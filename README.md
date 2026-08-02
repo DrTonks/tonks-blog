@@ -93,9 +93,9 @@ showCoverInContent: false
 pnpm build
 ```
 
-静态产物位于 `dist/`，可以部署到 GitHub Pages、Cloudflare Pages、Vercel、Netlify 或任意静态文件服务器。发布前请在 `astro.config.mjs` 中确认 `site` 与 `base` 符合目标地址。
+静态产物位于 `dist/`，可上传到自己的 Web 服务器或任意静态文件托管服务。发布前请在 `astro.config.mjs` 中确认 `site` 与 `base` 符合目标地址。
 
-仓库内的 GitHub Actions 可以构建并发布 `main` 分支。字体子集是正式构建的一部分，因此 CI 环境也需要安装 `requirements-font.txt` 中的 Python 依赖。
+仓库内的 GitHub Actions 只验证 `main` 分支能否完成 Astro 构建，不负责部署。正式构建包含字体子集流程，因此服务器构建环境需要安装 `requirements-font.txt` 中的 Python 依赖。
 
 ## 致谢与许可
 

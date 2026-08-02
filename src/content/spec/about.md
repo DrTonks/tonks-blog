@@ -35,12 +35,13 @@
 >特别感谢：
 
 ::github{repo="saicaca/fuwari"}
+感谢原作者及后续社区项目提供的基础设计与实现。
 
+>博客公开仓库：
 
->本站公开仓库：
+::github{repo="DrTonks/tonks-blog"}
 
-::github{repo="saicaca/fuwari"}
-## 🌟 主题特色
+## 主题特色
 
 - 桌面端与移动端独立的 Banner 轮播图，并提供平滑的背景衔接效果。
 - 亮色、暗色主题和以切换按钮为中心扩散的主题切换动画。
@@ -52,3 +53,29 @@
 - Markdown 扩展、KaTeX 数学公式、Mermaid、Expressive Code 与 PhotoSwipe 图片浏览。
 - 根据站点实际文本生成 Hanalei 字体子集，减少不必要的字体体积。
 
+## 本地开发
+
+环境要求：
+
+- Node.js 20 或更高版本
+- pnpm 9.14.4
+- Python 3（字体子集脚本需要 `fonttools` 和 `brotli`）
+
+pnpm install  
+python -m pip install -r requirements-font.txt  
+pnpm dev
+
+开发服务器默认运行在 `http://localhost:4321`。
+
+常用命令：
+
+|命令|用途|
+|---|---|
+|`pnpm dev`|生成开发用字体子集并启动开发服务器|
+|`pnpm build`|构建站点、生成最终字体子集和 Pagefind 索引|
+|`pnpm preview`|本地预览构建产物|
+|`pnpm new-post <文件名>`|创建文章|
+|`pnpm font:subset`|单独运行字体子集生成流程|
+|`pnpm format`|使用 Biome 格式化 `src`|
+
+项目继承了一些暂不影响构建和发布的历史类型问题，因此当前不以 `pnpm check` 全量通过作为构建前提。
