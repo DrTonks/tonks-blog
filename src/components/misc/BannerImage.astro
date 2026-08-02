@@ -1,0 +1,45 @@
+---
+import { url } from "../../utils/url-utils";
+
+interface Props {
+	id?: string;
+	src: string;
+	class?: string;
+	alt?: string;
+	position?: string;
+	device: "desktop" | "mobile";
+	index: number;
+}
+
+const {
+	id,
+	src,
+	alt = "",
+	position = "center",
+	device,
+	index,
+} = Astro.props;
+const className = Astro.props.class;
+const resolvedSrc = src.startsWith("/") ? url(src) : src;
+const imageClass = "w-full h-full object-cover";
+const imageStyle = `object-position: ${position}`;
+---
+<div
+	id={id}
+	class:list={[className, "overflow-hidden relative"]}
+	data-banner-device={device}
+	data-banner-index={index}
+>
+	<div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>
+	<img
+		data-banner-src={resolvedSrc}
+		alt={alt}
+		class={imageClass}
+		style={imageStyle}
+		loading="lazy"
+		decoding="async"
+	/>
+	<noscript>
+		<img src={resolvedSrc} alt={alt} class={imageClass} style={imageStyle} />
+	</noscript>
+</div>

@@ -1,0 +1,125 @@
+---
+import { Icon } from "astro-icon/components";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import { formatDateToYYYYMMDD } from "../utils/date-utils";
+import { getCategoryUrl, getTagUrl } from "../utils/url-utils";
+
+export interface Props {
+	published: Date;
+	updated?: Date;
+	category?: string;
+	tags?: string[];
+	hideUpdateDate?: boolean;
+	hideTagsForMobile?: boolean;
+	isHome?: boolean;
+	className?: string;
+	slug?: string;
+	showOnlyBasicMeta?: boolean;
+	words?: number;
+	minutes?: number;
+	showWordCount?: boolean;
+	showViews?: boolean;
+	trackView?: boolean;
+}
+
+const {
+	published,
+	updated,
+	category,
+	tags,
+	hideUpdateDate,
+	hideTagsForMobile,
+	className = "",
+	slug,
+	showOnlyBasicMeta = false,
+	words,
+	showWordCount = false,
+	showViews = false,
+	trackView = false,
+} = Astro.props;
+---
+
+<div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
+	<div class="flex items-center">
+		<div class="meta-icon">
+			<Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl" />
+		</div>
+		<span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(published)}</span>
+	</div>
+
+	{!hideUpdateDate && updated && updated.getTime() !== published.getTime() && (
+		<div class="flex items-center">
+			<div class="meta-icon">
+				<Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl" />
+			</div>
+			<span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(updated)}</span>
+		</div>
+	)}
+
+	<div class="flex items-center">
+		<div class="meta-icon">
+			<Icon name="material-symbols:book-2-outline-rounded" class="text-xl" />
+		</div>
+		<div class="flex flex-row flex-nowrap items-center">
+			<a
+				href={getCategoryUrl(category || "")}
+				aria-label={`View all posts in the ${category} category`}
+				class="link-lg transition text-50 text-sm font-medium hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"
+			>
+				{category || i18n(I18nKey.uncategorized)}
+			</a>
+		</div>
+	</div>
+
+	{showWordCount && typeof words === "number" && (
+		<div class="flex items-center">
+			<div class="meta-icon">
+				<Icon name="material-symbols:article-outline-rounded" class="text-xl" />
+			</div>
+			<span class="text-50 text-sm font-medium">
+				{words} {words === 1 ? i18n(I18nKey.wordCount) : i18n(I18nKey.wordsCount)}
+			</span>
+		</div>
+	)}
+
+	{showViews && slug && (
+		<div class="hidden items-center md:flex">
+			<div class="meta-icon">
+				<Icon name="material-symbols:visibility-outline-rounded" class="text-xl" />
+			</div>
+			<span
+				class="text-50 text-sm font-medium tabular-nums"
+				data-blog-views={slug}
+				data-track-view={trackView ? "true" : undefined}
+				aria-live={trackView ? "polite" : undefined}
+			>
+				— 浏览
+			</span>
+		</div>
+	)}
+
+	{!showOnlyBasicMeta && (
+		<div class:list={["items-center", { flex: !hideTagsForMobile, "hidden md:flex": hideTagsForMobile }]}>
+			<div class="meta-icon">
+				<Icon name="material-symbols:tag-rounded" class="text-xl" />
+			</div>
+			<div class="flex flex-row flex-nowrap items-center">
+				{tags && tags.length > 0 ? tags.map((tag, i) => (
+					<>
+						<div class:list={[{ hidden: i === 0 }, "mx-1.5 text-[var(--meta-divider)] text-sm"]}>/</div>
+						<a
+							href={getTagUrl(tag)}
+							aria-label={`View all posts with the ${tag.trim()} tag`}
+							class="link-lg transition text-50 text-sm font-medium hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"
+						>
+							{tag.trim()}
+						</a>
+					</>
+				)) : (
+					<div class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags)}</div>
+				)}
+			</div>
+		</div>
+	)}
+</div>

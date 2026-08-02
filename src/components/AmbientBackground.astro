@@ -1,0 +1,258 @@
+---
+---
+
+<div id="ambient-background" aria-hidden="true">
+	<div class="ambient-stars"></div>
+	<div class="ambient-pointer-glow"></div>
+</div>
+<script>
+	function initAmbientPointer() {
+		const ambientWindow = window as Window & { __tonksAmbientPointerReady?: boolean };
+		if (ambientWindow.__tonksAmbientPointerReady) return;
+		ambientWindow.__tonksAmbientPointerReady = true;
+
+		const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+		const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+		let frame = 0;
+		let x = window.innerWidth / 2;
+		let y = window.innerHeight / 2;
+		let pinAt = Number.POSITIVE_INFINITY;
+
+		const updateArtworkPin = () => {
+			const art = document.querySelector<HTMLElement>(".ambient-light-art");
+			const figures = art?.querySelectorAll<HTMLElement>(".ambient-light-art__figure");
+			if (!art || !figures?.length) return;
+			const figure = figures[0];
+			pinAt = art.getBoundingClientRect().top + window.scrollY + figure.offsetHeight - window.innerHeight;
+			for (const item of figures) item.classList.toggle("is-viewport-pinned", window.scrollY >= pinAt);
+		};
+
+		const paint = () => {
+			frame = 0;
+			document.documentElement.style.setProperty("--ambient-x", `${x}px`);
+			document.documentElement.style.setProperty("--ambient-y", `${y}px`);
+			const art = document.querySelector<HTMLElement>(".ambient-light-art");
+			if (art) {
+				const leftFigure = art.querySelector<HTMLElement>(".ambient-light-art__side--left .ambient-light-art__figure");
+				const rightFigure = art.querySelector<HTMLElement>(".ambient-light-art__side--right .ambient-light-art__figure");
+				const leftRect = leftFigure?.getBoundingClientRect();
+				const rightRect = rightFigure?.getBoundingClientRect();
+				let side = "";
+				let sideX = x;
+				let sideY = y;
+				if (leftRect && x >= leftRect.left && x <= leftRect.right && y >= leftRect.top && y <= leftRect.bottom) {
+					side = "left";
+					sideX = x - leftRect.left;
+					sideY = y - leftRect.top;
+				} else if (rightRect && x >= rightRect.left && x <= rightRect.right && y >= rightRect.top && y <= rightRect.bottom) {
+					side = "right";
+					sideX = x - rightRect.left;
+					sideY = y - rightRect.top;
+				}
+				art.dataset.hoverSide = side;
+				art.style.setProperty("--ambient-side-x", `${sideX}px`);
+				art.style.setProperty("--ambient-side-y", `${sideY}px`);
+			}
+		};
+		const loadLightArt = () => {
+			for (const image of document.querySelectorAll<HTMLImageElement>("img[data-light-art-src]")) {
+				if (!image.src) image.src = image.dataset.lightArtSrc || "";
+			}
+		};
+
+		loadLightArt();
+		new MutationObserver(loadLightArt).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+		requestAnimationFrame(updateArtworkPin);
+		window.addEventListener("scroll", updateArtworkPin, { passive: true });
+		window.addEventListener("resize", updateArtworkPin, { passive: true });
+		document.addEventListener("astro:page-load", () => requestAnimationFrame(updateArtworkPin));
+
+		document.addEventListener("pointermove", (event) => {
+			if (!finePointer.matches || reducedMotion.matches) return;
+			x = event.clientX;
+			y = event.clientY;
+			if (!frame) frame = requestAnimationFrame(paint);
+		}, { passive: true });
+	}
+
+	initAmbientPointer();
+</script>
+
+<style>
+	#ambient-background {
+		position: fixed;
+		inset: 0;
+		z-index: 20;
+		overflow: hidden;
+		pointer-events: none;
+		contain: strict;
+	}
+
+	.ambient-stars,
+	.ambient-pointer-glow {
+		position: absolute;
+		inset: 0;
+	}
+
+	.ambient-stars {
+		opacity: 0;
+		background-image:
+			radial-gradient(circle at 12% 18%, rgb(255 255 255 / 68%) 0 1px, transparent 1.6px),
+			radial-gradient(circle at 34% 42%, rgb(160 205 255 / 52%) 0 1px, transparent 1.8px),
+			radial-gradient(circle at 68% 22%, rgb(255 255 255 / 55%) 0 1px, transparent 1.6px),
+			radial-gradient(circle at 84% 64%, rgb(180 214 255 / 48%) 0 1px, transparent 1.8px);
+		background-size: 173px 149px, 227px 191px, 281px 233px, 337px 271px;
+		mask-image: linear-gradient(to bottom, transparent 0 28vh, black 48vh 100%);
+	}
+
+	.ambient-pointer-glow {
+		opacity: 0;
+		background: radial-gradient(circle 18rem at var(--ambient-x, 50vw) var(--ambient-y, 50vh), color-mix(in oklch, var(--primary) 13%, transparent), transparent 72%);
+	}
+
+	:global(.ambient-light-art) {
+		position: absolute;
+		inset: 3.5rem 0 0;
+		z-index: 0;
+		overflow: visible;
+		pointer-events: none;
+		opacity: 1;
+		transition: top 420ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 240ms ease;
+	}
+
+	:global(body.lg\:is-home .ambient-light-art) {
+		top: calc(30vh + 3.5rem);
+	}
+
+	:global(.ambient-light-art__side) {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 30vw;
+	}
+
+	:global(.ambient-light-art__side--left) { left: 0; }
+	:global(.ambient-light-art__side--right) { right: 0; }
+	:global(.ambient-light-art__figure) {
+		position: sticky;
+		top: max(0px, calc(100vh - 30vw * var(--ambient-art-ratio)));
+		width: 100%;
+		height: min(100vh, calc(30vw * var(--ambient-art-ratio)));
+	}
+	:global(.ambient-light-art__figure.is-viewport-pinned) {
+		position: fixed;
+		top: auto;
+		bottom: 0;
+		width: 30vw;
+	}
+	:global(.ambient-light-art__side--left .ambient-light-art__figure.is-viewport-pinned) { left: 0; }
+	:global(.ambient-light-art__side--right .ambient-light-art__figure.is-viewport-pinned) { right: 0; }
+	:global(.ambient-light-art__figure img) {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		object-position: center top;
+		user-select: none;
+	}
+	:global(.ambient-light-art__base) { opacity: 0.025; }
+	:global(.ambient-light-art__hover) {
+		opacity: 0;
+		mask-image: radial-gradient(circle 19rem at var(--ambient-side-x, 50%) var(--ambient-side-y, 20rem), black 0 28%, transparent 75%);
+		transition: opacity 160ms ease;
+	}
+	:global(.ambient-light-art[data-hover-side="left"] .ambient-light-art__side--left .ambient-light-art__hover),
+	:global(.ambient-light-art[data-hover-side="right"] .ambient-light-art__side--right .ambient-light-art__hover) { opacity: 0.15; }
+
+	:global(html.dark) .ambient-stars {
+		opacity: 0.62;
+	}
+
+	:global(html.dark) .ambient-pointer-glow {
+		opacity: 1;
+	}
+
+	:global(html.dark .ambient-light-art) { opacity: 1; }
+	:global(html.dark .ambient-light-art__base) { opacity: 0; }
+	:global(html.dark .ambient-light-art__hover) { opacity: 0; }
+	:global(html.dark .ambient-light-art[data-hover-side="left"] .ambient-light-art__side--left .ambient-light-art__hover),
+	:global(html.dark .ambient-light-art[data-hover-side="right"] .ambient-light-art__side--right .ambient-light-art__hover) { opacity: 0.075; }
+
+	:global(.ambient-document-stars) {
+		position: absolute;
+		inset: 3.5rem 0 0;
+		z-index: 0;
+		overflow: hidden;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 300ms ease;
+	}
+	:global(.ambient-document-stars__base) {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(circle at 4% 9%, rgb(255 255 255 / 100%) 0 1.25px, rgb(190 220 255 / 32%) 1.5px, transparent 3px),
+			radial-gradient(circle at 13% 31%, rgb(188 222 255 / 92%) 0 1.35px, rgb(135 190 255 / 28%) 1.7px, transparent 3.2px),
+			radial-gradient(circle at 23% 67%, rgb(255 255 255 / 50%) 0 0.8px, transparent 1.5px),
+			radial-gradient(circle at 34% 17%, rgb(235 244 255 / 98%) 0 1.2px, rgb(175 210 255 / 30%) 1.5px, transparent 3px),
+			radial-gradient(circle at 43% 79%, rgb(255 255 255 / 56%) 0 1.1px, transparent 1.9px),
+			radial-gradient(circle at 54% 42%, rgb(145 194 255 / 54%) 0 0.9px, transparent 1.7px),
+			radial-gradient(circle at 65% 12%, rgb(255 255 255 / 100%) 0 1.4px, rgb(183 217 255 / 34%) 1.7px, transparent 3.3px),
+			radial-gradient(circle at 76% 63%, rgb(186 215 255 / 52%) 0 1px, transparent 1.8px),
+			radial-gradient(circle at 87% 26%, rgb(255 255 255 / 96%) 0 1.15px, rgb(178 213 255 / 28%) 1.45px, transparent 2.8px),
+			radial-gradient(circle at 96% 84%, rgb(151 199 255 / 57%) 0 1.1px, transparent 1.9px);
+		animation: ambient-twinkle 3.6s ease-in-out -1.1s infinite alternate;
+		will-change: opacity;
+	}
+	:global(body.lg\:is-home .ambient-document-stars) {
+		top: calc(30vh + 3.5rem);
+	}
+	:global(.ambient-document-stars)::before,
+	:global(.ambient-document-stars)::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(circle at 8% 54%, rgb(255 255 255 / 98%) 0 1.2px, rgb(183 216 255 / 30%) 1.5px, transparent 3px),
+			radial-gradient(circle at 19% 88%, rgb(154 203 255 / 56%) 0 1px, transparent 1.8px),
+			radial-gradient(circle at 31% 45%, rgb(255 255 255 / 62%) 0 0.8px, transparent 1.5px),
+			radial-gradient(circle at 48% 22%, rgb(175 211 255 / 58%) 0 1.1px, transparent 1.9px),
+			radial-gradient(circle at 61% 91%, rgb(255 255 255 / 96%) 0 1.2px, rgb(181 215 255 / 30%) 1.5px, transparent 3px),
+			radial-gradient(circle at 72% 36%, rgb(142 191 255 / 55%) 0 0.9px, transparent 1.6px),
+			radial-gradient(circle at 83% 74%, rgb(255 255 255 / 100%) 0 1.3px, rgb(185 218 255 / 32%) 1.65px, transparent 3.2px),
+			radial-gradient(circle at 93% 48%, rgb(172 209 255 / 52%) 0 0.8px, transparent 1.5px);
+		animation: ambient-twinkle 2.8s ease-in-out infinite alternate;
+		will-change: opacity;
+	}
+	:global(.ambient-document-stars)::after {
+		transform: translateY(11%);
+		animation-delay: -1.9s;
+		animation-duration: 4.3s;
+	}
+	:global(html.dark .ambient-document-stars) { opacity: 0.94; }
+	:global(html.dark) .ambient-stars { opacity: 0; }
+
+	@keyframes ambient-twinkle {
+		from { opacity: 0.08; }
+		to { opacity: 1; }
+	}
+
+	@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+		.ambient-pointer-glow { opacity: 0 !important; }
+		:global(.ambient-light-art__hover) { display: none; }
+	}
+
+	@media (max-width: 1023px) {
+		:global(.ambient-light-art) { display: none; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.ambient-document-stars__base),
+		:global(.ambient-document-stars)::before,
+		:global(.ambient-document-stars)::after {
+			animation: none;
+			will-change: auto;
+		}
+	}
+</style>

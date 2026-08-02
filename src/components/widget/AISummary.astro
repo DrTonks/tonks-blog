@@ -1,0 +1,65 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	summary?: string;
+}
+
+const { summary = "" } = Astro.props;
+---
+
+<section class="ai-summary-card card-base" aria-labelledby="ai-summary-title">
+	<div class="ai-summary-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+	<header>
+		<div class="ai-summary-icon"><Icon name="material-symbols:auto-awesome-rounded" /></div>
+		<div>
+			<div id="ai-summary-title" class="ai-summary-title" role="heading" aria-level="2">AI摘要</div>
+			<p>ARTICLE BRIEF</p>
+		</div>
+	</header>
+	<div class="ai-summary-divider"><span></span></div>
+	<p class="ai-summary-text" data-ai-summary-visual aria-hidden="true">{summary}</p>
+	<p class="sr-only" data-ai-summary-accessible>{summary}</p>
+	<footer>
+		<span><span data-ai-summary-count>{Array.from(summary).length} 字</span><span> · 由 deepseek-v4-flash 生成</span></span>
+	</footer>
+</section>
+
+<style>
+	.ai-summary-card {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		padding: 1.1rem;
+		border: 1px solid color-mix(in oklch, var(--primary) 18%, transparent);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%);
+	}
+
+	.ai-summary-card::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: radial-gradient(circle at 100% 0%, color-mix(in oklch, var(--primary) 16%, transparent), transparent 42%);
+	}
+
+	header { display: flex; align-items: center; gap: 0.7rem; }
+	.ai-summary-title { margin: 0; color: var(--primary); font-size: 1.22rem; font-weight: 800; line-height: 1.15; }
+	header p { margin: 0.2rem 0 0; color: var(--meta-divider); font: 700 0.62rem/1 ui-monospace, Consolas, monospace; letter-spacing: 0.14em; }
+	.ai-summary-icon { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border-radius: 0.75rem; color: var(--primary); background: color-mix(in oklch, var(--primary) 13%, transparent); font-size: 1.25rem; }
+	.ai-summary-badge { margin-left: auto; border: 1px solid color-mix(in oklch, var(--primary) 28%, transparent); border-radius: 999px; padding: 0.18rem 0.48rem; color: var(--primary); font: 800 0.65rem/1 ui-monospace, Consolas, monospace; }
+	.ai-summary-divider { height: 1px; margin: 0.9rem 0; overflow: visible; background: linear-gradient(90deg, color-mix(in oklch, var(--primary) 48%, transparent), transparent); }
+	.ai-summary-divider span { display: block; width: 2.5rem; height: 3px; border-radius: 999px; background: var(--primary); transform: translateY(-1px); }
+	.ai-summary-text { min-height: 5.75rem; margin: 0; color: var(--primary); font-size: 0.92rem; line-height: 1.75; overflow-wrap: anywhere; }
+	.ai-summary-text::after { content: ""; display: inline-block; width: 0.42rem; height: 1em; margin-left: 0.18rem; border-radius: 2px; vertical-align: -0.12em; background: var(--primary); opacity: 0; }
+	.ai-summary-card.is-typing .ai-summary-text::after { opacity: 0.72; animation: ai-caret 760ms steps(1) infinite; }
+	footer { display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px dashed color-mix(in oklch, var(--primary) 18%, transparent); color: var(--meta-divider); font-size: 0.72rem; }
+	footer span { display: inline-flex; align-items: center; gap: 0.3rem; }
+	.ai-summary-orbit { position: absolute; top: -2.6rem; right: -2.6rem; width: 7rem; height: 7rem; border: 1px solid color-mix(in oklch, var(--primary) 12%, transparent); border-radius: 50%; opacity: 0.8; }
+	.ai-summary-orbit span { position: absolute; border: 1px solid color-mix(in oklch, var(--primary) 10%, transparent); border-radius: 50%; inset: 0.75rem; }
+	.ai-summary-orbit span:nth-child(2) { inset: 1.5rem; }
+	.ai-summary-orbit span:nth-child(3) { inset: 2.25rem; background: color-mix(in oklch, var(--primary) 18%, transparent); }
+
+	@keyframes ai-caret { 50% { opacity: 0; } }
+	@media (prefers-reduced-motion: reduce) { .ai-summary-card.is-typing .ai-summary-text::after { animation: none; } }
+</style>

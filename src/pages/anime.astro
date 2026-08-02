@@ -1,0 +1,49 @@
+---
+import AnimeClient from "../components/AnimeClient.svelte";
+import ImageWrapper from "../components/misc/ImageWrapper.astro";
+import { siteConfig } from "../config";
+import localAnimeList from "../data/anime";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+// 检查追番页面是否启用
+if (!siteConfig.featurePages.anime) {
+	return Astro.redirect("/404/");
+}
+
+// 配置传递给客户端组件
+const BANGUMI_USER_ID = siteConfig.bangumi?.userId || "your-user-id";
+const ANIME_MODE = siteConfig.anime?.mode || "bangumi";
+---
+
+<MainGridLayout title={i18n(I18nKey.anime)} description={i18n(I18nKey.animeSubtitle)}>
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-9 py-6 relative w-full">
+      <!-- 页面标题 -->
+      <div class="relative w-full mb-8 font-hanalei">
+        <div class="mb-6">
+          <h1 class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2">{i18n(I18nKey.animeTitle)}</h1>
+          <p class="text-black/75 dark:text-white/75">{i18n(I18nKey.animeSubtitle)}</p>
+        </div>
+        
+        <!-- 统计卡片（由列表区的客户端组件统一填充） -->
+        <div>
+          <!-- 统计内容由下面的 AnimeClient 组件负责渲染 -->
+        </div>
+      </div>
+
+      <!-- 动漫列表 -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4">
+          {i18n(I18nKey.animeList)}
+        </h2>
+        
+        <!-- 客户端组件会负责显示列表（含加载态/空态/错误） -->
+        <div>
+          <AnimeClient client:only="svelte" bangumiUserId={BANGUMI_USER_ID} mode={ANIME_MODE} localList={localAnimeList} />
+        </div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>

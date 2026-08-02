@@ -1,0 +1,18 @@
+{
+	"2024a08/a08": "本文为服创大赛A08赛题项目总结。采用YOLOv5s检测+轻量化SAM-Adapter分割的混合架构，结合SE/CBAM注意力机制与SimCLR自监督学习实现钢材表面缺陷检测。前端Vue3+TensorFlow.js端侧AI拦截，后端Spring Boot异步检测，Docker容器化部署。",
+	"bianyiyuanli1": "本文为编译原理LR(0)与SLR(1)文法学习笔记。讲解项目、闭包、Goto转换与DFA构造步骤，分析两种方法的填表规则与冲突判定，核心区别在于SLR(1)使用Follow集限制规约范围，能解决部分LR(0)的移进-规约冲突。",
+	"calculator/calculator": "本文描述了基于Vue3+TypeScript的金融教学计算器：涵盖等额本息/等额本金还款、提前还款模拟、NPV/IRR投资分析、折旧计算及蒙特卡洛信用风险模拟（VaR），结果以ECharts可视化展示并支持CSV导出。",
+	"codexissue1/codex-desktop-sqlite-log-churn": "Codex Desktop的logs_2.sqlite高频写入TRACE/DEBUG/INFO日志的诊断与缓解方案。通过SQLite BEFORE INSERT trigger黑名单过滤低级别日志，保留WARN/ERROR。附带Python诊断脚本，实测WAL增长下降约99.86%。",
+	"dashboard/dash": "基于Vue3+Three.js的贷款平台3D数据大屏。解析GeoJSON构建中国地图，通过棱柱高度与颜色映射各省指标，结合Raycaster点击交互、CSS2DRenderer标签和粒子特效，实现省份级数据可视化的完整方案。",
+	"es6": "ECMAScript学习笔记。涵盖对象操作、Map/Set集合、Array方法、箭头函数、class类（私有属性#、getter/setter、继承extends/super），以及数组与对象的解构赋值和扩展运算符用法。",
+	"fingerprint": "贷款风控平台的用户设备指纹库设计。在UniApp中收集设备特征与行为特征，建立准唯一设备标识。包含用户授权合规流程、AES加密传输及跨平台兼容处理方案。",
+	"git": "本文为GitHub Actions部署网站的问题记录。包括yml中需将master改为main、PowerShell执行pnpm的策略限制，以及因国内访问GitHub Pages速度慢而放弃该方案的决策过程。",
+	"loanbackendmodel": "本文是对贷款风控后端两大模型的设计描述。评分卡基于实名认证、收入、存款等计算信用分，审批模型综合信用分、金额占比、资料完整度等输出风险分与建议，附ML迁移路线。",
+	"loanwebend": "本文为贷款平台Web管理端（Vue3+Element Plus）的需求文档。涵盖JWT登录、用户管理、贷款产品CRUD、申请审批工作流、还款逾期监控与邮件提醒、仪表盘统计等功能，含完整API清单、数据字段定义与验收标准。",
+	"lunbotucss": "CSS+JS动画名片轮播图练习。利用CSS transition实现滑动过渡，通过JS的appendChild/prepend移动DOM节点完成轮播切换，配合@keyframes实现模糊+平移的内容展示动画。",
+	"music/tonks-home-music-system": "个人网站音乐系统技术实现。包括LRC歌词解析、Canvas环形频谱、桌宠唱歌状态机，以及Galaxy/魔法环双主题背景音频联动。",
+	"searchbar": "动态搜索框实现：用JS事件监听替代CSS :hover控制搜索栏展开/收起，避免中文输入法候选框导致的hover丢失问题；附带基于filter的客户端搜索逻辑与结果动态渲染。",
+	"tailwindcss": "Tailwind CSS入门笔记：介绍工具优先理念、常用类（布局/间距/颜色/排版）、响应式断点前缀、状态变体（hover/focus/group-hover）、tailwind.config.js自定义配置及PurgeCSS生产优化。",
+	"yuyifenxi/yuyifenxi": "编译原理语义分析笔记：讲解属性文法中综合属性（自底向上）与继承属性（自顶向下）的计算规则，以及S-属性文法和L-属性文法在LR/LL分析器中的翻译实现。",
+	"zato729/zato": "本文为视觉小说《Z.A.T.O.》的读后感，通过分析作品中各个角色的塑造，探讨作品的超展开、\"不解决问题\"的叙事哲学与作者的创作理念。"
+}

@@ -1,0 +1,135 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getPostUrlBySlug } from "@utils/url-utils";
+import PostCard from "./PostCard.astro";
+import { siteConfig } from "../config";
+
+const { page } = Astro.props;
+
+let delay = 0;
+const interval = 50;
+---
+<div
+  id="post-list-container"
+  class="transition flex flex-col rounded-[var(--radius-large)] bg-[var(--card-bg)] py-0 md:py-0 md:bg-transparent gap-2 md:gap-4 mb-4 list-mode md:list-mode"
+  data-default-layout={siteConfig.postListLayout.defaultMode}
+>
+  {page.data.map((entry: CollectionEntry<"posts">) => (
+    <PostCard
+      entry={entry}
+      title={entry.data.title}
+      tags={entry.data.tags}
+      category={entry.data.category}
+      published={entry.data.published}
+      updated={entry.data.updated}
+      url={getPostUrlBySlug(entry.slug)}
+      image={entry.data.image}
+      description={entry.data.description}
+      draft={entry.data.draft}
+      pinned={entry.data.pinned}
+      class:list="onload-animation"
+      style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
+    />
+  ))}
+</div>
+
+<script>
+  type PostLayoutWindow = Window & {
+    __postLayoutControllerInitialized?: boolean;
+    __postLayoutSwupHookInitialized?: boolean;
+    swup?: {
+      hooks?: {
+        on: (hook: string, callback: () => void) => void;
+      };
+    };
+  };
+
+  const postLayoutWindow = window as PostLayoutWindow;
+
+  function updatePostListLayout(layout: string) {
+    const postListContainer = document.getElementById("post-list-container");
+    if (!postListContainer) return;
+
+    postListContainer.classList.remove("list-mode", "grid-mode");
+
+    if (layout === "grid") {
+      postListContainer.classList.add(
+        "grid-mode",
+        "grid",
+        "grid-cols-1",
+        "md:grid-cols-2",
+        "gap-6",
+      );
+      postListContainer.classList.remove("flex", "flex-col");
+    } else {
+      postListContainer.classList.add("list-mode", "flex", "flex-col");
+      postListContainer.classList.remove(
+        "grid",
+        "grid-cols-1",
+        "md:grid-cols-2",
+        "gap-6",
+      );
+    }
+
+    postListContainer.classList.add("js-initialized");
+  }
+
+  function publishLayoutInit() {
+    const postListContainer = document.getElementById("post-list-container");
+    if (!postListContainer) return;
+
+    const layout = postListContainer.classList.contains("grid-mode")
+      ? "grid"
+      : "list";
+    window.dispatchEvent(new CustomEvent("layoutInit", { detail: { layout } }));
+  }
+
+  function initLayout() {
+    const postListContainer = document.getElementById("post-list-container");
+    if (!postListContainer) return;
+
+    const savedLayout = localStorage.getItem("postListLayout");
+    const defaultLayout =
+      postListContainer.getAttribute("data-default-layout") || "list";
+    const currentLayout = savedLayout || defaultLayout;
+
+    if (window.innerWidth >= 769) {
+      updatePostListLayout(currentLayout);
+    } else {
+      postListContainer.classList.add("js-initialized");
+    }
+
+    publishLayoutInit();
+  }
+
+  function scheduleLayoutInit() {
+    window.requestAnimationFrame(initLayout);
+  }
+
+  function registerSwupHook() {
+    if (
+      postLayoutWindow.__postLayoutSwupHookInitialized ||
+      !postLayoutWindow.swup?.hooks
+    ) {
+      return;
+    }
+
+    postLayoutWindow.__postLayoutSwupHookInitialized = true;
+    postLayoutWindow.swup.hooks.on("page:view", scheduleLayoutInit);
+  }
+
+  scheduleLayoutInit();
+
+  if (!postLayoutWindow.__postLayoutControllerInitialized) {
+    postLayoutWindow.__postLayoutControllerInitialized = true;
+
+    window.addEventListener("layoutChange", (event) => {
+      if (!(event instanceof CustomEvent) || !event.detail?.layout) return;
+      updatePostListLayout(event.detail.layout);
+    });
+    window.addEventListener("resize", scheduleLayoutInit, { passive: true });
+    document.addEventListener("swup:enable", registerSwupHook, { once: true });
+  }
+
+  registerSwupHook();
+</script>

@@ -1,0 +1,6 @@
+# Add characters here only when Hanalei text is created exclusively at runtime
+# and therefore does not appear in production HTML.
+#
+# Normal page, post, navigation, tag, category and profile text is detected
+# automatically from dist HTML. Comments in this file are ignored.
+

@@ -1,0 +1,41 @@
+# Copied to dist and uploaded with the static site.
+# Apache needs mod_headers, mod_setenvif and AllowOverride FileInfo.
+# Compression additionally uses mod_deflate and mod_filter.
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  <FilesMatch "\.(?:html?|json|webmanifest|xml)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+
+  <FilesMatch "\.(?:woff2?|ttf|otf)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+
+  <FilesMatch "\.(?:png|jpe?g|webp|avif|gif|svg)$">
+    Header set Cache-Control "public, max-age=86400, must-revalidate"
+  </FilesMatch>
+
+  <IfModule mod_setenvif.c>
+  # Wallpapers keep stable names, so replacements must revalidate immediately.
+  SetEnvIf Request_URI "^/assets/(?:desktop-banner|mobile-banner)/" cache_banner_revalidate=1
+  Header set Cache-Control "no-cache" env=cache_banner_revalidate
+
+  SetEnvIf Request_URI "^/pagefind/" cache_pagefind_revalidate=1
+  Header set Cache-Control "no-cache" env=cache_pagefind_revalidate
+
+  # Only Vite/Astro content-hashed assets receive immutable caching.
+  SetEnvIf Request_URI "^/_astro/" cache_astro_immutable=1
+  Header set Cache-Control "public, max-age=31536000, immutable" env=cache_astro_immutable
+  </IfModule>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  <IfModule mod_filter.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript
+  AddOutputFilterByType DEFLATE application/javascript application/json image/svg+xml
+  </IfModule>
+</IfModule>

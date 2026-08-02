@@ -1,0 +1,313 @@
+---
+import type { CollectionEntry } from "astro:content";
+import * as path from "node:path";
+import { Icon } from "astro-icon/components";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import { getDir, getTagUrl } from "../utils/url-utils";
+import { siteConfig } from "../config";
+import ImageWrapper from "./misc/ImageWrapper.astro";
+import PostMetadata from "./PostMeta.astro";
+
+interface Props {
+	class?: string;
+	entry: CollectionEntry<"posts">;
+	title: string;
+	url: string;
+	published: Date;
+	updated?: Date;
+	tags: string[];
+	category: string | null;
+	image: string;
+	description: string;
+	draft: boolean;
+	pinned?: boolean;
+	style: string;
+}
+const {
+	entry,
+	title,
+	url,
+	published,
+	updated,
+	tags,
+	category,
+	image,
+	description,
+	pinned,
+	style,
+} = Astro.props;
+const className = Astro.props.class;
+
+const hasCover = image !== undefined && image !== null && image !== "";
+
+const coverWidth = "28%";
+
+const { remarkPluginFrontmatter } = await entry.render();
+---
+
+<div class:list={["post-card card-base flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} data-has-cover={String(hasCover)} style={style}>
+    <div class:list={["post-card__body pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%_-_52px_-_12px)]": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]": hasCover}]}>
+        <a href={url}
+           class="post-card__title transition group w-full block font-bold mb-3 text-3xl text-90
+        hover:text-[var(--primary)] dark:hover:text-[var(--primary)]
+        active:text-[var(--title-active)] dark:active:text-[var(--title-active)]
+        before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
+        before:absolute before:top-[35px] before:left-[18px] before:hidden md:before:block
+        ">
+            {pinned && <Icon name="mdi:pin" class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5"></Icon>}
+            {title}
+            <Icon class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
+            <Icon class="text-[var(--primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+        </a>
+
+        <!-- metadata (without tags) -->
+        <PostMetadata published={published} updated={updated} tags={tags} category={category || ''} hideTagsForMobile={true} hideUpdateDate={true} className="post-card__meta mb-4" showOnlyBasicMeta={true} words={remarkPluginFrontmatter.words} showWordCount={true} slug={entry.slug} showViews={true}></PostMetadata>
+
+        <!-- description -->
+        <div class="post-card__excerpt transition text-75 mb-3.5 pr-4">
+            { description || remarkPluginFrontmatter.excerpt }
+        </div>
+
+        <!-- tags (moved to bottom) -->
+        <div class="post-card__tags flex flex-wrap gap-2 mt-2" data-many-tags={String(tags.length > 3)}>
+            {tags && tags.length > 0 ? (
+                tags.map((tag) => (
+                    <a 
+                        href={getTagUrl(tag)} 
+                        class:list={[
+                            siteConfig.tagStyle.useNewStyle 
+                                ? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-[var(--primary)] dark:hover:text-[var(--primary)] active:text-[var(--primary)] dark:active:text-[var(--primary)] group/tag whitespace-nowrap"
+                                : "btn-regular h-6 text-xs px-2 rounded-lg"
+                        ]}
+                        aria-label={`View all posts tagged with ${tag.trim()}`}
+                    >
+                        <span class="transition-transform group-hover/tag:translate-x-0.5">
+                            # {tag.trim()}
+                        </span>
+                    </a>
+                ))
+            ) : (
+                <span class="text-xs text-50">{i18n(I18nKey.noTags)}</span>
+            )}
+        </div>
+    </div>
+
+    {hasCover && <a href={url} aria-label={title}
+                    class:list={["post-card__cover group",
+                        "max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
+                        "md:w-[var(--coverWidth)] relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
+                    ]} >
+        <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
+        <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
+            <Icon name="material-symbols:chevron-right-rounded"
+                  class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl">
+            </Icon>
+        </div>
+        <ImageWrapper src={image} basePath={path.join("content/posts/", getDir(entry.id))} alt="Cover Image of the Post"
+                  class="w-full h-full">
+        </ImageWrapper>
+    </a>}
+
+    {!hasCover && (
+        <a
+            href={url}
+            aria-label={title}
+            class="post-card__cover-placeholder group hidden overflow-hidden"
+            data-pagefind-ignore
+        >
+            <span class="post-card__placeholder-grid" aria-hidden="true"></span>
+            <Icon
+                name="material-symbols:article-outline-rounded"
+                class="post-card__placeholder-icon text-[3.25rem]"
+                aria-hidden="true"
+            />
+        </a>
+    )}
+
+    {!hasCover &&
+        <a href={url} aria-label={title} class="post-card__enter !hidden md:!flex btn-regular w-[3.25rem]
+         absolute right-3 top-3 bottom-3 rounded-xl bg-[var(--enter-btn-bg)]
+         hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95
+        ">
+            <Icon name="material-symbols:chevron-right-rounded"
+                  class="transition text-[var(--primary)] text-4xl mx-auto">
+            </Icon>
+        </a>
+    }
+</div>
+<div class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"></div>
+
+<style define:vars={{coverWidth}}>
+    @media (min-width: 769px) {
+        :global(#post-list-container.grid-mode) .post-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-width: 0;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__body {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            width: 100%;
+            padding: 1.15rem 1.25rem 1rem;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__title {
+            display: block;
+            overflow: hidden;
+            margin-bottom: 0.45rem;
+            font-size: 1.6rem;
+            line-height: 1.28;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__title::before {
+            top: 0.62rem;
+            left: -0.75rem;
+            display: block;
+        }
+
+        :global(#post-list-container.grid-mode) :global(.post-card__meta) {
+			flex-wrap: nowrap;
+			min-height: 1.5rem;
+            margin-bottom: 0.65rem;
+			gap: 0.35rem;
+            font-size: 0.75rem;
+			overflow: hidden;
+			white-space: nowrap;
+        }
+
+		:global(#post-list-container.grid-mode) :global(.post-card__meta .meta-icon) {
+			width: 1.5rem;
+			height: 1.5rem;
+			margin-right: 0.25rem;
+		}
+
+		:global(#post-list-container.grid-mode) :global(.post-card__meta svg) {
+			font-size: 1rem;
+		}
+
+		:global(#post-list-container.grid-mode) :global(.post-card__meta .text-sm) {
+			font-size: 0.68rem;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__excerpt {
+            display: -webkit-box;
+            min-height: 2.75rem;
+            overflow: hidden;
+            padding-right: 0;
+            margin-bottom: 0.55rem;
+            font-size: 0.9rem;
+            line-height: 1.4rem;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__tags {
+            position: relative;
+			display: flex;
+			flex-wrap: nowrap;
+			white-space: nowrap;
+            max-height: 1.5rem;
+            margin-top: auto;
+            overflow: hidden;
+        }
+
+		:global(#post-list-container.grid-mode) .post-card__tags > :global(a) {
+			flex: 0 0 auto;
+		}
+
+		:global(#post-list-container.grid-mode) .post-card__tags[data-many-tags="true"]::after {
+			content: "…";
+			position: absolute;
+			right: 0;
+			top: 0;
+			display: grid;
+			width: 1.6rem;
+			height: 1.5rem;
+			place-items: center;
+			color: var(--primary);
+			background: linear-gradient(to right, transparent, var(--card-bg) 35%);
+		}
+
+        :global(#post-list-container.grid-mode) .post-card__cover {
+            position: relative;
+            inset: auto;
+            order: -1;
+            width: 100%;
+            aspect-ratio: 16 / 8.25;
+            max-height: none;
+            margin: 0;
+            border-radius: var(--radius-large) var(--radius-large) 0 0;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__cover :global(img) {
+            transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__cover:hover :global(img) {
+            transform: scale(1.025);
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__cover-placeholder {
+            position: relative;
+            order: -1;
+            display: flex;
+            width: 100%;
+            aspect-ratio: 16 / 8.25;
+            align-items: center;
+            justify-content: center;
+            color: color-mix(in oklch, var(--primary) 72%, var(--btn-content));
+            background:
+                radial-gradient(circle at 24% 28%, color-mix(in oklch, var(--primary) 25%, transparent) 0 1px, transparent 2px),
+                radial-gradient(circle at 72% 64%, color-mix(in oklch, var(--primary) 18%, transparent) 0 1.5px, transparent 2.5px),
+                linear-gradient(135deg, color-mix(in oklch, var(--card-bg) 86%, var(--primary)), var(--card-bg));
+            background-size: 2.75rem 2.75rem, 4rem 4rem, auto;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__placeholder-grid {
+            position: absolute;
+            inset: 18% 12%;
+            border: 1px solid color-mix(in oklch, var(--primary) 16%, transparent);
+            border-radius: 1rem;
+            opacity: 0.7;
+            transform: rotate(-4deg);
+            transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__placeholder-icon {
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 0 1.25rem color-mix(in oklch, var(--primary) 28%, transparent));
+            transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__cover-placeholder:hover .post-card__placeholder-grid {
+            opacity: 1;
+            transform: rotate(0deg) scale(1.025);
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__cover-placeholder:hover .post-card__placeholder-icon {
+            transform: translateY(-0.125rem) scale(1.04);
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__enter {
+            display: none !important;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        :global(#post-list-container.grid-mode) .post-card__cover :global(img) {
+            transition: none;
+        }
+
+        :global(#post-list-container.grid-mode) .post-card__placeholder-grid,
+        :global(#post-list-container.grid-mode) .post-card__placeholder-icon {
+            transition: none;
+        }
+    }
+</style>
