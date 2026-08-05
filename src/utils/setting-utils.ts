@@ -93,9 +93,14 @@ export function setThemeFromPoint(theme: LIGHT_DARK_MODE, x: number, y: number):
 	}
 
 	const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-	root.style.setProperty("--theme-reveal-x", `${x}px`);
-	root.style.setProperty("--theme-reveal-y", `${y}px`);
-	root.style.setProperty("--theme-reveal-radius", `${radius}px`);
+	// Chrome 的 ::view-transition-new(root) 渲染盒可能不等于 100vw×100vh，
+	// 改用百分比坐标/半径，circle() 百分比以元素自身盒为准，各浏览器行为一致。
+	const px = (x / innerWidth) * 100;
+	const py = (y / innerHeight) * 100;
+	const pr = (radius * Math.SQRT2) / Math.hypot(innerWidth, innerHeight) * 100;
+	root.style.setProperty("--theme-reveal-x", `${px}%`);
+	root.style.setProperty("--theme-reveal-y", `${py}%`);
+	root.style.setProperty("--theme-reveal-radius", `${pr}%`);
 	root.classList.add("is-theme-revealing");
 
 	const transition = viewTransitionDocument.startViewTransition(() => {
