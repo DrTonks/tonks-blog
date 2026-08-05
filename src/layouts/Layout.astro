@@ -900,13 +900,24 @@ function activateDeferredBanner(wrapper: Element | null | undefined, priority: "
 	if (!image) return Promise.resolve();
 	const deferredSrc = image.dataset.bannerSrc;
 	if (!deferredSrc) return typeof image.decode === "function" ? image.decode().catch(() => {}) : Promise.resolve();
+	const localFallback = image.dataset.bannerLocal || null;
 	return new Promise<void>((resolve) => {
 		const finish = () => resolve();
 		image.fetchPriority = priority;
 		image.addEventListener("load", finish, { once: true });
-		image.addEventListener("error", finish, { once: true });
+		image.addEventListener("error", () => {
+			if (localFallback && image.src !== localFallback) {
+				// CDN 失败 → 回退本地
+				image.addEventListener("load", finish, { once: true });
+				image.addEventListener("error", finish, { once: true });
+				image.src = localFallback;
+			} else {
+				finish();
+			}
+		}, { once: true });
 		image.src = deferredSrc;
 		delete image.dataset.bannerSrc;
+		delete image.dataset.bannerLocal;
 	});
 }
 

@@ -347,17 +347,12 @@
   }
 
   .timeline-card .overlay {
-    opacity: 1;
+    opacity: 0;
     transition: opacity 300ms ease;
   }
 
   /* Light mode: remove gray overlay and add golden outline/glow on active card */
-  :global(:not(.dark)) .timeline-card .overlay {
-    /* hide the dark overlay in light mode */
-    opacity: 0;
-  }
-
-  :global(:not(.dark)) .timeline-card.active .card-content {
+  :global(html:not(.dark)) .timeline-card.active .card-content {
     transform: scale(1.02);
     box-shadow: 0 10px 30px rgba(250, 215, 100, 0.12), 0 6px 18px rgba(250, 215, 100, 0.08);
     border: 1px solid rgba(250, 215, 100, 0.9);

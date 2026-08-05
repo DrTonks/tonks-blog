@@ -1,6 +1,6 @@
 ---
 import { siteConfig } from "@/config";
-import { initialLoadingPreloadImages } from "@/loading-preload";
+import { initialLoadingPreloadImages, CDN_PRELOAD_MAP } from "@/loading-preload";
 
 const ROWS = 18;
 const COLS = 18;
@@ -17,6 +17,7 @@ const rows = Array.from({ length: ROWS }, (_, rowIndex) => {
 	});
 });
 const explicitPreloadImageUrls = initialLoadingPreloadImages;
+const cdnMapping = CDN_PRELOAD_MAP();
 const preloadHanaleiFont = Boolean(siteConfig.font?.hanalei?.enable);
 const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 ---
@@ -89,7 +90,7 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 	}
 </style>
 
-<script is:inline define:vars={{ explicitPreloadImageUrls, preloadHanaleiFont, preloadBannerCarousel }}>
+<script is:inline define:vars={{ explicitPreloadImageUrls, cdnMapping, preloadHanaleiFont, preloadBannerCarousel }}>
 	(() => {
 		if (window.__tonksInitialLoaderStarted) return;
 		window.__tonksInitialLoaderStarted = true;
@@ -119,14 +120,38 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 					resolve();
 					return;
 				}
+				const localFallback = img.dataset.bannerLocal || null;
 				const preload = new Image();
 				preload.decoding = "async";
 				preload.fetchPriority = priority;
-				preload.onload = preload.onerror = () => {
+				preload.onload = () => {
 					img.fetchPriority = priority;
 					img.src = src;
 					delete img.dataset.bannerSrc;
+					delete img.dataset.bannerLocal;
 					resolve();
+				};
+				preload.onerror = () => {
+					if (localFallback) {
+						window.__tonksCdnFailed = true;
+						const retry = new Image();
+						retry.decoding = "async";
+						retry.fetchPriority = priority;
+						retry.onload = retry.onerror = () => {
+							img.fetchPriority = priority;
+							img.src = localFallback;
+							delete img.dataset.bannerSrc;
+							delete img.dataset.bannerLocal;
+							resolve();
+						};
+						retry.src = localFallback;
+					} else {
+						img.fetchPriority = priority;
+						img.src = src;
+						delete img.dataset.bannerSrc;
+						delete img.dataset.bannerLocal;
+						resolve();
+					}
 				};
 				preload.src = src;
 			});
@@ -169,12 +194,28 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 
 		function preloadExplicitImages() {
 			return Promise.all(
-				explicitPreloadImageUrls.map((src) => new Promise((resolve) => {
-					const image = new Image();
-					image.decoding = "async";
-					image.onload = image.onerror = resolve;
-					image.src = src;
-				})),
+				explicitPreloadImageUrls.map((localSrc) => {
+					const cdnSrc = cdnMapping[localSrc] || null;
+					const primary = cdnSrc || localSrc;
+					return new Promise((resolve) => {
+						const image = new Image();
+						image.decoding = "async";
+						image.onload = resolve;
+						image.onerror = () => {
+							if (cdnSrc && !window.__tonksCdnFailed) {
+								// CDN 失败 → 标记不可达并重试本地
+								window.__tonksCdnFailed = true;
+								const fallbackImg = new Image();
+								fallbackImg.decoding = "async";
+								fallbackImg.onload = fallbackImg.onerror = resolve;
+								fallbackImg.src = localSrc;
+							} else {
+								resolve();
+							}
+						};
+						image.src = primary;
+					});
+				}),
 			);
 		}
 
@@ -344,7 +385,7 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 
 			let spinnerTimer;
 			if (!reducedMotion) {
-				spinnerTimer = setInterval(spinnerTick, 200);
+				spinnerTimer = setInterval(spinnerTick, 100);
 				spinnerTick();
 			}
 

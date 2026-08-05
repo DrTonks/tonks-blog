@@ -14,8 +14,10 @@
 		const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 		const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 		let frame = 0;
+		let layoutFrame = 0;
 		let x = window.innerWidth / 2;
 		let y = window.innerHeight / 2;
+		let hasPointerPosition = false;
 		let pinAt = Number.POSITIVE_INFINITY;
 
 		const updateArtworkPin = () => {
@@ -23,8 +25,10 @@
 			const figures = art?.querySelectorAll<HTMLElement>(".ambient-light-art__figure");
 			if (!art || !figures?.length) return;
 			const figure = figures[0];
+			const canPin = art.clientHeight > figure.offsetHeight;
+			art.classList.toggle("is-too-short-to-pin", !canPin);
 			pinAt = art.getBoundingClientRect().top + window.scrollY + figure.offsetHeight - window.innerHeight;
-			for (const item of figures) item.classList.toggle("is-viewport-pinned", window.scrollY >= pinAt);
+			for (const item of figures) item.classList.toggle("is-viewport-pinned", canPin && window.scrollY >= pinAt);
 		};
 
 		const paint = () => {
@@ -59,18 +63,27 @@
 				if (!image.src) image.src = image.dataset.lightArtSrc || "";
 			}
 		};
+		const scheduleArtworkLayoutUpdate = () => {
+			if (layoutFrame) return;
+			layoutFrame = requestAnimationFrame(() => {
+				layoutFrame = 0;
+				updateArtworkPin();
+				if (hasPointerPosition && !frame) frame = requestAnimationFrame(paint);
+			});
+		};
 
 		loadLightArt();
 		new MutationObserver(loadLightArt).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-		requestAnimationFrame(updateArtworkPin);
-		window.addEventListener("scroll", updateArtworkPin, { passive: true });
-		window.addEventListener("resize", updateArtworkPin, { passive: true });
-		document.addEventListener("astro:page-load", () => requestAnimationFrame(updateArtworkPin));
+		scheduleArtworkLayoutUpdate();
+		window.addEventListener("scroll", scheduleArtworkLayoutUpdate, { passive: true });
+		window.addEventListener("resize", scheduleArtworkLayoutUpdate, { passive: true });
+		document.addEventListener("astro:page-load", scheduleArtworkLayoutUpdate);
 
 		document.addEventListener("pointermove", (event) => {
 			if (!finePointer.matches || reducedMotion.matches) return;
 			x = event.clientX;
 			y = event.clientY;
+			hasPointerPosition = true;
 			if (!frame) frame = requestAnimationFrame(paint);
 		}, { passive: true });
 	}
@@ -139,6 +152,13 @@
 		width: 100%;
 		height: min(100vh, calc(30vw * var(--ambient-art-ratio)));
 	}
+	:global(.ambient-light-art.is-too-short-to-pin) {
+		overflow: hidden;
+	}
+	:global(.ambient-light-art.is-too-short-to-pin .ambient-light-art__figure) {
+		position: absolute;
+		top: 0;
+	}
 	:global(.ambient-light-art__figure.is-viewport-pinned) {
 		position: fixed;
 		top: auto;
@@ -177,7 +197,7 @@
 	:global(html.dark .ambient-light-art__base) { opacity: 0; }
 	:global(html.dark .ambient-light-art__hover) { opacity: 0; }
 	:global(html.dark .ambient-light-art[data-hover-side="left"] .ambient-light-art__side--left .ambient-light-art__hover),
-	:global(html.dark .ambient-light-art[data-hover-side="right"] .ambient-light-art__side--right .ambient-light-art__hover) { opacity: 0.075; }
+	:global(html.dark .ambient-light-art[data-hover-side="right"] .ambient-light-art__side--right .ambient-light-art__hover) { opacity: 0.095; }
 
 	:global(.ambient-document-stars) {
 		position: absolute;

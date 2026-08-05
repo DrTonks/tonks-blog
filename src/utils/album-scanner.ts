@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { AlbumGroup, Photo } from "../data/1";
+import type { AlbumGroup, Photo } from "../types/album";
 import { formatDateToYYYYMMDD } from "./date-utils";
 
 export async function scanAlbums(): Promise<AlbumGroup[]> {

@@ -1,5 +1,6 @@
 ---
 import { url } from "../../utils/url-utils";
+import { getCdnUrl } from "@/config/cdn";
 
 interface Props {
 	id?: string;
@@ -21,6 +22,7 @@ const {
 } = Astro.props;
 const className = Astro.props.class;
 const resolvedSrc = src.startsWith("/") ? url(src) : src;
+const cdnSrc = src.startsWith("/") ? (getCdnUrl(src) ?? resolvedSrc) : resolvedSrc;
 const imageClass = "w-full h-full object-cover";
 const imageStyle = `object-position: ${position}`;
 ---
@@ -32,7 +34,8 @@ const imageStyle = `object-position: ${position}`;
 >
 	<div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>
 	<img
-		data-banner-src={resolvedSrc}
+		data-banner-src={cdnSrc}
+		data-banner-local={resolvedSrc !== cdnSrc ? resolvedSrc : undefined}
 		alt={alt}
 		class={imageClass}
 		style={imageStyle}

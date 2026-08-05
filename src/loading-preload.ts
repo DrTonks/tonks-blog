@@ -16,3 +16,9 @@ export const initialLoadingPreloadImages: string[] = [
 	"/assets/home/left.png",
 	"/assets/home/right.png",
 ];
+
+/**
+ * CDN 映射（供 LoadingScreen 内联脚本在运行时进行 CDN → 本地回退）
+ * 由 LoadingScreen.astro 的 define:vars 注入。
+ */
+export { getCdnMapping as CDN_PRELOAD_MAP } from "./config/cdn";

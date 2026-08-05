@@ -1,3 +1,14 @@
+interface SwupHookRegistry {
+	on<TVisit = unknown>(
+		event: string,
+		handler: (visit: TVisit) => void,
+	): void;
+}
+
+interface SwupRuntime {
+	hooks: SwupHookRegistry;
+}
+
 declare global {
 	interface HTMLElementTagNameMap {
 		"table-of-contents": HTMLElement & {
@@ -6,8 +17,7 @@ declare global {
 	}
 
 	interface Window {
-		// Define swup type directly since @swup/astro doesn't export AstroIntegration
-		swup: any;
+		swup: SwupRuntime;
 		pagefind: {
 			search: (query: string) => Promise<{
 				results: Array<{
@@ -17,6 +27,9 @@ declare global {
 		};
 
 		mobileTOCInit?: () => void;
+		initSemifullScrollDetection?: () => void;
+		closeAnnouncement?: () => void;
+		iconifyLoaded?: boolean;
 	}
 }
 
@@ -45,3 +58,5 @@ interface SearchResult {
 	raw_url?: string;
 	sub_results?: SearchResult[];
 }
+
+export {};
