@@ -1,1 +1,32 @@
+# 所有文本文件统一使用 LF 换行符
+* text=auto
+
+# Astro/前端源码
+*.astro text eol=lf
+*.svelte text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.tsx text eol=lf
+*.jsx text eol=lf
+*.vue text eol=lf
+
+# 文档和配置
+*.md text eol=lf
+*.json text eol=lf
+*.jsonc text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# GitHub Linguist 覆盖
 *.js linguist-language=astro
+
+# 二进制文件不做转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.webp binary
