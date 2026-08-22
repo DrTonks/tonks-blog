@@ -5,20 +5,12 @@
 		"description": "旨在让大学生快速了解当前就业市场对于应届生招聘岗位的能力要求，清晰并准确的分析出自身就业能力、就业意愿。",
 		"image": "/images/projects/fc2026-1.jpg",
 		"category": "web",
-		"techStack": [
-			"AI",
-			"LLM",
-			"智能体"
-		],
-		"status": "in-progress",
+		"techStack": ["AI", "LLM", "Agent", "Vue3", "Springboot"],
+		"status": "completed",
 		"startDate": "2026-06-01",
-		"tags": [
-			"服创",
-			"AI",
-			"职业规划",
-			"智能体"
-		],
-		"award": "西部赛区一等奖",
+		"endDate": "2026-08-21",
+		"tags": ["服创", "AI", "职业规划", "Agent"],
+		"award": "国家二等奖 · 赛区一等奖",
 		"links": "https://career-planner.tonks.top/",
 		"sourceCode": "https://career-planner.tonks.top/",
 		"featured": true
@@ -33,10 +25,7 @@
 		"status": "completed",
 		"startDate": "2026-02-01",
 		"endDate": "2026-05-16",
-		"tags": [
-			"计设",
-			"软件应用与开发"
-		],
+		"tags": ["计设", "软件应用与开发"],
 		"award": "省二等奖"
 	},
 	{
@@ -45,21 +34,32 @@
 		"description": "对pgvector的HNSW算法向量检索优化，性能排名44/3529，进入决赛第二阶段，未入围前20。",
 		"image": "/images/projects/tianchi.png",
 		"category": "web",
-		"techStack": [
-			"C",
-			"SQL",
-			"HNSW"
-		],
+		"techStack": ["C", "SQL", "HNSW"],
 		"status": "completed",
 		"startDate": "2025-11-01",
 		"endDate": "2026-01-05",
-		"tags": [
-			"Postgresql",
-			"pgvector",
-			"数据库",
-			"向量检索"
-		],
+		"tags": ["Postgresql", "pgvector", "数据库", "向量检索"],
 		"sourceCode": "https://gitee.com/DrTonks/polardb_competition_2025/"
+	},
+	{
+		"id": "tonks-home",
+		"title": "Tonks-Home",
+		"description": "基于sleepy后端的个人主页，展示日常状态和项目活动，实现音乐播放与桌宠系统。",
+		"image": "/images/projects/personalWebsite.png",
+		"category": "web",
+		"techStack": [
+			"Vue3",
+			"TypeScript",
+			"Tailwind CSS",
+			"Python",
+			"Flask",
+			"SQLite"
+		],
+		"status": "in-progress",
+		"startDate": "2025-5-16",
+		"tags": ["homepage", "personal"],
+		"sourceCode": "https://github.com/DrTonks/tonks-home",
+		"links": "https://tonks.top"
 	},
 	{
 		"id": "carDetect",
@@ -79,12 +79,8 @@
 		"startDate": "2024-12-20",
 		"endDate": "2025-06-21",
 		"featured": true,
-		"tags": [
-			"服创",
-			"端侧AI",
-			"机器学习"
-		],
-		"award": "西部赛区三等奖",
+		"tags": ["服创", "端侧AI", "机器学习"],
+		"award": "赛区三等奖",
 		"sourceCode": "https://github.com/DrTonks/vue-detectSystem"
 	},
 	{
@@ -93,21 +89,12 @@
 		"description": "《金融学基础》教学项目，可视化计算过程，帮助用户处理不同贷款方案的还款计划和情境计算。",
 		"image": "/images/projects/calculator.png",
 		"category": "web",
-		"techStack": [
-			"Vue3",
-			"lodash",
-			"TypeScript",
-			"Tailwind CSS"
-		],
+		"techStack": ["Vue3", "lodash", "TypeScript", "Tailwind CSS"],
 		"status": "completed",
 		"startDate": "2025-09-21",
 		"endDate": "2025-10-01",
 		"featured": true,
-		"tags": [
-			"金融",
-			"贷款",
-			"数学"
-		],
+		"tags": ["金融", "贷款", "数学"],
 		"links": "https://loancalculator.tonks.top"
 	},
 	{
@@ -116,20 +103,10 @@
 		"description": "互+综合设计课程项目，作为拓展功能（其实就是装杯功能）被实现。计划添加地图中的更多可交互元素",
 		"image": "/images/projects/dashboard.png",
 		"category": "web",
-		"techStack": [
-			"Vue3",
-			"Three.js",
-			"TypeScript",
-			"Tailwind CSS"
-		],
+		"techStack": ["Vue3", "Three.js", "TypeScript", "Tailwind CSS"],
 		"status": "in-progress",
 		"startDate": "2025-10-21",
-		"tags": [
-			"金融",
-			"贷款",
-			"数据可视化",
-			"大屏"
-		],
+		"tags": ["金融", "贷款", "数据可视化", "大屏"],
 		"links": "https://loanriskctl-dashboard.tonks.top",
 		"sourceCode": "https://loanriskctl-dashboard.tonks.top"
 	},
@@ -151,32 +128,20 @@
 		],
 		"status": "in-progress",
 		"startDate": "2025-09-01",
-		"tags": [
-			"金融",
-			"贷款",
-			"后台管理",
-			"APP"
-		],
+		"tags": ["金融", "贷款", "后台管理", "APP"],
 		"links": "https://loanriskctl-webend.tonks.top",
 		"sourceCode": "https://loanriskctl-webend.tonks.top"
 	},
 	{
 		"id": "myblog",
-		"title": "我的博客",
+		"title": "Tonks-Blog",
 		"description": "基于fuwari的个人博客，精简大部分内容，支持AI摘要/后端统计/首屏加载/主题切换等功能。",
 		"image": "/images/projects/myblog.png",
 		"category": "web",
-		"techStack": [
-			"Astro",
-			"TypeScript",
-			"Tailwind CSS",
-			"Node.js"
-		],
+		"techStack": ["Astro", "TypeScript", "Tailwind CSS", "Node.js"],
 		"status": "in-progress",
 		"startDate": "2024-12-01",
-		"tags": [
-			"blog"
-		],
+		"tags": ["blog"],
 		"sourceCode": "https://github.com/DrTonks/tonks-blog"
 	},
 	{
@@ -185,20 +150,11 @@
 		"description": "微光工作室25届招新已完成，参与维护官网、招新网站。计划重构为管理端/用户端分离的集成系统。",
 		"image": "/images/projects/weiguang.png",
 		"category": "web",
-		"techStack": [
-			"HTML",
-			"CSS",
-			"JavaScript",
-			"Vue3",
-			"Pinia"
-		],
-		"status": "planned",
+		"techStack": ["HTML", "CSS", "JavaScript", "Vue3", "Pinia"],
+		"status": "completed",
 		"startDate": "2024-10-01",
-		"tags": [
-			"微光工作室",
-			"招新",
-			"三件套项目"
-		],
+		"endDate": "2025-11-01",
+		"tags": ["微光工作室", "招新", "三件套项目"],
 		"sourceCode": "https://glimmer.org.cn/"
 	}
 ]
