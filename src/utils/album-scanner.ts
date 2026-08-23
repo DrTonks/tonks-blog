@@ -28,6 +28,9 @@ export async function scanAlbums(): Promise<AlbumGroup[]> {
 		}
 	}
 
+	// 按 info.json 里的 date 降序排序，新相册排在最前
+	albums.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
 	return albums;
 }
 
