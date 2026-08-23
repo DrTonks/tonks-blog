@@ -1,40 +1,35 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import type { Project } from '../data/projects';
   import { i18n } from '../i18n/translation';
   import I18nKey from '../i18n/i18nKey';
-
-  type Project = {
-    id: string;
-    title: string;
-    description: string;
-    image?: string;
-    category?: string;
-    techStack?: string[];
-    status?: string;
-    liveDemo?: string;
-    sourceCode?: string;
-    startDate?: string;
-    endDate?: string;
-    featured?: boolean;
-    tags?: string[];
-    award?: string;
-    links?: string[] | string;
-    demoUrl?: string;
-    sourceUrl?: string;
-  };
 
   let projects: Project[] = [];
   let loading = true;
   let error: string | null = null;
+
+  const firstLink = (links?: string[] | string) => {
+    const link = Array.isArray(links) ? links.find((item) => item?.trim()) : links;
+    return link?.trim() || undefined;
+  };
+
+  const getPreviewUrl = (project: Project) =>
+    firstLink(project.links) || project.liveDemo?.trim() || project.demoUrl?.trim() || undefined;
+
+  const getSourceUrl = (project: Project) =>
+    project.sourceCode?.trim() || project.sourceUrl?.trim() || undefined;
+
+  // “参与制作”优先打开源码；没有源码时仍可回退到项目预览。
+  const getInvolvedUrl = (project: Project) => getSourceUrl(project) || getPreviewUrl(project);
 
   onMount(async () => {
     try {
       const res = await fetch('/data/projects.json', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch projects.json');
       projects = await res.json();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      error = e?.message || String(e);
+      error = e instanceof Error ? e.message : String(e);
     } finally {
       loading = false;
     }
@@ -42,9 +37,7 @@
 
   $: awarded = projects.filter((p) => p.award && String(p.award).trim() !== '');
   $: involved = projects.filter((p) => p.category === 'web' || p.category === 'mobile');
-  $: previewable = projects.filter(
-    (p) => p.links && (Array.isArray(p.links) ? p.links.length > 0 : Boolean(p.links)),
-  );
+  $: previewable = projects.filter((p) => Boolean(getPreviewUrl(p)));
   $: techSet = Array.from(new Set(projects.flatMap((p) => p.techStack || []))).sort();
 </script>
 
@@ -83,7 +76,7 @@
               </div>
             </a>
           {:else}
-            <div class="bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300" aria-disabled>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300">
               {#if project.image}
                 <div class="aspect-video overflow-hidden">
                   <img src={project.image} alt={project.title} class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
@@ -117,8 +110,9 @@
       <h2 class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4">参与制作</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {#each involved as project}
-          {#if (Array.isArray(project.links) && project.links.length > 0) || project.liveDemo || project.demoUrl || project.sourceCode || project.sourceUrl}
-            <a href={(Array.isArray(project.links) ? project.links[0] : project.links) ?? project.liveDemo ?? project.demoUrl ?? project.sourceCode ?? project.sourceUrl} target="_blank" rel="noopener noreferrer" class="bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300">
+          {@const involvedUrl = getInvolvedUrl(project)}
+          {#if involvedUrl}
+            <a href={involvedUrl} target="_blank" rel="noopener noreferrer" aria-label={`查看 ${project.title}${getSourceUrl(project) ? ' 的源代码' : ' 的预览'}`} class="bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900">
               {#if project.image}
                 <div class="aspect-video overflow-hidden">
                   <img src={project.image} alt={project.title} class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
@@ -143,7 +137,7 @@
               </div>
             </a>
           {:else}
-            <div class="bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300" aria-disabled>
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300">
               {#if project.image}
                 <div class="aspect-video overflow-hidden">
                   <img src={project.image} alt={project.title} class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
@@ -179,10 +173,12 @@
       <h2 class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4">可预览应用</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {#each previewable as project}
-          <a href={(Array.isArray(project.links) ? project.links[0] : project.links)} target="_blank" rel="noopener noreferrer" class="group bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300">
+          {@const previewUrl = getPreviewUrl(project)}
+          {@const sourceUrl = getSourceUrl(project)}
+          <article class="group bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300">
             {#if project.image}
               <div class="aspect-video overflow-hidden">
-                <img src={project.image} alt={project.title} class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                <img src={project.image} alt={project.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
             {/if}
             <div class="p-4">
@@ -193,13 +189,20 @@
                 </span>
               </div>
               <p class="text-black/60 dark:text-white/60 mb-3 text-sm line-clamp-2">{project.description}</p>
-              <div class="flex gap-3 text-sm">
-                {#if project.links}
-                  <span class="text-blue-600 dark:text-blue-400 hover:underline font-medium">预览</span>
+              <div class="flex flex-wrap items-center gap-3 text-sm">
+                {#if previewUrl}
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-blue-400" aria-label={`预览 ${project.title}`}>
+                    预览
+                  </a>
+                {/if}
+                {#if sourceUrl}
+                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" class="font-medium text-neutral-600 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-neutral-300" aria-label={`查看 ${project.title} 的源代码`}>
+                    源代码
+                  </a>
                 {/if}
               </div>
             </div>
-          </a>
+          </article>
         {/each}
       </div>
     </div>
