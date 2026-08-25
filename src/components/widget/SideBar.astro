@@ -1,5 +1,9 @@
 ---
 import type { MarkdownHeading } from "astro";
+import { Icon } from "astro-icon/components";
+import { siteConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
 import { widgetManager } from "../../utils/widget-manager";
 import Announcement from "./Announcement.astro";
 import AISummary from "./AISummary.astro";
@@ -8,6 +12,7 @@ import MusicPlayer from "./MusicPlayer.svelte";
 import Profile from "./Profile.astro";
 import Tags from "./Tags.astro";
 import TOC from "./TOC.astro";
+import WidgetLayout from "./WidgetLayout.astro";
 
 interface Props {
 	class?: string;
@@ -20,6 +25,7 @@ const { class: className, headings, aiSummary } = Astro.props;
 // 获取配置的组件列表
 const topComponents = widgetManager.getComponentsByPosition("top");
 const stickyComponents = widgetManager.getComponentsByPosition("sticky");
+const showSidebarToc = Boolean(siteConfig.toc.enable && headings?.length);
 
 // 组件映射表
 const componentMap = {
@@ -52,20 +58,36 @@ function renderComponent(component: any, index: number, _components: any[]) {
 }
 ---
 
-<div id="sidebar" class:list={[className, "w-full", { "sidebar-article-mode": Boolean(aiSummary) }]}>
+<div id="sidebar" class:list={[className, "w-full", {
+	"sidebar-article-mode": Boolean(aiSummary),
+	"sidebar-has-inline-toc": siteConfig.toc.enable,
+	"sidebar-inline-active": showSidebarToc,
+}]}>
 	<!-- 顶部固定组件区域 -->
 	{topComponents.length > 0 && (
-		<div class="flex flex-col w-full gap-4 mb-4">
+		<div class="sidebar-top-components flex flex-col w-full gap-4 mb-4">
 			{topComponents.map((component, index) => {
 				const renderData = renderComponent(component, index, topComponents);
 				if (!renderData) return null;
 				
 				const { Component, props } = renderData;
 				if (component.type === "profile") {
-					return <div id="sidebar-primary-widget" data-sidebar-motion-item data-mode={aiSummary ? "summary" : "profile"}>
-						<div data-sidebar-profile-panel hidden={Boolean(aiSummary)}><Profile {...props} /></div>
-						<div data-sidebar-summary-panel hidden={!aiSummary}><AISummary summary={aiSummary?.summary} /></div>
-					</div>;
+					return <>
+						<div id="sidebar-primary-widget" data-sidebar-motion-item data-mode={aiSummary ? "summary" : "profile"}>
+							<div data-sidebar-profile-panel hidden={Boolean(aiSummary)}><Profile {...props} /></div>
+							<div data-sidebar-summary-panel hidden={!aiSummary}><AISummary summary={aiSummary?.summary} /></div>
+						</div>
+						{siteConfig.toc.enable && <div class="sidebar-inline-toc hidden md:block 2xl:hidden" hidden={!showSidebarToc} data-sidebar-motion-item>
+							<WidgetLayout id="sidebar-toc-card" name={i18n(I18nKey.tableOfContents)}>
+								<button slot="title-action" type="button" class="sidebar-collapse-toggle" data-sidebar-toc-toggle aria-expanded="true" aria-controls="sidebar-toc-card" aria-label="收起目录" title="收起目录">
+									<Icon name="material-symbols:keyboard-arrow-up-rounded" class="sidebar-collapse-toggle__icon" />
+								</button>
+								<div class="sidebar-inline-toc__viewport">
+									<TOC id="sidebar-toc" headings={headings ?? []} />
+								</div>
+							</WidgetLayout>
+						</div>}
+					</>;
 				}
 				return <div data-sidebar-motion-item><Component {...props} /></div>;
 			})}
@@ -156,9 +178,95 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		width: 100%;
 	}
 
+	.sidebar-inline-toc {
+		position: static;
+		z-index: 1;
+		opacity: 1;
+		transform: translateY(0);
+		transition: opacity 180ms ease, transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+
+	.sidebar-inline-toc.is-revealing {
+		opacity: 0;
+		transform: translateY(0.5rem);
+	}
+
+	.sidebar-inline-toc[hidden] {
+		display: none !important;
+	}
+
+	.sidebar-inline-toc__viewport {
+		max-height: clamp(16rem, calc(100vh - 22rem), 36rem);
+		overflow: hidden;
+		transition: max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+
+	.sidebar-inline-toc.is-collapsed .sidebar-inline-toc__viewport {
+		max-height: 9rem;
+	}
+
+	.sidebar-collapse-toggle {
+		display: grid;
+		width: 2.5rem;
+		height: 2.5rem;
+		margin-left: auto;
+		place-items: center;
+		border: 1px solid color-mix(in oklch, var(--primary) 24%, transparent);
+		border-radius: 0.75rem;
+		color: var(--primary);
+		background: color-mix(in oklch, var(--primary) 10%, transparent);
+		cursor: pointer;
+		transition: background-color 180ms ease, border-color 180ms ease, transform 120ms ease;
+	}
+
+	.sidebar-collapse-toggle:hover {
+		border-color: color-mix(in oklch, var(--primary) 46%, transparent);
+		background: color-mix(in oklch, var(--primary) 18%, transparent);
+	}
+
+	.sidebar-collapse-toggle:active { transform: scale(0.94); }
+	.sidebar-collapse-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+	.sidebar-collapse-toggle__icon { font-size: 1.4rem; transition: transform 220ms ease; }
+	.sidebar-collapse-toggle[aria-expanded="false"] .sidebar-collapse-toggle__icon { transform: rotate(180deg); }
+
+	.sidebar-inline-toc__viewport :global(table-of-contents) {
+		height: auto;
+		max-height: inherit;
+		overflow-y: auto;
+		padding-bottom: 0.5rem;
+	}
+
+	/* Flatten the top group only while the inline TOC is active. This makes the
+	   TOC's sticky containing block the whole sidebar instead of the short top
+	   group, so it can remain sticky until the sidebar/article release point. */
+	@media (min-width: 768px) and (max-width: 1535px) {
+		#sidebar.sidebar-has-inline-toc {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		#sidebar.sidebar-has-inline-toc > .sidebar-top-components {
+			display: contents;
+		}
+
+		/* Move as one unit: profile, TOC, announcement, categories and tags.
+		   The grid row bounds native sticky at the article bottom. */
+		#sidebar.sidebar-inline-active {
+			position: sticky;
+			top: 0.75rem;
+			align-self: start;
+		}
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		#sidebar-primary-widget [data-sidebar-profile-panel],
 		#sidebar-primary-widget [data-sidebar-summary-panel] {
+			transition: none;
+		}
+
+		.sidebar-inline-toc__viewport,
+		.sidebar-collapse-toggle__icon {
 			transition: none;
 		}
 	}
@@ -218,6 +326,13 @@ function renderComponent(component: any, index: number, _components: any[]) {
 			return;
 		}
 
+		// 左侧目录模式保持整个侧栏 sticky，不触发半程释放。
+		if (sidebar.classList.contains("sidebar-inline-active")) {
+			sidebar.classList.remove("sidebar-sticky-released");
+			sidebar.style.removeProperty("--sidebar-release-offset");
+			return;
+		}
+
 		if (reset) {
 			sidebar.classList.remove("sidebar-sticky-released");
 			sidebar.style.removeProperty("--sidebar-release-offset");
@@ -240,6 +355,111 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		stickyFrame = requestAnimationFrame(() => {
 			stickyFrame = 0;
 			syncArticleSidebarSticky(reset);
+		});
+	}
+
+	function syncInlineToc() {
+		const sidebar = document.getElementById("sidebar");
+		const inlineToc = sidebar?.querySelector<HTMLElement>(".sidebar-inline-toc");
+		const toc = inlineToc?.querySelector<HTMLElement & { init?: () => void }>("table-of-contents");
+		if (!sidebar || !inlineToc) return;
+
+		const contentRoot = document.querySelector(".custom-md, .markdown-content, .prose");
+		const hasArticleHeadings = Boolean(contentRoot?.querySelector("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]"));
+		if (hasArticleHeadings && inlineToc.hidden) {
+			inlineToc.classList.add("is-revealing");
+			inlineToc.hidden = false;
+			requestAnimationFrame(() => requestAnimationFrame(() => {
+				inlineToc.classList.remove("is-revealing");
+			}));
+		} else if (!hasArticleHeadings) {
+			inlineToc.hidden = true;
+			inlineToc.classList.remove("is-revealing");
+		}
+		sidebar.classList.toggle("sidebar-inline-active", hasArticleHeadings);
+		if (hasArticleHeadings) toc?.init?.();
+		scheduleArticleSidebarSticky(true);
+	}
+
+	function initSidebarTocToggle() {
+		const sidebar = document.getElementById("sidebar");
+		const inlineToc = sidebar?.querySelector<HTMLElement>(".sidebar-inline-toc");
+		const toggle = inlineToc?.querySelector<HTMLButtonElement>("[data-sidebar-toc-toggle]");
+		if (!inlineToc || !toggle) return;
+		const hasTwoTocInstances = document.querySelectorAll("table-of-contents").length > 1;
+		if (hasTwoTocInstances && toggle.dataset.userToggled !== "true") {
+			inlineToc.classList.add("is-collapsed");
+			toggle.setAttribute("aria-expanded", "false");
+			toggle.setAttribute("aria-label", "展开目录");
+			toggle.title = "展开目录";
+		}
+		if (toggle.dataset.initialized === "true") return;
+		toggle.dataset.initialized = "true";
+		toggle.addEventListener("click", () => {
+			toggle.dataset.userToggled = "true";
+			const collapsed = !inlineToc.classList.contains("is-collapsed");
+			const viewport = inlineToc.querySelector<HTMLElement>(".sidebar-inline-toc__viewport");
+			const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			if (viewport && !reduceMotion) {
+				const startHeight = viewport.getBoundingClientRect().height;
+				viewport.style.transition = "none";
+				viewport.style.maxHeight = "none";
+				inlineToc.classList.toggle("is-collapsed", collapsed);
+				const expandedLimit = Math.max(256, window.innerHeight - 352);
+				const endHeight = collapsed
+					? 144
+					: Math.min(viewport.scrollHeight, 576, expandedLimit);
+				viewport.style.maxHeight = `${startHeight}px`;
+				viewport.getBoundingClientRect();
+				viewport.style.removeProperty("transition");
+				requestAnimationFrame(() => {
+					viewport.style.maxHeight = `${endHeight}px`;
+				});
+				viewport.addEventListener("transitionend", (event) => {
+					if (event.propertyName === "max-height") viewport.style.removeProperty("max-height");
+				}, { once: true });
+			} else {
+				inlineToc.classList.toggle("is-collapsed", collapsed);
+			}
+			toggle.setAttribute("aria-expanded", String(!collapsed));
+			toggle.setAttribute("aria-label", collapsed ? "展开目录" : "收起目录");
+			toggle.title = collapsed ? "展开目录" : "收起目录";
+		});
+	}
+
+	function initAISummaryToggle() {
+		const card = document.querySelector<HTMLElement>(".ai-summary-card");
+		const toggle = card?.querySelector<HTMLButtonElement>("[data-ai-summary-toggle]");
+		if (!card || !toggle || toggle.dataset.initialized === "true") return;
+		toggle.dataset.initialized = "true";
+			toggle.addEventListener("click", () => {
+			const collapsed = !card.classList.contains("is-collapsed");
+			const content = card.querySelector<HTMLElement>("#ai-summary-content");
+			const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			const startHeight = content?.getBoundingClientRect().height || 0;
+			if (content) {
+				content.style.transition = "none";
+				content.style.height = "auto";
+			}
+			card.classList.toggle("is-collapsed", collapsed);
+			if (content) {
+				const endHeight = content.getBoundingClientRect().height;
+				if (reduceMotion) {
+					content.style.removeProperty("height");
+					content.style.removeProperty("transition");
+				} else {
+					content.style.height = `${startHeight}px`;
+					content.getBoundingClientRect();
+					content.style.removeProperty("transition");
+					requestAnimationFrame(() => content.style.height = `${endHeight}px`);
+					content.addEventListener("transitionend", (event) => {
+						if (event.propertyName === "height") content.style.removeProperty("height");
+					}, { once: true });
+				}
+			}
+			toggle.setAttribute("aria-expanded", String(!collapsed));
+			toggle.setAttribute("aria-label", collapsed ? "展开 AI 摘要" : "收起 AI 摘要");
+			toggle.title = collapsed ? "展开 AI 摘要" : "收起 AI 摘要";
 		});
 	}
 
@@ -303,7 +523,9 @@ function renderComponent(component: any, index: number, _components: any[]) {
 			return;
 		}
 
-		const movingItems = [...sidebar.querySelectorAll<HTMLElement>("[data-sidebar-motion-item]")].slice(1);
+		const movingItems = [...sidebar.querySelectorAll<HTMLElement>("[data-sidebar-motion-item]")]
+			.slice(1)
+			.filter((item) => !item.classList.contains("sidebar-inline-toc") && !item.hidden);
 		const before = new Map(movingItems.map((item) => [item, item.getBoundingClientRect().top]));
 		const currentPanel = currentMode === "summary" ? summaryPanel : profilePanel;
 		const nextPanel = nextMode === "summary" ? summaryPanel : profilePanel;
@@ -343,9 +565,19 @@ function renderComponent(component: any, index: number, _components: any[]) {
 
 	if (!sidebarWindow.__aiSummarySidebarInitialized) {
 		sidebarWindow.__aiSummarySidebarInitialized = true;
-		const registerSwup = () => window.swup?.hooks?.on("page:view", () => syncAISummary(false));
+		const registerSwup = () => window.swup?.hooks?.on("page:view", () => {
+			initSidebarTocToggle();
+			initAISummaryToggle();
+			syncInlineToc();
+			syncAISummary(false);
+		});
 		if (window.swup) registerSwup();
 		else document.addEventListener("swup:enable", registerSwup, { once: true });
 	}
-	requestAnimationFrame(() => syncAISummary(true));
+	requestAnimationFrame(() => {
+		initSidebarTocToggle();
+		initAISummaryToggle();
+		syncInlineToc();
+		syncAISummary(true);
+	});
 </script>

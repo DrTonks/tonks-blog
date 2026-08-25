@@ -15,9 +15,12 @@ const { id, name, isCollapsed, collapsedHeight, style } = Astro.props;
 const className = Astro.props.class;
 ---
 <widget-layout data-id={id} data-is-collapsed={String(isCollapsed)} class={"pb-4 card-base " + className} style={style}>
-    <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-8 mt-4 mb-2
+    <div class="widget-title-row relative ml-8 mr-4 mt-4 mb-2 flex items-center gap-2
         before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
-        before:absolute before:left-[-16px] before:top-[5.5px]">{name}</div>
+        before:absolute before:left-[-16px] before:top-1/2 before:-translate-y-1/2">
+        <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100">{name}</div>
+        <slot name="title-action"></slot>
+    </div>
     <div id={id} class:list={["collapse-wrapper px-4 overflow-hidden", {"collapsed": isCollapsed}]}>
         <slot></slot>
     </div>
@@ -34,8 +37,16 @@ const className = Astro.props.class;
 </widget-layout>
 
 <style define:vars={{ collapsedHeight }}>
+    .collapse-wrapper {
+        transition: height 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
     .collapsed {
         height: var(--collapsedHeight);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .collapse-wrapper { transition: none; }
     }
 </style>
 
@@ -50,10 +61,29 @@ const className = Astro.props.class;
             const id = this.dataset.id;
             const btn = this.querySelector<HTMLDivElement>('.expand-btn');
             const toggle = btn?.querySelector<HTMLButtonElement>('button');
-            const wrapper = this.querySelector(`#${id}`)
+            const wrapper = this.querySelector<HTMLElement>(`#${id}`)
             toggle?.addEventListener('click', () => {
                 const willExpand = wrapper?.classList.contains('collapsed') ?? false;
-                wrapper?.classList.toggle('collapsed', !willExpand);
+                if (!wrapper) return;
+
+				const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+				const startHeight = wrapper.getBoundingClientRect().height;
+				wrapper.style.height = `${startHeight}px`;
+				wrapper.classList.toggle('collapsed', !willExpand);
+
+				if (reduceMotion) {
+					wrapper.style.removeProperty('height');
+				} else if (willExpand) {
+					const endHeight = wrapper.scrollHeight;
+					wrapper.getBoundingClientRect();
+					wrapper.style.height = `${endHeight}px`;
+					wrapper.addEventListener('transitionend', (event) => {
+						if (event.propertyName === 'height') wrapper.style.removeProperty('height');
+					}, { once: true });
+				} else {
+					wrapper.getBoundingClientRect();
+					requestAnimationFrame(() => wrapper.style.removeProperty('height'));
+				}
                 toggle.setAttribute('aria-expanded', String(willExpand));
                 btn?.querySelector('.more-icon')?.classList.toggle('hidden', willExpand);
                 btn?.querySelector('.more-label')?.classList.toggle('hidden', willExpand);

@@ -1187,19 +1187,20 @@ const setup = () => {
 		// 只处理新的katex元素的滚动条，使用原生CSS滚动条
 		initCustomScrollbar();
 		
-		// 检查当前页面是否为文章页面（有TOC元素）
+		// 左右目录都在 Swup 容器外，节点会跨页保留。
+		// 以新正文为唯一依据，同步可见性并重建每一个实例。
 		const tocWrapper = document.getElementById('toc-wrapper');
-		const isArticlePage = tocWrapper !== null;
+		const contentRoot = document.querySelector('.custom-md, .markdown-content, .prose');
+		const isArticlePage = Boolean(contentRoot?.querySelector('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]'));
+		if (tocWrapper) tocWrapper.hidden = !isArticlePage;
 		
-		// 只在文章页面重新初始化 TOC 组件
-		if (isArticlePage) {
-			const tocElement = document.querySelector('table-of-contents');
-			if (tocElement && typeof (tocElement as any).init === 'function') {
-				setTimeout(() => {
-					(tocElement as any).init();
-				}, 100);
+		document.querySelectorAll('table-of-contents').forEach((tocElement) => {
+			if (typeof (tocElement as any).init === 'function') {
+				(tocElement as any).init();
 			}
+		});
 			
+		if (isArticlePage) {
 			// 重新初始化移动端 TOC 组件
 			if (typeof (window as any).mobileTOCInit === 'function') {
 				setTimeout(() => {

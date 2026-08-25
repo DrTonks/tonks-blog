@@ -16,9 +16,14 @@ const { summary = "" } = Astro.props;
 			<div id="ai-summary-title" class="ai-summary-title" role="heading" aria-level="2">AI摘要</div>
 			<p>ARTICLE BRIEF</p>
 		</div>
+		<button type="button" class="ai-summary-toggle" data-ai-summary-toggle aria-expanded="true" aria-controls="ai-summary-content" aria-label="收起 AI 摘要" title="收起 AI 摘要">
+			<Icon name="material-symbols:keyboard-arrow-up-rounded" class="ai-summary-toggle__icon" />
+		</button>
 	</header>
-	<div class="ai-summary-divider"><span></span></div>
-	<p class="ai-summary-text" data-ai-summary-visual aria-hidden="true">{summary}</p>
+	<div id="ai-summary-content">
+		<div class="ai-summary-divider"><span></span></div>
+		<p class="ai-summary-text" data-ai-summary-visual aria-hidden="true">{summary}</p>
+	</div>
 	<p class="sr-only" data-ai-summary-accessible>{summary}</p>
 	<footer>
 		<span><span data-ai-summary-count>{Array.from(summary).length} 字</span><span> · 由 deepseek-v4-flash 生成</span></span>
@@ -43,23 +48,31 @@ const { summary = "" } = Astro.props;
 		background: radial-gradient(circle at 100% 0%, color-mix(in oklch, var(--primary) 16%, transparent), transparent 42%);
 	}
 
-	header { display: flex; align-items: center; gap: 0.7rem; }
+	header { position: relative; z-index: 2; display: flex; align-items: center; gap: 0.7rem; }
 	.ai-summary-title { margin: 0; color: var(--primary); font-size: 1.22rem; font-weight: 800; line-height: 1.15; }
 	header p { margin: 0.2rem 0 0; color: var(--meta-divider); font: 700 0.62rem/1 ui-monospace, Consolas, monospace; letter-spacing: 0.14em; }
 	.ai-summary-icon { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border-radius: 0.75rem; color: var(--primary); background: color-mix(in oklch, var(--primary) 13%, transparent); font-size: 1.25rem; }
+	.ai-summary-toggle { position: relative; z-index: 3; display: grid; width: 2.5rem; height: 2.5rem; margin-left: auto; place-items: center; border: 1px solid color-mix(in oklch, var(--primary) 24%, transparent); border-radius: 0.75rem; color: var(--primary); background: color-mix(in oklch, var(--primary) 10%, transparent); cursor: pointer; transition: background-color 180ms ease, border-color 180ms ease, transform 120ms ease; }
+	.ai-summary-toggle:hover { border-color: color-mix(in oklch, var(--primary) 46%, transparent); background: color-mix(in oklch, var(--primary) 18%, transparent); }
+	.ai-summary-toggle:active { transform: scale(0.94); }
+	.ai-summary-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+	.ai-summary-toggle__icon { font-size: 1.4rem; transition: transform 220ms ease; }
+	.ai-summary-toggle[aria-expanded="false"] .ai-summary-toggle__icon { transform: rotate(180deg); }
 	.ai-summary-badge { margin-left: auto; border: 1px solid color-mix(in oklch, var(--primary) 28%, transparent); border-radius: 999px; padding: 0.18rem 0.48rem; color: var(--primary); font: 800 0.65rem/1 ui-monospace, Consolas, monospace; }
 	.ai-summary-divider { height: 1px; margin: 0.9rem 0; overflow: visible; background: linear-gradient(90deg, color-mix(in oklch, var(--primary) 48%, transparent), transparent); }
+	#ai-summary-content { overflow: hidden; transition: height 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
 	.ai-summary-divider span { display: block; width: 2.5rem; height: 3px; border-radius: 999px; background: var(--primary); transform: translateY(-1px); }
 	.ai-summary-text { min-height: 5.75rem; margin: 0; color: var(--primary); font-size: 0.92rem; line-height: 1.75; overflow-wrap: anywhere; }
+	.ai-summary-card.is-collapsed .ai-summary-text { display: -webkit-box; min-height: 0; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
 	.ai-summary-text::after { content: ""; display: inline-block; width: 0.42rem; height: 1em; margin-left: 0.18rem; border-radius: 2px; vertical-align: -0.12em; background: var(--primary); opacity: 0; }
 	.ai-summary-card.is-typing .ai-summary-text::after { opacity: 0.72; animation: ai-caret 760ms steps(1) infinite; }
 	footer { display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px dashed color-mix(in oklch, var(--primary) 18%, transparent); color: var(--meta-divider); font-size: 0.72rem; }
 	footer span { display: inline-flex; align-items: center; gap: 0.3rem; }
-	.ai-summary-orbit { position: absolute; top: -2.6rem; right: -2.6rem; width: 7rem; height: 7rem; border: 1px solid color-mix(in oklch, var(--primary) 12%, transparent); border-radius: 50%; opacity: 0.8; }
+	.ai-summary-orbit { position: absolute; top: -2.6rem; right: -2.6rem; width: 7rem; height: 7rem; border: 1px solid color-mix(in oklch, var(--primary) 12%, transparent); border-radius: 50%; opacity: 0.8; pointer-events: none; }
 	.ai-summary-orbit span { position: absolute; border: 1px solid color-mix(in oklch, var(--primary) 10%, transparent); border-radius: 50%; inset: 0.75rem; }
 	.ai-summary-orbit span:nth-child(2) { inset: 1.5rem; }
 	.ai-summary-orbit span:nth-child(3) { inset: 2.25rem; background: color-mix(in oklch, var(--primary) 18%, transparent); }
 
 	@keyframes ai-caret { 50% { opacity: 0; } }
-	@media (prefers-reduced-motion: reduce) { .ai-summary-card.is-typing .ai-summary-text::after { animation: none; } }
+	@media (prefers-reduced-motion: reduce) { .ai-summary-card.is-typing .ai-summary-text::after { animation: none; } .ai-summary-toggle__icon, #ai-summary-content { transition: none; } }
 </style>

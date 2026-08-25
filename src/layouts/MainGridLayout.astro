@@ -432,7 +432,7 @@ const transparentClass = shouldEnableTransparency
 <div class="absolute w-full z-0 hidden 2xl:block">
     <div class="relative max-w-[var(--page-width)] mx-auto">
         <!-- TOC component -->
-        {siteConfig.toc.enable && <div id="toc-wrapper" class:list={["hidden lg:block transition absolute top-0 w-[var(--toc-width)] items-center",
+        {siteConfig.toc.enable && <div id="toc-wrapper" hidden={!headings?.length} class:list={["hidden lg:block transition absolute top-0 w-[var(--toc-width)] items-center",
             sidebarLayoutConfig.position === "right" ? "-left-[var(--toc-width)]" : "-right-[var(--toc-width)]",
             {"toc-hide": siteConfig.banner.enable}]}
         >
@@ -450,6 +450,10 @@ const transparentClass = shouldEnableTransparency
 </Layout>
 
 <style>
+#toc-wrapper[hidden] {
+    display: none !important;
+}
+
 /* Banner text styles */
 .banner-title {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);

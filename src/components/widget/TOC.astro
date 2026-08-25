@@ -6,6 +6,7 @@ import { url } from "../../utils/url-utils";
 interface Props {
 	class?: string;
 	headings: MarkdownHeading[];
+	id?: string;
 }
 
 let { headings = [] } = Astro.props;
@@ -16,6 +17,7 @@ for (const heading of headings) {
 }
 
 const className = Astro.props.class;
+const tocId = Astro.props.id ?? "toc";
 // 修复路由判断逻辑，确保在文章页面能正确显示TOC
 const isPostsRoute =
 	Astro.url.pathname.includes("/posts/") || headings.length > 0;
@@ -33,7 +35,7 @@ let heading1Count = 1;
 
 const maxLevel = siteConfig.toc.depth;
 ---
-<table-of-contents class:list={[className, "group"]} id="toc">
+<table-of-contents class:list={[className, "group", "toc-list", "table-of-contents"]} id={tocId}>
     <!-- TOC内容将由JavaScript动态生成 -->
 </table-of-contents>
 
@@ -50,6 +52,7 @@ class TableOfContents extends HTMLElement {
     active: boolean[] = [];
     activeIndicator: HTMLElement | null = null;
     scrollAnimationFrame: number | null = null;
+    retryTimer: number | null = null;
 
     constructor() {
         super();
@@ -109,7 +112,7 @@ class TableOfContents extends HTMLElement {
 
         if (this.anchorNavTarget || !this.tocEl) return;
         const activeHeading =
-            document.querySelectorAll<HTMLDivElement>(`#toc .${this.visibleClass}`);
+            this.querySelectorAll<HTMLDivElement>(`.${this.visibleClass}`);
         if (!activeHeading.length) return;
 
         const topmost = activeHeading[0];
@@ -243,9 +246,25 @@ class TableOfContents extends HTMLElement {
         }
     };
 
-    init() {
-        // 重新生成TOC内容
-        this.regenerateTOC();
+    init(retryCount = 0) {
+        if (this.retryTimer !== null) {
+            window.clearTimeout(this.retryTimer);
+            this.retryTimer = null;
+        }
+        if (this.scrollAnimationFrame !== null) {
+            cancelAnimationFrame(this.scrollAnimationFrame);
+            this.scrollAnimationFrame = null;
+        }
+        this.observer.disconnect();
+        this.removeEventListener("click", this.handleAnchorClick, { capture: true });
+        this.headingIdxMap.clear();
+        this.headings = [];
+        this.sections = [];
+        this.tocEntries = [];
+        this.active = [];
+
+        // Swup 会保留目录外壳，每次都必须从当前正文重建。
+        if (!this.regenerateTOC(retryCount)) return;
 
         this.tocEl = this;
 
@@ -253,7 +272,7 @@ class TableOfContents extends HTMLElement {
             capture: true,
         });
 
-        this.activeIndicator = document.getElementById("active-indicator");
+        this.activeIndicator = this.querySelector<HTMLElement>("[data-active-indicator]");
 
         this.tocEntries = Array.from(
             this.querySelectorAll<HTMLAnchorElement>("a[href^='#']")
@@ -290,7 +309,7 @@ class TableOfContents extends HTMLElement {
         if (!isPostPage) {
             // 如果不是文章页面，隐藏TOC
             this.innerHTML = '';
-            return;
+            return false;
         }
 		// 只扫描 Markdown 正文，避免侧栏摘要、导航等页面级标题进入目录。
 		const contentRoot = document.querySelector('.custom-md, .markdown-content, .prose');
@@ -305,12 +324,13 @@ class TableOfContents extends HTMLElement {
 			: [];
         // 如果没有标题，延迟重试最多3次
         if (headings.length === 0 && retryCount < 3) {
-            setTimeout(() => this.regenerateTOC(retryCount + 1), 120);
-            return;
+            this.innerHTML = '';
+            this.retryTimer = window.setTimeout(() => this.init(retryCount + 1), 120);
+            return false;
         }
         if (headings.length === 0) {
             this.innerHTML = '';
-            return;
+            return false;
         }
         // 重新生成TOC HTML
         const minDepth = Math.min(...headings.map(h => h.depth));
@@ -324,18 +344,27 @@ class TableOfContents extends HTMLElement {
                 const badgeContent = heading.depth === minDepth ? (heading1Count++) :
                     heading.depth === minDepth + 1 ? '<div class="transition w-2 h-2 rounded-[0.1875rem] bg-[var(--toc-badge-bg)]"></div>' :
                     '<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
-                return `<a href="#${heading.slug}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2">
+                return `<a href="#${heading.slug}" class="z-10 px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2">
                     <div class="transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${depthClass} ${heading.depth === minDepth ? 'bg-[var(--toc-badge-bg)] text-[var(--btn-content)]' : ''}">
                         ${badgeContent}
                     </div>
                     <div class="transition text-sm ${heading.depth <= minDepth + 1 ? 'text-50' : 'text-30'}">${heading.text}</div>
                 </a>`;
             }).join('');
-        this.innerHTML = tocHTML + '<div id="active-indicator" style="opacity: 0" class="-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all group-hover:bg-transparent border-2 border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)] border-dashed"></div>';
+        const indicatorBackgroundClass = this.id === 'sidebar-toc'
+            ? 'bg-transparent'
+            : 'bg-[var(--toc-btn-hover)] group-hover:bg-transparent';
+        const indicatorBorderClass = this.id === 'sidebar-toc'
+            ? 'border-[var(--primary)] group-hover:border-[var(--primary)]'
+            : 'border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)]';
+        const indicatorLayerClass = this.id === 'sidebar-toc' ? 'z-20' : 'z-0';
+        this.innerHTML = tocHTML + `<div data-active-indicator style="opacity: 0" class="pointer-events-none ${indicatorLayerClass} absolute ${indicatorBackgroundClass} ${indicatorBorderClass} left-0 right-0 rounded-xl transition-all border-2 border-dashed"></div>`;
+        return true;
     }
 
     disconnectedCallback() {
 		if (this.scrollAnimationFrame !== null) cancelAnimationFrame(this.scrollAnimationFrame);
+        if (this.retryTimer !== null) window.clearTimeout(this.retryTimer);
         this.sections.forEach((section) =>
             this.observer.unobserve(section)
         );
@@ -349,8 +378,8 @@ if (!customElements.get("table-of-contents")) {
 }
 </script>
 
-<style>
-  table-of-contents#toc {
+<style is:global>
+  table-of-contents.toc-list {
       max-height: 100%;
       overflow: auto;
       position: relative;
@@ -358,7 +387,16 @@ if (!customElements.get("table-of-contents")) {
       display: block;
   }
 
-  table-of-contents#toc::-webkit-scrollbar {
+  table-of-contents.toc-list::-webkit-scrollbar {
       display: none;
+  }
+
+  /* Inline TOC uses the theme accent so hover remains legible in both themes. */
+  #sidebar-toc > a:hover {
+      background: color-mix(in oklch, var(--primary) 18%, transparent);
+  }
+
+  #sidebar-toc > a:active {
+      background: color-mix(in oklch, var(--primary) 28%, transparent);
   }
 </style>
