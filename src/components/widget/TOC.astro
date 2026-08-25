@@ -53,6 +53,9 @@ class TableOfContents extends HTMLElement {
     activeIndicator: HTMLElement | null = null;
     scrollAnimationFrame: number | null = null;
     retryTimer: number | null = null;
+    updateFrame: number | null = null;
+    isTracking = false;
+    lastActiveKey = "";
 
     constructor() {
         super();
@@ -62,6 +65,7 @@ class TableOfContents extends HTMLElement {
     };
 
     markVisibleSection = (entries: IntersectionObserverEntry[]) => {
+        if (!this.isTracking) return;
         entries.forEach((entry) => {
             const id = entry.target.children[0]?.getAttribute("id");
             const idx = id ? this.headingIdxMap.get(id) : undefined;
@@ -133,14 +137,42 @@ class TableOfContents extends HTMLElement {
         });
     };
 
-    update = () => {
-        requestAnimationFrame(() => {
+    update = (force = false) => {
+        const activeKey = this.active.map((value) => value ? "1" : "0").join("");
+        if (!force && activeKey === this.lastActiveKey) return;
+        this.lastActiveKey = activeKey;
+        if (this.updateFrame !== null) return;
+        this.updateFrame = requestAnimationFrame(() => {
+            this.updateFrame = null;
+            if (!this.isTracking) return;
             this.toggleActiveHeading();
-            // requestAnimationFrame(() => {
             this.scrollToActiveHeading();
-            // });
         });
     };
+
+    syncTracking(force = false) {
+        const shouldTrack = this.isConnected && this.tocEntries.length > 0 && this.getClientRects().length > 0;
+        if (shouldTrack === this.isTracking) {
+            if (shouldTrack && force) this.update(true);
+            return;
+        }
+
+        this.observer.disconnect();
+        this.isTracking = false;
+        this.active.fill(false);
+        this.lastActiveKey = "";
+
+        if (!shouldTrack) {
+            this.tocEntries.forEach((entry) => entry.classList.remove(this.visibleClass));
+            this.activeIndicator?.setAttribute("style", "opacity: 0");
+            return;
+        }
+
+        this.sections.forEach((section) => section && this.observer.observe(section));
+        this.isTracking = true;
+        this.fallback();
+        this.update(true);
+    }
 
     fallback = () => {
         if (!this.sections.length) return;
@@ -255,13 +287,19 @@ class TableOfContents extends HTMLElement {
             cancelAnimationFrame(this.scrollAnimationFrame);
             this.scrollAnimationFrame = null;
         }
+        if (this.updateFrame !== null) {
+            cancelAnimationFrame(this.updateFrame);
+            this.updateFrame = null;
+        }
         this.observer.disconnect();
+        this.isTracking = false;
         this.removeEventListener("click", this.handleAnchorClick, { capture: true });
         this.headingIdxMap.clear();
         this.headings = [];
         this.sections = [];
         this.tocEntries = [];
         this.active = [];
+        this.lastActiveKey = "";
 
         // Swup 会保留目录外壳，每次都必须从当前正文重建。
         if (!this.regenerateTOC(retryCount)) return;
@@ -294,12 +332,8 @@ class TableOfContents extends HTMLElement {
         }
         this.active = new Array(this.tocEntries.length).fill(false);
 
-        this.sections.forEach((section) =>
-            this.observer.observe(section)
-        );
-
-        this.fallback();
-        this.update();
+        // 隐藏的响应式目录保留最新内容，但不参与滚动跟踪。
+        this.syncTracking(true);
     };
 
     regenerateTOC(retryCount = 0) {
@@ -364,17 +398,36 @@ class TableOfContents extends HTMLElement {
 
     disconnectedCallback() {
 		if (this.scrollAnimationFrame !== null) cancelAnimationFrame(this.scrollAnimationFrame);
+        if (this.updateFrame !== null) cancelAnimationFrame(this.updateFrame);
         if (this.retryTimer !== null) window.clearTimeout(this.retryTimer);
         this.sections.forEach((section) =>
             this.observer.unobserve(section)
         );
         this.observer.disconnect();
+        this.isTracking = false;
         this.tocEl?.removeEventListener("click", this.handleAnchorClick);
     };
 }
 
 if (!customElements.get("table-of-contents")) {
     customElements.define("table-of-contents", TableOfContents);
+}
+
+type TocWindow = Window & {
+    __tocVisibilitySyncInitialized?: boolean;
+    __tocVisibilitySyncFrame?: number;
+};
+const tocWindow = window as TocWindow;
+if (!tocWindow.__tocVisibilitySyncInitialized) {
+    tocWindow.__tocVisibilitySyncInitialized = true;
+    window.addEventListener("resize", () => {
+        if (tocWindow.__tocVisibilitySyncFrame) cancelAnimationFrame(tocWindow.__tocVisibilitySyncFrame);
+        tocWindow.__tocVisibilitySyncFrame = requestAnimationFrame(() => {
+            tocWindow.__tocVisibilitySyncFrame = 0;
+            document.querySelectorAll<TableOfContents>("table-of-contents")
+                .forEach((toc) => toc.syncTracking(true));
+        });
+    }, { passive: true });
 }
 </script>
 

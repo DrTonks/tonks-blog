@@ -361,7 +361,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 	function syncInlineToc() {
 		const sidebar = document.getElementById("sidebar");
 		const inlineToc = sidebar?.querySelector<HTMLElement>(".sidebar-inline-toc");
-		const toc = inlineToc?.querySelector<HTMLElement & { init?: () => void }>("table-of-contents");
+		const toc = inlineToc?.querySelector<HTMLElement & { syncTracking?: (force?: boolean) => void }>("table-of-contents");
 		if (!sidebar || !inlineToc) return;
 
 		const contentRoot = document.querySelector(".custom-md, .markdown-content, .prose");
@@ -377,7 +377,8 @@ function renderComponent(component: any, index: number, _components: any[]) {
 			inlineToc.classList.remove("is-revealing");
 		}
 		sidebar.classList.toggle("sidebar-inline-active", hasArticleHeadings);
-		if (hasArticleHeadings) toc?.init?.();
+		// content:replace 已经重建目录；page:view 只切换可见实例的跟踪权。
+		if (hasArticleHeadings) toc?.syncTracking?.(true);
 		scheduleArticleSidebarSticky(true);
 	}
 
