@@ -147,6 +147,10 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		will-change: auto;
 	}
 
+	[data-sidebar-motion-item][hidden] {
+		display: none;
+	}
+
 	[data-sidebar-motion-item] > :global(widget-layout) {
 		display: flow-root;
 		width: 100%;

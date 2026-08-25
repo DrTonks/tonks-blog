@@ -5,6 +5,7 @@ description: 考前预习这一块
 tags:
   - 语义分析
   - 编译原理
+  - 学习
 category: 学习笔记
 draft: false
 image: ./32.png

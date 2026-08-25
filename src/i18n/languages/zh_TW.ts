@@ -38,6 +38,7 @@ export const zh_TW: Translation = {
 	[Key.systemMode]: "跟隨系統",
 
 	[Key.more]: "更多",
+	[Key.collapse]: "收起",
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "發布於",

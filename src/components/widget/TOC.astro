@@ -49,6 +49,7 @@ class TableOfContents extends HTMLElement {
     tocEntries: HTMLAnchorElement[] = [];
     active: boolean[] = [];
     activeIndicator: HTMLElement | null = null;
+    scrollAnimationFrame: number | null = null;
 
     constructor() {
         super();
@@ -158,6 +159,35 @@ class TableOfContents extends HTMLElement {
         this.active[idx] = true;
     };
 
+    fastScrollTo = (targetTop: number) => {
+        if (this.scrollAnimationFrame !== null) {
+            cancelAnimationFrame(this.scrollAnimationFrame);
+        }
+
+        const startTop = window.scrollY;
+        const distance = targetTop - startTop;
+        if (Math.abs(distance) < 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            window.scrollTo({ top: targetTop, behavior: "instant" });
+            this.scrollAnimationFrame = null;
+            return;
+        }
+
+        const startTime = performance.now();
+        const duration = 280;
+        const step = (now: number) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            // 立即起步，但保留足够的运动过程和柔和收尾。
+            const eased = 1 - Math.pow(1 - progress, 3);
+            window.scrollTo({ top: startTop + distance * eased, behavior: "instant" });
+            if (progress < 1) {
+                this.scrollAnimationFrame = requestAnimationFrame(step);
+            } else {
+                this.scrollAnimationFrame = null;
+            }
+        };
+        this.scrollAnimationFrame = requestAnimationFrame(step);
+    };
+
     handleAnchorClick = (event: Event) => {
         const anchor = event
             .composedPath()
@@ -165,6 +195,7 @@ class TableOfContents extends HTMLElement {
 
         if (anchor) {
             event.preventDefault(); // 阻止默认的锚点跳转
+			event.stopPropagation(); // 避免 Swup 再处理一次同一个锚点
             
             const id = decodeURIComponent(anchor.hash?.substring(1));
             const targetElement = document.getElementById(id);
@@ -174,11 +205,8 @@ class TableOfContents extends HTMLElement {
                 const navbarHeight = 80; // 导航栏高度
                 const targetTop = targetElement.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
                 
-                // 使用与移动端相同的滚动方式
-                window.scrollTo({
-                    top: targetTop,
-                    behavior: "smooth"
-                });
+				// 立即开始一段短促、可中断的滚动。
+				this.fastScrollTo(targetTop);
             }
             
             const idx = this.headingIdxMap.get(id);
@@ -307,6 +335,7 @@ class TableOfContents extends HTMLElement {
     }
 
     disconnectedCallback() {
+		if (this.scrollAnimationFrame !== null) cancelAnimationFrame(this.scrollAnimationFrame);
         this.sections.forEach((section) =>
             this.observer.unobserve(section)
         );

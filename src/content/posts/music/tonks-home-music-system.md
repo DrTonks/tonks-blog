@@ -1,10 +1,17 @@
 ---
 title: LRC与音频可视化联动
 published: 2026-07-13
-description: "tonks-home 音乐系统的技术实现：LRC 歌词解析原理、Canvas 环形频谱可视化、桌宠唱歌状态机、背景与音频联动等"
-tags: [Vue3, TypeScript, WebAudio, Canvas, LRC, 音频可视化]
-category: "前端"
-image: './cover.png'
+description: tonks-home 音乐系统的技术实现：LRC 歌词解析原理、Canvas 环形频谱可视化、桌宠唱歌状态机、背景与音频联动等
+tags:
+  - Vue3
+  - TypeScript
+  - WebAudio
+  - Canvas
+  - LRC
+  - 音频可视化
+  - 前端
+category: 前端
+image: ./cover.png
 draft: false
 pinned: false
 ---

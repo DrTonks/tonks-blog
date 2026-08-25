@@ -6,6 +6,13 @@ import { i18n } from "../../i18n/translation";
 import WidgetLayout from "./WidgetLayout.astro";
 
 const config = announcementConfig;
+// Explicit version is supported, while the content fingerprint makes ordinary
+// config edits automatically count as a new announcement.
+const announcementVersion = config.version ?? JSON.stringify({
+	title: config.title,
+	content: config.content,
+	link: config.link,
+});
 
 interface Props {
 	class?: string;
@@ -22,7 +29,7 @@ const style = Astro.props.style;
     class={className} 
     style={style}
 >
-    <div>
+    <div data-announcement-version={announcementVersion}>
         <!-- 公告栏内容 -->
         <div class="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3">
             {config.content}
@@ -58,24 +65,39 @@ const style = Astro.props.style;
 </WidgetLayout>
 
 <script>
-    function closeAnnouncement() {
-        // 通过data-id属性找到整个widget-layout元素
+    const CLOSED_VERSION_KEY = 'announcementClosedVersion';
+
+    function getAnnouncementElements() {
         const widgetLayout = document.querySelector<HTMLElement>('widget-layout[data-id="announcement"]');
-        if (widgetLayout) {
-            // 隐藏整个widget-layout元素
-            widgetLayout.style.display = 'none';
-            // 保存关闭状态到localStorage
-            localStorage.setItem('announcementClosed', 'true');
+        const item = widgetLayout?.closest<HTMLElement>('[data-sidebar-motion-item], .widget-container');
+        const version = widgetLayout
+            ?.querySelector<HTMLElement>('[data-announcement-version]')
+            ?.dataset.announcementVersion;
+        return { widgetLayout, item, version };
+    }
+
+    function closeAnnouncement() {
+        const { item, version } = getAnnouncementElements();
+        if (item && version) {
+            // Hide the complete flex item so it no longer contributes a gap.
+            item.hidden = true;
+            localStorage.setItem(CLOSED_VERSION_KEY, version);
+            localStorage.removeItem('announcementClosed');
         }
     }
 
-    // 页面加载时检查是否已关闭
-    document.addEventListener('DOMContentLoaded', function() {
-        const widgetLayout = document.querySelector<HTMLElement>('widget-layout[data-id="announcement"]');
-        if (widgetLayout && localStorage.getItem('announcementClosed') === 'true') {
-            widgetLayout.style.display = 'none';
-        }
-    });
+    function syncAnnouncementVisibility() {
+        const { item, version } = getAnnouncementElements();
+        if (!item || !version) return;
+        item.hidden = localStorage.getItem(CLOSED_VERSION_KEY) === version;
+        // The legacy boolean cannot identify which announcement was closed.
+        // Discard it so the current version is shown once and can be recorded.
+        localStorage.removeItem('announcementClosed');
+    }
+
+    // The script can run both on first load and after a Swup replacement.
+    syncAnnouncementVisibility();
+    document.addEventListener('DOMContentLoaded', syncAnnouncementVisibility, { once: true });
 
     // 使公告栏函数全局可用
     window.closeAnnouncement = closeAnnouncement;

@@ -2,9 +2,13 @@
 title: CSS+JS动画名片轮播图练习
 published: 2024-10-01
 pinned: false
-description: "一个简单的前端轮播图动画练习."
-tags: [Markdown, CSS, JavaScript]
-category: "前端"
+description: 一个简单的前端轮播图动画练习.
+tags:
+  - Markdown
+  - CSS
+  - JavaScript
+  - 前端
+category: 前端
 draft: false
 ---
 # CSS+JS动画名片轮播图

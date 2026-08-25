@@ -1135,13 +1135,27 @@ function initCarousel() {
 		carousel.removeEventListener("mouseleave", handleMouseLeave);
 	};
 
-	hideAllItems();
 	rebuildForDevice();
 }
 
 
 
 const setup = () => {
+	// ScriptsPlugin 会在内容替换后再次执行布局脚本。只注册一次全局钩子，
+	// 避免多次文章切换后相同的延迟操作不断叠加。
+	if (window.__tonksLayoutSwupHooksReady) return;
+	window.__tonksLayoutSwupHooksReady = true;
+
+	// @swup/astro 1.x 没有透传该核心选项；运行时启用后，鼠标侧键、
+	// 浏览器前进/后退也会使用页面过渡。ScrollPlugin 负责恢复原滚动位置。
+	window.swup.options.animateHistoryBrowsing = true;
+	window.history.scrollRestoration = 'manual';
+	let scrollRestoreInputController: AbortController | null = null;
+	const stopWatchingScrollRestore = () => {
+		scrollRestoreInputController?.abort();
+		scrollRestoreInputController = null;
+	};
+
 	// TODO: temp solution to change the height of the banner
 /*
 	window.swup.hooks.on('animation:out:start', () => {
@@ -1209,7 +1223,30 @@ const setup = () => {
 			}
 		}
 	})
-	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
+	window.swup.hooks.on('visit:start', (visit: {
+		to: {url: string};
+		scroll: {reset: boolean};
+	}) => {
+		window.scrollProtectionManager?.setPageTransitioning(true);
+		stopWatchingScrollRestore();
+		scrollRestoreInputController = new AbortController();
+		const cancelPendingScrollRestore = () => {
+			// The user now owns the viewport. Prevent ScrollPlugin's delayed
+			// content:scroll hook from restoring an older cached Y position.
+			visit.scroll.reset = false;
+			window.scrollTo({ top: window.scrollY, left: window.scrollX, behavior: 'instant' });
+			stopWatchingScrollRestore();
+		};
+		const passiveInputOptions = {
+			passive: true,
+			signal: scrollRestoreInputController.signal,
+		};
+		window.addEventListener('wheel', cancelPendingScrollRestore, passiveInputOptions);
+		window.addEventListener('touchstart', cancelPendingScrollRestore, passiveInputOptions);
+		window.addEventListener('pointerdown', cancelPendingScrollRestore, passiveInputOptions);
+		window.addEventListener('keydown', cancelPendingScrollRestore, {
+			signal: scrollRestoreInputController.signal,
+		});
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')
 		const isHomePage = pathsEqual(visit.to.url, url('/'))
@@ -1296,12 +1333,6 @@ const setup = () => {
 			}
 		}
 		
-		// 确保页面滚动到顶部，特别是移动端banner关闭时
-		window.scrollTo({
-			top: 0,
-			behavior: 'instant'
-		});
-		
 		// 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
 		const storedTheme = getStoredTheme();
 		const isDark = isThemeDark(storedTheme);
@@ -1333,6 +1364,11 @@ const setup = () => {
 		}, 300);
 	});
 	window.swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
+		stopWatchingScrollRestore();
+		window.scrollProtectionManager?.disable();
+		requestAnimationFrame(() => {
+			window.scrollProtectionManager?.setPageTransitioning(false);
+		});
 		setTimeout(() => {
 			// NOTE: disabled heightExtend toggling for A/B testing. If this block
 			// is re-enabled, ensure it does not cause scrollbar flicker on Windows.

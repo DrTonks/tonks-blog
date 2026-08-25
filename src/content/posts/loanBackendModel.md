@@ -1,12 +1,17 @@
 ---
 title: 多数据源贷款及风控平台后端模型设计思路
 published: 2025-10-08
-description: "综合设计1——评分卡/审批模型设计"
+description: 综合设计1——评分卡/审批模型设计
 encrypted: false
 pinned: false
-tags: [金融, 贷款,Express,JavaScript,node.js]
-category: "后端"
-
+tags:
+  - 金融
+  - 贷款
+  - Express
+  - JavaScript
+  - node.js
+  - 后端
+category: 后端
 ---
 
 # 后端模型设计

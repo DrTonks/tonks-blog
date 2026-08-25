@@ -53,30 +53,30 @@ const config = {
     }
   }
   
-  // 页面加载时初始化
-  document.addEventListener('DOMContentLoaded', initTwikoo);
-  
-  // Swup 页面切换后重新初始化
-  if (window.swup && window.swup.hooks) {
-    window.swup.hooks.on('content:replace', function() {
-      setTimeout(initTwikoo, 200);
-    });
-  } else {
-    document.addEventListener('swup:enable', function() {
-      if (window.swup && window.swup.hooks) {
-        window.swup.hooks.on('content:replace', function() {
-          setTimeout(initTwikoo, 200);
+  // ScriptsPlugin may execute this block on every article replacement. Keep
+  // the latest initializer, while installing document/Swup listeners once.
+  window.__tonksTwikooInit = initTwikoo;
+  if (!window.__tonksTwikooHooksReady) {
+    window.__tonksTwikooHooksReady = true;
+    const runTwikooInit = () => window.__tonksTwikooInit?.();
+    document.addEventListener('DOMContentLoaded', runTwikooInit);
+
+    const attachSwupHook = () => {
+      if (window.swup?.hooks && !window.__tonksTwikooSwupHookReady) {
+        window.__tonksTwikooSwupHookReady = true;
+        window.swup.hooks.on('content:replace', () => {
+          setTimeout(runTwikooInit, 200);
         });
+      }
+    };
+    attachSwupHook();
+    document.addEventListener('swup:enable', attachSwupHook);
+
+    document.addEventListener('mizuki:page:loaded', function() {
+      if (document.getElementById('tcomment')) {
+        console.log('[Twikoo] 通过自定义事件重新初始化');
+        runTwikooInit();
       }
     });
   }
-  
-  // 自定义事件监听
-  document.addEventListener('mizuki:page:loaded', function() {
-    const commentEl = document.getElementById('tcomment');
-    if (commentEl) {
-      console.log('[Twikoo] 通过自定义事件重新初始化');
-      initTwikoo();
-    }
-  });
 </script>

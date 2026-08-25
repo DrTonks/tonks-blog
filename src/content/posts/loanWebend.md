@@ -1,11 +1,16 @@
 ---
 title: 多数据源贷款及风控平台Web管理端设计思路
 published: 2025-10-10
-description: "综合设计1——Web管理后台"
+description: 综合设计1——Web管理后台
 encrypted: false
 pinned: false
-tags: [金融, 贷款,Vue3,JavaScript]
-category: "前端"
+tags:
+  - 金融
+  - 贷款
+  - Vue3
+  - JavaScript
+  - 前端
+category: 前端
 ---
 
 > 暂不开源，仅上传需求分析文档和前端预览。

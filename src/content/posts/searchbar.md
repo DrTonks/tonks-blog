@@ -2,12 +2,15 @@
 title: 动态搜索框和具体搜索逻辑实现
 published: 2024-10-01
 updated: 2024-11-29
-description: '二编增加搜索逻辑的实现'
-image: ''
-tags: [JavaScript, Markdown]
-category: '前端'
-draft: false 
-series: "Tonks"
+description: 二编增加搜索逻辑的实现
+image: ""
+tags:
+  - JavaScript
+  - Markdown
+  - 前端
+category: 前端
+draft: false
+series: Tonks
 ---
 
 # 动态搜索框和具体搜索逻辑

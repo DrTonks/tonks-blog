@@ -3,10 +3,15 @@ title: 金融学基础 - 通用计算器
 published: 2025-10-09
 pinned: false
 description: 覆盖贷款、投资分析与项目评估的教学工具，包含贷款还款、NPV/IRR、折旧、敏感性分析等功能。
-tags: [金融, 贷款, Vue3, TypeScript, 投资分析]
-category: "金融"
+tags:
+  - 金融
+  - 贷款
+  - Vue3
+  - TypeScript
+  - 前端
+category: 金融
 draft: false
-image: "./calculator.png"
+image: ./calculator.png
 ---
 
 # 金融学基础 - 通用计算器

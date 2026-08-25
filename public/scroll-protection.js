@@ -5,6 +5,11 @@
  */
 
 (() => {
+	// This file is injected again when Swup replaces an article. Never wrap the
+	// scrolling APIs or attach the global observers more than once.
+	if (window.__tonksScrollProtectionInitialized) return;
+	window.__tonksScrollProtectionInitialized = true;
+
 	// 保存原始的滚动方法
 	const originalScrollTo = window.scrollTo;
 	const originalScrollBy = window.scrollBy;
@@ -18,6 +23,16 @@
 		duration: 0,
 		timeout: null,
 	};
+	let isPageTransitioning = false;
+	let lastTwikooInteractionAt = 0;
+
+	function disableScrollProtection() {
+		scrollProtection.enabled = false;
+		if (scrollProtection.timeout) {
+			clearTimeout(scrollProtection.timeout);
+			scrollProtection.timeout = null;
+		}
+	}
 
 	// 检测是否为TOC导航触发的滚动
 	function checkIsTOCNavigation() {
@@ -43,6 +58,7 @@
 
 	// 启动滚动保护
 	function enableScrollProtection(duration = 3000, currentY = null) {
+		if (isPageTransitioning) return;
 		scrollProtection.enabled = true;
 		scrollProtection.allowedY =
 			currentY !== null ? currentY : window.scrollY || window.pageYOffset;
@@ -103,6 +119,7 @@
 
 	// 劫持 window.scrollTo
 	window.scrollTo = (x, y) => {
+		const originalArgs = [x, y];
 		// 处理参数为对象的情况
 		if (typeof x === "object") {
 			const options = x;
@@ -111,27 +128,36 @@
 		}
 
 		if (isScrollAllowed(x, y)) {
-			originalScrollTo.call(window, x, y);
+			// 保留 ScrollToOptions（尤其是 behavior），不要把平滑滚动降级成瞬移。
+			if (typeof originalArgs[0] === "object") {
+				originalScrollTo.call(window, originalArgs[0]);
+			} else {
+				originalScrollTo.call(window, x, y);
+			}
 		} else {
 			console.log("[强力滚动保护] 阻止 scrollTo:", x, y);
-			// 如果被阻止，滚动到允许的位置
-			originalScrollTo.call(window, x, scrollProtection.allowedY);
+			// 忽略这次程序化滚动即可。强制写回旧位置会与 Swup 的滚动
+			// 恢复互相争抢，在新页面高度变化时形成上下抽搐。
 		}
 	};
 
 	// 劫持 window.scrollBy
 	window.scrollBy = (x, y) => {
-		const currentY = window.scrollY || window.pageYOffset;
-		const targetY = currentY + y;
-
+		const originalArgs = [x, y];
 		if (typeof x === "object") {
 			const options = x;
 			x = options.left || 0;
 			y = options.top || 0;
 		}
+		const currentY = window.scrollY || window.pageYOffset;
+		const targetY = currentY + (y || 0);
 
 		if (isScrollAllowed(x, targetY)) {
-			originalScrollBy.call(window, x, y);
+			if (typeof originalArgs[0] === "object") {
+				originalScrollBy.call(window, originalArgs[0]);
+			} else {
+				originalScrollBy.call(window, x, y);
+			}
 		} else {
 			console.log("[强力滚动保护] 阻止 scrollBy:", x, y);
 		}
@@ -179,6 +205,7 @@
 					".tk-action-icon, .tk-submit, .tk-cancel, .tk-preview, .tk-owo, .tk-admin, .tk-edit, .tk-delete, .tk-reply, .tk-expand",
 				)
 			) {
+				lastTwikooInteractionAt = Date.now();
 				// 立即启动保护
 				enableScrollProtection(4000); // 增加保护时间到4秒
 				console.log("[强力滚动保护] 检测到 Twikoo 交互，启动保护");
@@ -195,6 +222,7 @@
 				target.classList.contains("tk-admin") ||
 				target.closest(".tk-admin")
 			) {
+				lastTwikooInteractionAt = Date.now();
 				enableScrollProtection(6000); // 管理面板操作保护更长时间
 				console.log("[强力滚动保护] 检测到 Twikoo 管理面板操作，启动长期保护");
 			}
@@ -226,6 +254,7 @@
 		"submit",
 		(event) => {
 			if (event.target.closest("#tcomment")) {
+				lastTwikooInteractionAt = Date.now();
 				enableScrollProtection(4000);
 				console.log("[强力滚动保护] 检测到 Twikoo 表单提交，启动保护");
 			}
@@ -246,6 +275,7 @@
 						".tk-admin-panel, .tk-modal, .tk-dialog, [class*='admin'], [class*='modal']",
 					);
 					if (adminPanel && adminPanel.offsetParent !== null) {
+						lastTwikooInteractionAt = Date.now();
 						// 面板可见，启动保护
 						enableScrollProtection(3000);
 						console.log(
@@ -260,6 +290,9 @@
 
 	// 监听 DOM 变化，检测管理面板的关闭
 	const observer = new MutationObserver((mutations) => {
+		// Twikoo's initial render and Swup's removal are not user actions. Only
+		// protect mutations shortly after an actual interaction with the widget.
+		if (isPageTransitioning || Date.now() - lastTwikooInteractionAt > 1500) return;
 		mutations.forEach((mutation) => {
 			if (mutation.type === "childList" || mutation.type === "attributes") {
 				const target = mutation.target;
@@ -279,6 +312,20 @@
 					}
 				}
 			}
+		});
+	});
+
+	// Scroll restoration owns the viewport throughout a route change. Release
+	// any old Twikoo lock before Swup starts and keep protection inactive until
+	// the new page has settled.
+	document.addEventListener("astro:before-swap", () => {
+		isPageTransitioning = true;
+		disableScrollProtection();
+	});
+	document.addEventListener("astro:page-load", () => {
+		disableScrollProtection();
+		requestAnimationFrame(() => {
+			isPageTransitioning = false;
 		});
 	});
 
@@ -304,12 +351,10 @@
 	// 提供全局接口
 	window.scrollProtectionManager = {
 		enable: enableScrollProtection,
-		disable: () => {
-			scrollProtection.enabled = false;
-			if (scrollProtection.timeout) {
-				clearTimeout(scrollProtection.timeout);
-			}
-			console.log("[强力滚动保护] 手动停止保护");
+		disable: disableScrollProtection,
+		setPageTransitioning: (value) => {
+			isPageTransitioning = value;
+			if (value) disableScrollProtection();
 		},
 		isEnabled: () => scrollProtection.enabled,
 		getStatus: () => ({ ...scrollProtection }),

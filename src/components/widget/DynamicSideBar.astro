@@ -168,6 +168,10 @@ const hasAnyComponents = hasTopComponents || hasStickyComponents;
 	.widget-container {
 		transition: all var(--sidebar-animation-duration) ease;
 	}
+
+	.widget-container[hidden] {
+		display: none;
+	}
 	
 	/* 响应式断点样式 */
 	@media (max-width: 768px) {

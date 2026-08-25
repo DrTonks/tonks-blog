@@ -409,7 +409,7 @@ const transparentClass = shouldEnableTransparency
 
             <main id="swup-container" class={`${mainContentClass} transition-main`}>
 				{aiSummary && <div id="ai-summary-data" hidden data-slug={aiSummary.slug} data-summary={aiSummary.summary}></div>}
-                <div id="content-wrapper" class="onload-animation transition-leaving">
+                <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>

@@ -1,12 +1,16 @@
 ---
 title: Tailwind CSS初步学习
 published: 2025-10-10
-description: 'tailwindcss学习笔记1'
-image: ''
-tags: [Tailwind,CSS]
-category: "前端"
-draft: false 
-lang: ''
+description: tailwindcss学习笔记1
+image: ""
+tags:
+  - Tailwind
+  - CSS
+  - 前端
+  - 学习
+category: 前端
+draft: false
+lang: ""
 ---
 
 # Tailwind CSS 初步学习

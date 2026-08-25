@@ -42,7 +42,17 @@ export default defineConfig({
 			// the default value `transition-` cause transition delay
 			// when the Tailwind class `transition-all` is used
 			containers: ["main"],
-			smoothScrolling: false, // 禁用平滑滚动以提升性能，避免与锚点导航冲突
+			// 保留 Scroll Plugin 的前进/后退位置缓存，但跨页不要启动一段
+			// 接管视口的加速滚动。默认配置会先等内容替换，再滚动到目标，
+			// 因而产生“静滞一下后才动”以及和滚轮输入争抢的手感。
+			smoothScrolling: {
+				doScrollingRightAway: true,
+				animateScroll: {
+					betweenPages: false,
+					samePageWithHash: false,
+					samePage: false,
+				},
+			},
 			cache: true,
 			preload: true, // 悬停链接时预取；避免预取首页全部可见文章
 			accessibility: true,
@@ -51,7 +61,8 @@ export default defineConfig({
 			globalInstance: true,
 			// 滚动相关配置优化
 			resolveUrl: (url) => url,
-			animateHistoryBrowsing: false,
+			// @swup/astro 1.x 不会把 animateHistoryBrowsing 传给 Swup；
+			// 该选项会在 Layout.astro 拿到全局实例后启用。
 			skipPopStateHandling: (event) => {
 				// 跳过锚点链接的处理，让浏览器原生处理
 				return event.state?.url?.includes("#");

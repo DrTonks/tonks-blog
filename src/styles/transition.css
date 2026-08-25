@@ -40,12 +40,22 @@ html.is-animating.is-leaving .transition-leaving {
 
 /* Swup fade 动画 - 保持兼容性 */
 html.is-changing .transition-swup-fade {
-    transition: all 300ms ease-out;
+    transition:
+        opacity 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 html.is-animating .transition-swup-fade {
     opacity: 0;
-    transform: translateY(1.5rem);
+    transform: translateY(0.5rem);
+}
+
+/* Swup 启用后始终由它负责主内容动画。若只在 is-changing 阶段覆盖，
+   状态类移除时 onload-animation 会重新启动，造成“显示后再闪一次”。 */
+html.swup-enabled .transition-swup-fade .onload-animation {
+    animation: none;
+    opacity: 1;
+    transform: none;
 }
 
 /* 增强的淡入动画 - 添加侧滑效果 */

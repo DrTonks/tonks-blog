@@ -16,6 +16,7 @@ let activeId = "";
 let observer: IntersectionObserver;
 let isHomePage = false;
 let swupReady = false;
+let scrollAnimationFrame: number | null = null;
 
 const togglePanel = () => {
 	const panel = document.getElementById("mobile-toc-panel");
@@ -94,12 +95,26 @@ const scrollToHeading = (id: string) => {
 
 		// 滚动到目标位置，考虑导航栏高度
 		const offset = 80;
-		const elementPosition = element.offsetTop - offset;
+		const elementPosition = element.getBoundingClientRect().top + window.scrollY - offset;
+		if (scrollAnimationFrame !== null) cancelAnimationFrame(scrollAnimationFrame);
+		const startTop = window.scrollY;
+		const distance = elementPosition - startTop;
+		if (Math.abs(distance) < 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			window.scrollTo({ top: elementPosition, behavior: "instant" });
+			scrollAnimationFrame = null;
+			return;
+		}
 
-		window.scrollTo({
-			top: elementPosition,
-			behavior: "smooth",
-		});
+		const startTime = performance.now();
+		const duration = 280;
+		const step = (now: number) => {
+			const progress = Math.min((now - startTime) / duration, 1);
+			const eased = 1 - Math.pow(1 - progress, 3);
+			window.scrollTo({ top: startTop + distance * eased, behavior: "instant" });
+			if (progress < 1) scrollAnimationFrame = requestAnimationFrame(step);
+			else scrollAnimationFrame = null;
+		};
+		scrollAnimationFrame = requestAnimationFrame(step);
 	}
 };
 
@@ -199,12 +214,14 @@ const init = () => {
 
 onMount(() => {
 	// 延迟初始化，确保页面内容已加载
-	setTimeout(init, 100);
+	const initTimer = window.setTimeout(init, 100);
 
 	// 监听滚动事件作为备用
 	window.addEventListener("scroll", updateActiveHeading);
 
 	return () => {
+		window.clearTimeout(initTimer);
+		if (scrollAnimationFrame !== null) cancelAnimationFrame(scrollAnimationFrame);
 		if (observer) {
 			observer.disconnect();
 		}

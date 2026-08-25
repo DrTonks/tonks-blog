@@ -1,9 +1,12 @@
 ---
 title: 编译原理——LR(0)/SLR(1)文法
 published: 2025-09-30
-description: "大学生vs变异原理，你们知道吗"
-tags: [文法分析, 编译原理]
-category: "学习笔记"
+description: 大学生vs变异原理，你们知道吗
+tags:
+  - 文法分析
+  - 编译原理
+  - 学习
+category: 学习笔记
 draft: false
 ---
 

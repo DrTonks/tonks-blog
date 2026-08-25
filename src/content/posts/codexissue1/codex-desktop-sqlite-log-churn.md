@@ -8,7 +8,7 @@ tags:
   - SSD
   - 性能优化
   - Windows
-category: 开发工具
+category: 常见问题
 draft: false
 pinned: false
 image: ./1.png

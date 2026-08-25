@@ -7,6 +7,9 @@ interface SwupHookRegistry {
 
 interface SwupRuntime {
 	hooks: SwupHookRegistry;
+	options: {
+		animateHistoryBrowsing: boolean;
+	};
 }
 
 declare global {
@@ -30,6 +33,15 @@ declare global {
 		initSemifullScrollDetection?: () => void;
 		closeAnnouncement?: () => void;
 		iconifyLoaded?: boolean;
+		__tonksLayoutSwupHooksReady?: boolean;
+		__tonksScrollProtectionInitialized?: boolean;
+		__tonksTwikooInit?: () => void;
+		__tonksTwikooHooksReady?: boolean;
+		__tonksTwikooSwupHookReady?: boolean;
+		scrollProtectionManager?: {
+			disable: () => void;
+			setPageTransitioning: (value: boolean) => void;
+		};
 	}
 }
 
