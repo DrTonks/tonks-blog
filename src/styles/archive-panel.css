@@ -1,0 +1,300 @@
+.archive-shell {
+  padding: 1.5rem 1.25rem 2rem;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+html.dark .archive-shell {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.archive-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.25rem 0.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--signal-line);
+}
+
+.archive-header h1 {
+  margin: 0.35rem 0 0.4rem;
+  color: color-mix(in srgb, currentColor 92%, transparent);
+  font-family: var(--font-hanalei, inherit);
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.archive-header p {
+  margin: 0;
+  color: color-mix(in srgb, currentColor 52%, transparent);
+  font-size: 0.9rem;
+}
+
+.archive-kicker,
+.archive-summary,
+.year-code,
+.year-heading > span,
+.entry-sequence,
+.archive-entry time,
+.entry-tags,
+.archive-empty {
+  font-family: "JetBrains Mono Variable", monospace;
+  letter-spacing: 0.08em;
+}
+
+.archive-kicker {
+  color: var(--signal-line);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.archive-summary {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.4rem;
+}
+
+.archive-summary > span {
+  display: grid;
+  min-width: 4.4rem;
+  padding: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--signal-line) 50%, transparent);
+  background: var(--industrial-surface);
+}
+
+.archive-summary > span:first-child {
+  color: var(--signal-ink);
+  background: var(--signal);
+}
+
+.archive-summary strong {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.archive-summary small {
+  margin-top: 0.35rem;
+  font-size: 0.52rem;
+  font-weight: 800;
+}
+
+.archive-year {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.archive-year + .archive-year {
+  margin-top: 2.25rem;
+}
+
+.year-heading {
+  position: relative;
+  align-self: start;
+  padding: 0.85rem 0.9rem;
+  border-left: 0.25rem solid var(--signal);
+  background: var(--industrial-surface);
+}
+
+.year-code {
+  color: var(--signal-line);
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.year-heading h2 {
+  margin: 0.18rem 0 0.25rem;
+  color: color-mix(in srgb, currentColor 92%, transparent);
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.year-heading > span {
+  color: color-mix(in srgb, currentColor 46%, transparent);
+  font-size: 0.55rem;
+  font-weight: 700;
+}
+
+.year-entries {
+  position: relative;
+  min-width: 0;
+}
+
+.year-entries::before {
+  content: "";
+  position: absolute;
+  top: 0.85rem;
+  bottom: 0.85rem;
+  left: 5.92rem;
+  width: 1px;
+  background: color-mix(in srgb, var(--signal-line) 52%, transparent);
+}
+
+.archive-entry {
+  position: relative;
+  display: grid;
+  min-height: 3.45rem;
+  grid-template-columns: 2rem 3.2rem 1.45rem minmax(0, 1fr) minmax(5rem, 0.36fr) 1.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  overflow: hidden;
+  padding: 0.35rem 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--signal-line) 24%, transparent);
+  border-radius: 0.35rem;
+  isolation: isolate;
+  transition: color var(--motion-signal-fast) var(--ease-signal);
+}
+
+.archive-entry::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: var(--signal);
+  transform: scaleX(0);
+  transform-origin: 100% 50%;
+  transition: transform var(--motion-signal-medium) var(--ease-cut);
+}
+
+.archive-entry:hover::before,
+.archive-entry:focus-visible::before {
+  transform: scaleX(1);
+  transform-origin: 0 50%;
+}
+
+.archive-entry:hover,
+.archive-entry:focus-visible {
+  color: var(--signal-ink);
+  outline: none;
+}
+
+.entry-sequence,
+.archive-entry time,
+.entry-tags {
+  color: color-mix(in srgb, currentColor 46%, transparent);
+  font-size: 0.62rem;
+}
+
+.entry-node {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  height: 100%;
+  place-items: center;
+}
+
+.entry-node i {
+  display: block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: 2px solid var(--card-bg);
+  border-radius: 0;
+  background: var(--signal-line);
+  box-shadow: 0 0 0 1px var(--signal-line);
+  transform: rotate(45deg);
+  transition: transform var(--motion-signal-fast) var(--ease-signal), background-color var(--motion-signal-fast) ease;
+}
+
+.archive-entry:hover .entry-node i,
+.archive-entry:focus-visible .entry-node i {
+  background: var(--signal-ink);
+  transform: rotate(0deg) scale(1.18);
+}
+
+.entry-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.94rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: transform var(--motion-signal-fast) var(--ease-signal);
+}
+
+.archive-entry:hover .entry-title,
+.archive-entry:focus-visible .entry-title {
+  transform: translateX(0.2rem);
+}
+
+.entry-tags {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-arrow {
+  justify-self: end;
+  font-size: 1rem;
+  opacity: 0;
+  transform: translateX(-0.3rem);
+  transition: opacity var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal);
+}
+
+.archive-entry:hover .entry-arrow,
+.archive-entry:focus-visible .entry-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.archive-empty {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  color: color-mix(in srgb, currentColor 42%, transparent);
+  font-size: 0.7rem;
+}
+
+@media (max-width: 760px) {
+  .archive-shell {
+    padding: 1.25rem 0.8rem 1.5rem;
+  }
+
+  .archive-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .archive-year {
+    display: block;
+  }
+
+  .year-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .year-heading h2 {
+    font-size: 1.45rem;
+  }
+
+  .year-entries::before {
+    left: 4.18rem;
+  }
+
+  .archive-entry {
+    grid-template-columns: 2.9rem 1.45rem minmax(0, 1fr) 1.2rem;
+    padding-inline: 0.35rem;
+  }
+
+  .entry-sequence,
+  .entry-tags {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-entry,
+  .archive-entry::before,
+  .entry-node i,
+  .entry-title,
+  .entry-arrow {
+    transition: none;
+  }
+}

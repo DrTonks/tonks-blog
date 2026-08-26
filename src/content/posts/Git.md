@@ -1,15 +1,17 @@
 ---
-title: 使用Github Action部署网站的问题解决
+title: 使用Github Action部署网站的常见问题
 published: 2024-09-21
-description: "初步使用GitHub工作流部署网站可能遭遇的问题"
-tags: [Markdown, Github, npm,pnpm]
-category: "常见问题"
+description: 初步使用GitHub工作流部署网站可能遭遇的问题
+tags:
+  - Markdown
+  - Github
+  - npm
+  - pnpm
+category: 常见问题
 draft: false
 ---
 
-# Github工作流部署网站的常见问题
-
-​	**在2020年，GitHub 开始将默认主分支的名称从 master 更改为 main。** 对于某些功能，这两者似乎能够自动识别替换，但在手写的yml文件中，出现master将导致Github Action无法正常识别其作用的分支，不能自动将其部署在指定域名。
+说是常见问题，其实只有一个。**在2020年，GitHub 开始将默认主分支的名称从 master 更改为 main。** 对于某些功能，这两者似乎能够自动识别替换，但在手写的yml文件中，出现master将导致Github Action无法正常识别其作用的分支，不能自动将其部署在指定域名。
 
 ​	另外，在部署博客的过程中，我尝试了pnpm（一种快速且节省磁盘空间的软件包管理程序，相当于npm的替代），并通过如下指令安装：
 

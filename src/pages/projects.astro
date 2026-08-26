@@ -1,7 +1,5 @@
 ---
-import { getCollection } from "astro:content";
 import ProjectsClient from "../components/ProjectsClient.svelte";
-import { UNCATEGORIZED } from "../constants/constants";
 import { getAllTechStack, getProjectStats } from "../data/projects";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -18,35 +16,39 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
 ---
 
 <MainGridLayout title={title} description={subtitle}>
-  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-    <div class="card-base z-10 px-9 py-6 relative w-full">
-      <!-- 页面标题 -->
-      <div class="flex flex-col items-start justify-center mb-8 font-hanalei">
-        <h1 class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2">
+  <div class="project-shell flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-5 py-6 md:px-9 relative w-full">
+      <header class="project-intro">
+        <div class="project-intro__copy">
+          <span class="project-intro__kicker">PROJECT DATABASE / {String(stats.total).padStart(2, "0")}</span>
+          <h1 class="font-hanalei text-4xl font-bold text-black/90 dark:text-white/90 mb-2">
           {i18n(I18nKey.projects)}
-        </h1>
-        <p class="text-lg text-black/60 dark:text-white/60">
-          {i18n(I18nKey.projectsSubtitle)}
-        </p>
-      </div>
+          </h1>
+          <p>{i18n(I18nKey.projectsSubtitle)}</p>
+        </div>
+        <div class="project-intro__mark" aria-hidden="true"><span>OC</span><small>WORKS</small></div>
+      </header>
 
-      <!-- 统计信息 -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 font-hanalei">
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4">
-          <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.total}</div>
-          <div class="text-sm text-blue-600/70 dark:text-blue-400/70">{i18n(I18nKey.projectsTotal)}</div>
+      <div class="project-stats" aria-label="项目统计">
+        <div class="project-stat">
+          <span>01 / TOTAL</span>
+          <strong>{stats.total}</strong>
+          <small>{i18n(I18nKey.projectsTotal)}</small>
         </div>
-        <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4">
-          <div class="text-2xl font-bold text-green-600 dark:text-green-400">{stats.byStatus.completed}</div>
-          <div class="text-sm text-green-600/70 dark:text-green-400/70">{i18n(I18nKey.projectsCompleted)}</div>
+        <div class="project-stat">
+          <span>02 / COMPLETE</span>
+          <strong>{stats.byStatus.completed}</strong>
+          <small>{i18n(I18nKey.projectsCompleted)}</small>
         </div>
-        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg p-4">
-          <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.byStatus.inProgress}</div>
-          <div class="text-sm text-yellow-600/70 dark:text-yellow-400/70">{i18n(I18nKey.projectsInProgress)}</div>
+        <div class="project-stat project-stat--signal">
+          <span>03 / ACTIVE</span>
+          <strong>{stats.byStatus.inProgress}</strong>
+          <small>{i18n(I18nKey.projectsInProgress)}</small>
         </div>
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4">
-          <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{allTechStack.length}</div>
-          <div class="text-sm text-purple-600/70 dark:text-purple-400/70">{i18n(I18nKey.projectsTechStack)}</div>
+        <div class="project-stat">
+          <span>04 / STACK</span>
+          <strong>{allTechStack.length}</strong>
+          <small>{i18n(I18nKey.projectsTechStack)}</small>
         </div>
       </div>
 
@@ -57,17 +59,151 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
 </MainGridLayout>
 
 <style>
-  .line-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .project-shell {
+    color: rgba(0, 0, 0, 0.9);
   }
-  
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+
+  :global(html.dark) .project-shell {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .project-intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--project-accent-line);
+  }
+
+  .project-intro__copy p {
+    margin: 0;
+    color: color-mix(in srgb, currentColor 58%, transparent);
+    font-size: 1rem;
+  }
+
+  .project-intro__kicker,
+  .project-intro__mark,
+  .project-stat {
+    font-family: "JetBrains Mono Variable", monospace;
+  }
+
+  .project-intro__kicker {
+    display: block;
+    margin-bottom: 0.6rem;
+    color: var(--project-accent);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+
+  .project-intro__mark {
+    display: grid;
+    width: 4.4rem;
+    height: 4.4rem;
+    flex: 0 0 auto;
+    place-items: center;
+    color: var(--project-accent-strong);
+    border: 1px solid var(--project-accent-line);
+    border-radius: 1rem;
+    background: var(--project-accent-surface);
+    box-shadow:
+      inset 0 0 1.2rem color-mix(in srgb, var(--project-accent-glow) 58%, transparent),
+      0 0.4rem 1.5rem color-mix(in srgb, var(--project-accent-glow) 48%, transparent);
+  }
+
+  .project-intro__mark span {
+    align-self: end;
+    font-size: 1.45rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .project-intro__mark small {
+    align-self: start;
+    font-size: 0.54rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+
+  .project-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .project-stat {
+    position: relative;
+    display: grid;
+    min-height: 6rem;
+    align-content: space-between;
+    padding: 0.75rem;
     overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--project-accent-line) 54%, transparent);
+    border-radius: 1rem;
+    background:
+      radial-gradient(circle at 88% 14%, color-mix(in srgb, var(--project-accent-soft) 78%, transparent), transparent 40%),
+      linear-gradient(145deg, color-mix(in srgb, var(--project-accent-surface) 40%, transparent), transparent 56%),
+      var(--industrial-surface);
+    transition:
+      border-color var(--motion-signal-fast) ease,
+      box-shadow var(--motion-signal-fast) ease;
+  }
+
+  :global(html.dark) .project-stat {
+    background: var(--industrial-surface);
+  }
+
+  .project-stat > span,
+  .project-stat > small {
+    color: color-mix(in srgb, currentColor 48%, transparent);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .project-stat strong {
+    width: fit-content;
+    min-width: 2.5rem;
+    padding: 0.42rem 0.72rem;
+    color: var(--project-accent-strong);
+    border: 1px solid var(--project-accent-line);
+    border-radius: 999px;
+    background: var(--project-accent-surface);
+    box-shadow: inset 0 0 0.8rem color-mix(in srgb, var(--project-accent-glow) 42%, transparent);
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .project-stat:hover,
+  .project-stat--signal {
+    border-color: var(--project-accent-line);
+    box-shadow: 0 0.55rem 1.5rem color-mix(in srgb, var(--project-accent-glow) 58%, transparent);
+  }
+
+  .project-stat--signal {
+    background:
+      radial-gradient(circle at 88% 20%, var(--project-accent-soft), transparent 42%),
+      color-mix(in srgb, var(--industrial-surface) 82%, var(--project-accent-soft));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-stat {
+      transition: none;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .project-stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 520px) {
+    .project-intro__mark {
+      display: none;
+    }
   }
 </style>

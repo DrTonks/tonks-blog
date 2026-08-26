@@ -30,7 +30,7 @@
 
 > 关于本站搭建
 
-此网站使用 **Astro** 框架构建，基于 [fuwari](https://github.com/saicaca/fuwari) 主题，参考其他同类型博客并深度魔改。
+此网站使用 **Astro** 框架构建，基于 [fuwari](https://github.com/saicaca/fuwari) 主题，参考其他同类型博客并深度魔改。fuwari虽然已经烂大街了，也没有其他博客的酷炫效果和逆天动效，但是它的布局真的给我一种很清晰、很舒服的感觉。视觉中心拿捏得很到位，柔和的过渡效果可能比较符合我的审美。我也有尝试过科幻工业风格的主题，最后还是回到了这里。
 
 >特别感谢：
 
@@ -52,30 +52,3 @@
 - Pagefind 静态搜索、Swup 无刷新导航、RSS/Atom、站点地图和 Open Graph 支持。
 - Markdown 扩展、KaTeX 数学公式、Mermaid、Expressive Code 与 PhotoSwipe 图片浏览。
 - 根据站点实际文本生成 Hanalei 字体子集，减少不必要的字体体积。
-
-## 本地开发
-
-环境要求：
-
-- Node.js 20 或更高版本
-- pnpm 9.14.4
-- Python 3（字体子集脚本需要 `fonttools` 和 `brotli`）
-
-pnpm install  
-python -m pip install -r requirements-font.txt  
-pnpm dev
-
-开发服务器默认运行在 `http://localhost:4321`。
-
-常用命令：
-
-|命令|用途|
-|---|---|
-|`pnpm dev`|生成开发用字体子集并启动开发服务器|
-|`pnpm build`|构建站点、生成最终字体子集和 Pagefind 索引|
-|`pnpm preview`|本地预览构建产物|
-|`pnpm new-post <文件名>`|创建文章|
-|`pnpm font:subset`|单独运行字体子集生成流程|
-|`pnpm format`|使用 Biome 格式化 `src`|
-
-项目继承了一些暂不影响构建和发布的历史类型问题，因此当前不以 `pnpm check` 全量通过作为构建前提。

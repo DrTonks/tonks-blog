@@ -1,5 +1,5 @@
 ---
-title: 编译原理——LR(0)/SLR(1)文法
+title: 编译原理 · LR(0)/SLR(1)文法
 published: 2025-09-30
 description: 大学生vs变异原理，你们知道吗
 tags:
@@ -9,8 +9,7 @@ tags:
 category: 学习笔记
 draft: false
 ---
-
-# LR(0)/SLR(1)文法学习笔记 
+题型比较好理解，但是考得好难好复杂，算不过来了要。闲下来翻翻ppt和网课，倒点垃圾，希望期末能过：
 
 一个**项目（Item）** 的形式是：`A → α . β`
 

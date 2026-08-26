@@ -2,6 +2,8 @@
 @import './albums.css';
 /* 导入追番页面样式 */
 @import './anime.css';
+/* 归档样式常驻加载，避免开发模式页面切换时组件样式短暂缺失 */
+@import './archive-panel.css';
 /* 导入动画样式 */
 @import './transition.css';
 @import './animation-enhancements.css';
@@ -536,8 +538,8 @@ html {
   --_spoiler-mask: color-mix(in oklch, var(--primary) 55%, white 45%);
 }
 
-/* Industrial signal interaction primitives.
-   These semantic accents intentionally remain independent from the user hue. */
+/* Theme signal interaction primitives.
+   High-attention ACCESS cues use their own yellow token instead. */
 .signal-sweep {
   position: relative;
   isolation: isolate;

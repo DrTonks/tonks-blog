@@ -26,7 +26,7 @@ showCoverInContent: true
 
 技术栈：Vue 3（Vue CLI）、three.js、ECharts（局部图表）、axios（后端请求）、CSS2DRenderer（DOM 标签）、TWEEN.js（动画）。
 
-## 二、实现流程（按时间/功能顺序）
+## 二、实现流程
 
 1. 准备资产
    - 把省份边界 GeoJSON（`public/map.json` 或 `public/newMap.json`）、ChinaLine.json、以及必要的图片资源放入 `public/`。
@@ -45,7 +45,7 @@ showCoverInContent: true
 
 5. 后端数据接入与省级聚合
    - 可用两种方式：
-     a) 后端直接提供按省聚合的接口（推荐）：例如 `GET /stats/province-overview` 返回每个省的指标（用户数、申请数、贷款均值、信用均值、通过率等）。
+     a) 后端直接提供按省聚合的接口：例如 `GET /stats/province-overview` 返回每个省的指标（用户数、申请数、贷款均值、信用均值、通过率等）。
      b) 后端只提供原始用户/申请数据，前端并行拉取并合并（次优）：调用 `/get-allUser`、`/allApplication`、`/get-creditScore` 等，然后通过 `city -> province` 的映射函数（`src/utils/geoMatch.js` 与 `src/utils/cityToProvince.js`）把 city 字段解析为省名并聚合。
    - 实现要点：前端方法要做并发控制（例如 mapLimit）避免大量阻塞请求；但长期看应由后端做聚合以节省前端延迟与流量。
 
@@ -112,11 +112,3 @@ showCoverInContent: true
    - 对重复使用的对象使用 `InstancedMesh`。
    - 使用 LOD（Level of Detail）分层渲染，缩放时切换到更少 detail 的模型。
    - 对大的静态 JSON（如 ChinaLine.json、map.json）使用 gzip、CDN 或按需加载。
-
-
-
-## 参考链接与文档
-
-- three.js 文档: https://threejs.org/docs/
-- Vue CLI 部署文档: https://cli.vuejs.org/guide/deployment.html
-- 浏览器兼容性数据更新: https://github.com/browserslist/update-db

@@ -12,7 +12,7 @@ category: 学习笔记
 draft: false
 ---
 
-# ECMAScript学习笔记
+只是备忘录（当然根本记不住这么多特性......）。偶尔拿出来看一眼。
 
 ## ECMAScript语法规范01·基础
 

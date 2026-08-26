@@ -47,6 +47,13 @@ const { remarkPluginFrontmatter } = await entry.render();
 ---
 
 <div class:list={["post-card card-base group/post flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} data-has-cover={String(hasCover)} style={style}>
+    <a
+        href={url}
+        class="post-card__hit"
+        tabindex="-1"
+        aria-hidden="true"
+        data-pagefind-ignore
+    ></a>
     <div class:list={["post-card__body pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%_-_52px_-_12px)]": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]": hasCover}]}>
         <span class="post-card__signal-rail" aria-hidden="true"></span>
         <a href={url}
@@ -96,12 +103,11 @@ const { remarkPluginFrontmatter } = await entry.render();
                         "max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
                         "md:w-[var(--coverWidth)] relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
                     ]} >
-        <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
-        <span class="post-card__cover-scan" aria-hidden="true"></span>
+        <div class="post-card__cover-mask absolute pointer-events-none z-10 w-full h-full transition"></div>
         <span class="post-card__access-label signal-kicker" aria-hidden="true">ACCESS <span>→</span></span>
         <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
             <Icon name="material-symbols:chevron-right-rounded"
-                  class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl">
+                  class="post-card__cover-chevron transition opacity-0 scale-50 text-white text-5xl">
             </Icon>
         </div>
         <ImageWrapper src={image} basePath={path.join("content/posts/", getDir(entry.id))} alt="Cover Image of the Post"
@@ -141,31 +147,8 @@ const { remarkPluginFrontmatter } = await entry.render();
 
 <style define:vars={{coverWidth}}>
     .post-card {
+        cursor: pointer;
         transition: background-color 150ms ease;
-    }
-
-    .post-card::before {
-        content: "";
-        position: absolute;
-        z-index: 10;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 36%;
-        pointer-events: none;
-        background: linear-gradient(
-            90deg,
-            transparent 0%,
-            var(--signal-soft) 25%,
-            color-mix(in srgb, var(--signal) 22%, transparent) 50%,
-            var(--signal-soft) 75%,
-            transparent 100%
-        );
-        opacity: 0;
-        transform: translateX(-130%) skewX(-10deg);
-        transition:
-            opacity var(--motion-signal-fast) ease,
-            transform 520ms var(--ease-cut);
     }
 
     .post-card::after {
@@ -181,19 +164,27 @@ const { remarkPluginFrontmatter } = await entry.render();
         transition: opacity var(--motion-signal-fast) ease;
     }
 
-    .post-card:hover::before,
-    .post-card:focus-within::before {
-        opacity: 1;
-        transform: translateX(365%) skewX(-10deg);
-    }
-
     .post-card:hover::after,
     .post-card:focus-within::after {
         opacity: 1;
     }
 
+    .post-card__hit {
+        position: absolute;
+        z-index: 10;
+        inset: 0;
+        border-radius: inherit;
+    }
+
     .post-card__body {
         z-index: 20;
+        pointer-events: none;
+        transition: color var(--motion-signal-fast) var(--ease-signal);
+    }
+
+    .post-card__body :global(a),
+    .post-card__body :global(button) {
+        pointer-events: auto;
     }
 
     .post-card__signal-rail {
@@ -213,7 +204,7 @@ const { remarkPluginFrontmatter } = await entry.render();
     .post-card:hover .post-card__signal-rail,
     .post-card:focus-within .post-card__signal-rail {
         height: 1.75rem;
-        background: var(--signal);
+        background: var(--primary);
     }
 
     .post-card__title {
@@ -224,15 +215,36 @@ const { remarkPluginFrontmatter } = await entry.render();
         border-radius: 0.18rem;
     }
 
-    .post-card__cover-scan {
-        position: absolute;
-        z-index: 11;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(105deg, var(--signal-soft), transparent 62%);
-        transform: scaleX(0);
+    .post-card:hover .post-card__title::before,
+    .post-card:focus-within .post-card__title::before {
+        transform: scaleX(1);
         transform-origin: 0 50%;
-        transition: transform var(--motion-signal-medium) var(--ease-cut);
+    }
+
+    .post-card:hover .post-card__title,
+    .post-card:focus-within .post-card__title {
+        color: var(--signal-ink);
+    }
+
+    .post-card:hover .post-card__title .signal-arrow,
+    .post-card:focus-within .post-card__title .signal-arrow {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .post-card__cover,
+    .post-card__cover-placeholder,
+    .post-card__enter {
+        z-index: 20;
+    }
+
+    .post-card__cover :global(img) {
+        transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .post-card:hover .post-card__cover :global(img),
+    .post-card:focus-within .post-card__cover :global(img) {
+        transform: scale(1.025);
     }
 
     .post-card__access-label {
@@ -244,8 +256,9 @@ const { remarkPluginFrontmatter } = await entry.render();
         gap: 0.25rem;
         align-items: center;
         padding: 0.42rem 0.5rem;
-        color: var(--signal-ink);
-        background: var(--signal);
+        color: var(--access-ink);
+        background: var(--access-signal);
+        box-shadow: 0 0 0 1px var(--access-line);
         opacity: 0;
         transform: translateX(-0.35rem);
         transition:
@@ -253,15 +266,25 @@ const { remarkPluginFrontmatter } = await entry.render();
             transform var(--motion-signal-fast) var(--ease-signal);
     }
 
-    .post-card__cover:hover .post-card__cover-scan,
-    .post-card__cover:focus-visible .post-card__cover-scan {
-        transform: scaleX(1);
-    }
-
-    .post-card__cover:hover .post-card__access-label,
-    .post-card__cover:focus-visible .post-card__access-label {
+    .post-card:hover .post-card__access-label,
+    .post-card:focus-within .post-card__access-label {
         opacity: 1;
         transform: translateX(0);
+    }
+
+    .post-card:hover .post-card__cover-mask,
+    .post-card:focus-within .post-card__cover-mask {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .post-card:active .post-card__cover-mask {
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .post-card:hover .post-card__cover-chevron,
+    .post-card:focus-within .post-card__cover-chevron {
+        opacity: 1;
+        transform: scale(1);
     }
 
     .post-card__enter-label {
@@ -400,14 +423,6 @@ const { remarkPluginFrontmatter } = await entry.render();
             border-radius: var(--radius-large) var(--radius-large) 0 0;
         }
 
-        :global(#post-list-container.grid-mode) .post-card__cover :global(img) {
-            transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        :global(#post-list-container.grid-mode) .post-card__cover:hover :global(img) {
-            transform: scale(1.025);
-        }
-
         :global(#post-list-container.grid-mode) .post-card__cover-placeholder {
             position: relative;
             order: -1;
@@ -459,16 +474,11 @@ const { remarkPluginFrontmatter } = await entry.render();
         .post-card,
         .post-card::after,
         .post-card__signal-rail,
-        .post-card__cover-scan,
         .post-card__access-label {
             transition: none;
         }
 
-        .post-card::before {
-            display: none;
-        }
-
-        :global(#post-list-container.grid-mode) .post-card__cover :global(img) {
+        .post-card__cover :global(img) {
             transition: none;
         }
 

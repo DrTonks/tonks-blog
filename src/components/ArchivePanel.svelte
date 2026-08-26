@@ -1,151 +1,108 @@
 <script lang="ts">
-import { onMount } from "svelte";
+  import { onMount } from "svelte";
+  import I18nKey from "../i18n/i18nKey";
+  import { i18n } from "../i18n/translation";
+  import { getPostUrlBySlug } from "../utils/url-utils";
 
-import I18nKey from "../i18n/i18nKey";
-import { i18n } from "../i18n/translation";
-import { getPostUrlBySlug } from "../utils/url-utils";
+  export let tags: string[] = [];
+  export let categories: string[] = [];
+  export let sortedPosts: Post[] = [];
 
-export let tags: string[];
-export let categories: string[];
-export let sortedPosts: Post[] = [];
+  let uncategorized = false;
 
-const params = new URLSearchParams(window.location.search);
-tags = params.has("tag") ? params.getAll("tag") : [];
-categories = params.has("category") ? params.getAll("category") : [];
-const uncategorized = params.get("uncategorized");
+  interface Post {
+    slug: string;
+    data: {
+      title: string;
+      tags: string[];
+      category?: string;
+      published: Date | string;
+    };
+  }
 
-interface Post {
-	slug: string;
-	data: {
-		title: string;
-		tags: string[];
-		category?: string;
-		published: Date;
-	};
-}
+  interface Group {
+    year: number;
+    posts: Post[];
+  }
 
-interface Group {
-	year: number;
-	posts: Post[];
-}
+  onMount(() => {
+    const params = new URLSearchParams(window.location.search);
+    tags = params.has("tag") ? params.getAll("tag") : [];
+    categories = params.has("category") ? params.getAll("category") : [];
+    uncategorized = params.has("uncategorized");
+  });
 
-let groups: Group[] = [];
+  const asDate = (value: Date | string) => (value instanceof Date ? value : new Date(value));
 
-function formatDate(date: Date) {
-	const month = (date.getMonth() + 1).toString().padStart(2, "0");
-	const day = date.getDate().toString().padStart(2, "0");
-	return `${month}-${day}`;
-}
+  function formatDate(value: Date | string) {
+    const date = asDate(value);
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${month}.${day}`;
+  }
 
-function formatTag(tagList: string[]) {
-	return tagList.map((t) => `#${t}`).join(" ");
-}
+  function formatTag(tagList: string[]) {
+    return tagList.map((tag) => `#${tag}`).join("  ");
+  }
 
-onMount(async () => {
-	let filteredPosts: Post[] = sortedPosts;
+  $: filteredPosts = sortedPosts.filter((post) => {
+    if (tags.length > 0 && !(Array.isArray(post.data.tags) && post.data.tags.some((tag) => tags.includes(tag)))) return false;
+    if (categories.length > 0 && !(post.data.category && categories.includes(post.data.category))) return false;
+    if (uncategorized && post.data.category) return false;
+    return true;
+  });
 
-	if (tags.length > 0) {
-		filteredPosts = filteredPosts.filter(
-			(post) =>
-				Array.isArray(post.data.tags) &&
-				post.data.tags.some((tag) => tags.includes(tag)),
-		);
-	}
-
-	if (categories.length > 0) {
-		filteredPosts = filteredPosts.filter(
-			(post) => post.data.category && categories.includes(post.data.category),
-		);
-	}
-
-	if (uncategorized) {
-		filteredPosts = filteredPosts.filter((post) => !post.data.category);
-	}
-
-	const grouped = filteredPosts.reduce(
-		(acc, post) => {
-			const year = post.data.published.getFullYear();
-			if (!acc[year]) {
-				acc[year] = [];
-			}
-			acc[year].push(post);
-			return acc;
-		},
-		{} as Record<number, Post[]>,
-	);
-
-	const groupedPostsArray = Object.keys(grouped).map((yearStr) => ({
-		year: Number.parseInt(yearStr, 10),
-		posts: grouped[Number.parseInt(yearStr, 10)],
-	}));
-
-	groupedPostsArray.sort((a, b) => b.year - a.year);
-
-	groups = groupedPostsArray;
-});
+  $: groups = Object.entries(
+    filteredPosts.reduce((grouped, post) => {
+      const year = asDate(post.data.published).getFullYear();
+      grouped[year] ||= [];
+      grouped[year].push(post);
+      return grouped;
+    }, {} as Record<number, Post[]>),
+  )
+    .map(([year, posts]) => ({ year: Number.parseInt(year, 10), posts }))
+    .sort((left, right) => right.year - left.year) as Group[];
 </script>
 
-<div class="card-base px-8 py-6">
-    {#each groups as group}
-        <div>
-            <div class="flex flex-row w-full items-center h-[3.75rem]">
-                <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">
-                    {group.year}
-                </div>
-                <div class="w-[15%] md:w-[10%]">
-                    <div
-                            class="h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto
-                  -outline-offset-[2px] z-50 outline-3"
-                    ></div>
-                </div>
-                <div class="w-[70%] md:w-[80%] transition text-left text-50">
-                    {group.posts.length} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
-                </div>
-            </div>
+<div class="archive-shell card-base">
+  <header class="archive-header">
+    <div>
+      <span class="archive-kicker">ARCHIVE / CHRONOLOGICAL INDEX</span>
+      <h1>{i18n(I18nKey.archive)}</h1>
+      <p>按时间索引所有公开文章，选择任意记录进入正文。</p>
+    </div>
+    <div class="archive-summary" aria-label="归档统计">
+      <span><strong>{String(filteredPosts.length).padStart(2, "0")}</strong><small>ENTRIES</small></span>
+      <span><strong>{String(groups.length).padStart(2, "0")}</strong><small>YEARS</small></span>
+    </div>
+  </header>
 
-            {#each group.posts as post}
-                <a
-                        href={getPostUrlBySlug(post.slug)}
-                        aria-label={post.data.title}
-                        class="group btn-plain !block h-10 w-full rounded-lg hover:text-[initial]"
-                >
-                    <div class="flex flex-row justify-start items-center h-full">
-                        <!-- date -->
-                        <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50">
-                            {formatDate(post.data.published)}
-                        </div>
+  {#if groups.length > 0}
+    <div class="archive-index">
+      {#each groups as group, groupIndex}
+        <section class="archive-year" aria-labelledby={`archive-year-${group.year}`}>
+          <header class="year-heading">
+            <div class="year-code">YR-{String(groupIndex + 1).padStart(2, "0")}</div>
+            <h2 id={`archive-year-${group.year}`}>{group.year}</h2>
+            <span>{String(group.posts.length).padStart(2, "0")} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}</span>
+          </header>
 
-                        <!-- dot and line -->
-                        <div class="w-[15%] md:w-[10%] relative dash-line h-full flex items-center">
-                            <div
-                                    class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-                       bg-[oklch(0.5_0.05_var(--hue))] group-hover:bg-[var(--primary)]
-                       outline outline-4 z-50
-                       outline-[var(--card-bg)]
-                       group-hover:outline-[var(--btn-plain-bg-hover)]
-                       group-active:outline-[var(--btn-plain-bg-active)]"
-                            ></div>
-                        </div>
-
-                        <!-- post title -->
-                        <div
-                                class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-[var(--primary)]
-                     text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden"
-                        >
-                            {post.data.title}
-                        </div>
-
-                        <!-- tag list -->
-                        <div
-                                class="hidden md:block md:w-[15%] text-left text-sm transition
-                     whitespace-nowrap overflow-ellipsis overflow-hidden text-30"
-                        >
-                            {formatTag(post.data.tags)}
-                        </div>
-                    </div>
-                </a>
+          <div class="year-entries">
+            {#each group.posts as post, postIndex}
+              <a href={getPostUrlBySlug(post.slug)} aria-label={post.data.title} class="archive-entry">
+                <span class="entry-sequence">{String(postIndex + 1).padStart(2, "0")}</span>
+                <time datetime={asDate(post.data.published).toISOString()}>{formatDate(post.data.published)}</time>
+                <span class="entry-node" aria-hidden="true"><i></i></span>
+                <span class="entry-title">{post.data.title}</span>
+                <span class="entry-tags">{formatTag(post.data.tags)}</span>
+                <span class="entry-arrow" aria-hidden="true">→</span>
+              </a>
             {/each}
-        </div>
-    {/each}
+          </div>
+        </section>
+      {/each}
+    </div>
+  {:else}
+    <div class="archive-empty">NO MATCHING ENTRIES</div>
+  {/if}
 </div>
