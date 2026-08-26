@@ -78,7 +78,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 							<div data-sidebar-summary-panel hidden={!aiSummary}><AISummary summary={aiSummary?.summary} /></div>
 						</div>
 						{siteConfig.toc.enable && <div class="sidebar-inline-toc hidden md:block 2xl:hidden" hidden={!showSidebarToc} data-sidebar-motion-item>
-							<WidgetLayout id="sidebar-toc-card" name={i18n(I18nKey.tableOfContents)}>
+							<WidgetLayout id="sidebar-toc-card" name={i18n(I18nKey.tableOfContents)} titleClass="font-hanalei">
 								<button slot="title-action" type="button" class="sidebar-collapse-toggle" data-sidebar-toc-toggle aria-expanded="true" aria-controls="sidebar-toc-card" aria-label="收起目录" title="收起目录">
 									<Icon name="material-symbols:keyboard-arrow-up-rounded" class="sidebar-collapse-toggle__icon" />
 								</button>
@@ -193,6 +193,14 @@ function renderComponent(component: any, index: number, _components: any[]) {
 
 	.sidebar-inline-toc[hidden] {
 		display: none !important;
+	}
+
+	/* The scoped motion-item rule is more specific than Tailwind's responsive
+	   display utilities, so enforce the inline TOC's actual viewport range. */
+	@media (max-width: 767px), (min-width: 1536px) {
+		#sidebar .sidebar-inline-toc {
+			display: none !important;
+		}
 	}
 
 	.sidebar-inline-toc__viewport {
@@ -316,6 +324,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 	const wait = (duration: number) => new Promise<void>((resolve) => window.setTimeout(resolve, duration));
 
 	let stickyFrame = 0;
+	let inlineTocFrame = 0;
 	function syncArticleSidebarSticky(reset = false) {
 		const sidebar = document.getElementById("sidebar");
 		const article = document.getElementById("content-wrapper");
@@ -358,6 +367,14 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		});
 	}
 
+	function scheduleInlineTocSync() {
+		if (inlineTocFrame) cancelAnimationFrame(inlineTocFrame);
+		inlineTocFrame = requestAnimationFrame(() => {
+			inlineTocFrame = 0;
+			syncInlineToc();
+		});
+	}
+
 	function syncInlineToc() {
 		const sidebar = document.getElementById("sidebar");
 		const inlineToc = sidebar?.querySelector<HTMLElement>(".sidebar-inline-toc");
@@ -366,19 +383,21 @@ function renderComponent(component: any, index: number, _components: any[]) {
 
 		const contentRoot = document.querySelector(".custom-md, .markdown-content, .prose");
 		const hasArticleHeadings = Boolean(contentRoot?.querySelector("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]"));
-		if (hasArticleHeadings && inlineToc.hidden) {
+		const inlineViewportActive = window.matchMedia("(min-width: 768px) and (max-width: 1535px)").matches;
+		const shouldShowInlineToc = hasArticleHeadings && inlineViewportActive;
+		if (shouldShowInlineToc && inlineToc.hidden) {
 			inlineToc.classList.add("is-revealing");
 			inlineToc.hidden = false;
 			requestAnimationFrame(() => requestAnimationFrame(() => {
 				inlineToc.classList.remove("is-revealing");
 			}));
-		} else if (!hasArticleHeadings) {
+		} else if (!shouldShowInlineToc) {
 			inlineToc.hidden = true;
 			inlineToc.classList.remove("is-revealing");
 		}
-		sidebar.classList.toggle("sidebar-inline-active", hasArticleHeadings);
+		sidebar.classList.toggle("sidebar-inline-active", shouldShowInlineToc);
 		// content:replace 已经重建目录；page:view 只切换可见实例的跟踪权。
-		if (hasArticleHeadings) toc?.syncTracking?.(true);
+		toc?.syncTracking?.(true);
 		scheduleArticleSidebarSticky(true);
 	}
 
@@ -467,7 +486,10 @@ function renderComponent(component: any, index: number, _components: any[]) {
 	if (!sidebarWindow.__articleSidebarStickyInitialized) {
 		sidebarWindow.__articleSidebarStickyInitialized = true;
 		window.addEventListener("scroll", () => scheduleArticleSidebarSticky(false), { passive: true });
-		window.addEventListener("resize", () => scheduleArticleSidebarSticky(true), { passive: true });
+		window.addEventListener("resize", () => {
+			scheduleInlineTocSync();
+			scheduleArticleSidebarSticky(true);
+		}, { passive: true });
 	}
 
 	function typeSummary(summary: string, run: number) {

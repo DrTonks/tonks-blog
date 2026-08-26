@@ -21,6 +21,41 @@ const cdnMapping = CDN_PRELOAD_MAP();
 const preloadHanaleiFont = Boolean(siteConfig.font?.hanalei?.enable);
 const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 ---
+<!-- Keep the complete loader styling in the first body chunk. Astro would
+	 otherwise extract it into a render-blocking page stylesheet. -->
+<style is:inline>
+	.initial-loading-screen {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		background: var(--page-bg);
+	}
+
+	.initial-loading-glow {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: radial-gradient(ellipse at center, var(--loader-glow) 0%, transparent 55%);
+	}
+
+	.initial-loading-grid {
+		width: 100%;
+		height: 100%;
+	}
+
+	.ld-hex {
+		fill: var(--loader-hex-fill);
+		stroke: var(--loader-hex-stroke);
+		stroke-dasharray: 100;
+		stroke-dashoffset: 100;
+		stroke-opacity: 0;
+	}
+</style>
+
 <div
 	id="initial-loading-screen"
 	class="initial-loading-screen"
@@ -57,38 +92,6 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 		#initial-loading-screen { display: none !important; }
 	</style>
 </noscript>
-<style>
-	.initial-loading-screen {
-		position: fixed;
-		inset: 0;
-		z-index: 9999;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		background: var(--page-bg);
-	}
-
-	.initial-loading-glow {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		background: radial-gradient(ellipse at center, var(--loader-glow) 0%, transparent 55%);
-	}
-
-	.initial-loading-grid {
-		width: 100%;
-		height: 100%;
-	}
-
-	.ld-hex {
-		fill: var(--loader-hex-fill);
-		stroke: var(--loader-hex-stroke);
-		stroke-dasharray: 100;
-		stroke-dashoffset: 100;
-		stroke-opacity: 0;
-	}
-</style>
 
 <script is:inline define:vars={{ explicitPreloadImageUrls, cdnMapping, preloadHanaleiFont, preloadBannerCarousel }}>
 	(() => {

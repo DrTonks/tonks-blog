@@ -1,7 +1,7 @@
 [
 	{
 		"id": "career-planner-2026",
-		"title": "微光职引——职业规划智能体",
+		"title": "“微光职引”大学生职业规划智能体",
 		"description": "旨在让大学生快速了解当前就业市场对于应届生招聘岗位的能力要求，清晰并准确的分析出自身就业能力、就业意愿。",
 		"image": "/images/projects/fc2026-1.jpg",
 		"category": "web",
@@ -29,7 +29,7 @@
 	{
 		"id": "jsj-contest-2026",
 		"title": "第19届C4参赛项目",
-		"description": "软件应用与开发：5月16号完成线上答辩并获奖，未入围国赛。",
+		"description": "软件应用与开发：5月16号完成线上答辩并获省级二等奖，未入围国赛。",
 		"image": "/images/projects/js2026-1.png",
 		"category": "web",
 		"techStack": [],
