@@ -46,19 +46,17 @@ const coverWidth = "28%";
 const { remarkPluginFrontmatter } = await entry.render();
 ---
 
-<div class:list={["post-card card-base flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} data-has-cover={String(hasCover)} style={style}>
+<div class:list={["post-card card-base group/post flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} data-has-cover={String(hasCover)} style={style}>
     <div class:list={["post-card__body pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%_-_52px_-_12px)]": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]": hasCover}]}>
+        <span class="post-card__signal-rail" aria-hidden="true"></span>
         <a href={url}
-           class="post-card__title transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-[var(--primary)] dark:hover:text-[var(--primary)]
-        active:text-[var(--title-active)] dark:active:text-[var(--title-active)]
-        before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
-        before:absolute before:top-[35px] before:left-[18px] before:hidden md:before:block
-        ">
-            {pinned && <Icon name="mdi:pin" class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5"></Icon>}
-            {title}
-            <Icon class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
-            <Icon class="text-[var(--primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+           class="post-card__title signal-sweep signal-marker group w-full block font-bold mb-3 text-3xl text-90 active:text-[var(--signal-ink)]">
+            <span class="relative z-10">
+                {pinned && <Icon name="mdi:pin" class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5"></Icon>}
+                {title}
+                <Icon class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
+                <Icon class="signal-arrow text-[var(--signal-ink)] text-[2rem] hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+            </span>
         </a>
 
         <!-- metadata (without tags) -->
@@ -99,6 +97,8 @@ const { remarkPluginFrontmatter } = await entry.render();
                         "md:w-[var(--coverWidth)] relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
                     ]} >
         <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
+        <span class="post-card__cover-scan" aria-hidden="true"></span>
+        <span class="post-card__access-label signal-kicker" aria-hidden="true">ACCESS <span>→</span></span>
         <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
             <Icon name="material-symbols:chevron-right-rounded"
                   class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl">
@@ -126,19 +126,175 @@ const { remarkPluginFrontmatter } = await entry.render();
     )}
 
     {!hasCover &&
-        <a href={url} aria-label={title} class="post-card__enter !hidden md:!flex btn-regular w-[3.25rem]
+        <a href={url} aria-label={title} class="post-card__enter signal-sweep signal-marker !hidden md:!flex btn-regular w-[3.25rem] flex-col
          absolute right-3 top-3 bottom-3 rounded-xl bg-[var(--enter-btn-bg)]
-         hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95
+         active:scale-95
         ">
             <Icon name="material-symbols:chevron-right-rounded"
-                  class="transition text-[var(--primary)] text-4xl mx-auto">
+                  class="signal-arrow post-card__enter-icon relative z-10 text-[var(--primary)] text-4xl mx-auto">
             </Icon>
+            <span class="post-card__enter-label signal-kicker z-10">GO</span>
         </a>
     }
 </div>
 <div class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"></div>
 
 <style define:vars={{coverWidth}}>
+    .post-card {
+        transition: background-color 150ms ease;
+    }
+
+    .post-card::before {
+        content: "";
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 36%;
+        pointer-events: none;
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            var(--signal-soft) 25%,
+            color-mix(in srgb, var(--signal) 22%, transparent) 50%,
+            var(--signal-soft) 75%,
+            transparent 100%
+        );
+        opacity: 0;
+        transform: translateX(-130%) skewX(-10deg);
+        transition:
+            opacity var(--motion-signal-fast) ease,
+            transform 520ms var(--ease-cut);
+    }
+
+    .post-card::after {
+        content: "";
+        position: absolute;
+        z-index: 30;
+        inset: 0;
+        box-sizing: border-box;
+        pointer-events: none;
+        border: 1px solid var(--signal-line);
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity var(--motion-signal-fast) ease;
+    }
+
+    .post-card:hover::before,
+    .post-card:focus-within::before {
+        opacity: 1;
+        transform: translateX(365%) skewX(-10deg);
+    }
+
+    .post-card:hover::after,
+    .post-card:focus-within::after {
+        opacity: 1;
+    }
+
+    .post-card__body {
+        z-index: 20;
+    }
+
+    .post-card__signal-rail {
+        position: absolute;
+        top: 2.2rem;
+        left: 1.125rem;
+        display: none;
+        width: 0.22rem;
+        height: 1.25rem;
+        background: var(--primary);
+        transform-origin: 50% 100%;
+        transition:
+            height var(--motion-signal-fast) var(--ease-signal),
+            background-color var(--motion-signal-fast) ease;
+    }
+
+    .post-card:hover .post-card__signal-rail,
+    .post-card:focus-within .post-card__signal-rail {
+        height: 1.75rem;
+        background: var(--signal);
+    }
+
+    .post-card__title {
+        width: fit-content;
+        max-width: 100%;
+        margin-left: -0.35rem;
+        padding: 0.12rem 0.35rem 0.18rem;
+        border-radius: 0.18rem;
+    }
+
+    .post-card__cover-scan {
+        position: absolute;
+        z-index: 11;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(105deg, var(--signal-soft), transparent 62%);
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        transition: transform var(--motion-signal-medium) var(--ease-cut);
+    }
+
+    .post-card__access-label {
+        position: absolute;
+        z-index: 21;
+        right: 0.7rem;
+        bottom: 0.7rem;
+        display: inline-flex;
+        gap: 0.25rem;
+        align-items: center;
+        padding: 0.42rem 0.5rem;
+        color: var(--signal-ink);
+        background: var(--signal);
+        opacity: 0;
+        transform: translateX(-0.35rem);
+        transition:
+            opacity var(--motion-signal-fast) ease,
+            transform var(--motion-signal-fast) var(--ease-signal);
+    }
+
+    .post-card__cover:hover .post-card__cover-scan,
+    .post-card__cover:focus-visible .post-card__cover-scan {
+        transform: scaleX(1);
+    }
+
+    .post-card__cover:hover .post-card__access-label,
+    .post-card__cover:focus-visible .post-card__access-label {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .post-card__enter-label {
+        position: absolute;
+        left: 50%;
+        bottom: 0.75rem;
+        width: max-content;
+        color: currentColor;
+        transform: translateX(-50%);
+    }
+
+    .post-card__enter:is(:hover, :focus-visible) .post-card__enter-icon {
+        color: var(--signal-ink);
+    }
+
+    @media (min-width: 769px) {
+        .post-card__signal-rail {
+            display: block;
+        }
+
+        .post-card__enter {
+            position: absolute;
+            z-index: 20;
+            top: 0.75rem;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            left: auto;
+            width: 3.25rem;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
     @media (min-width: 769px) {
         :global(#post-list-container.grid-mode) .post-card {
             display: flex;
@@ -165,10 +321,9 @@ const { remarkPluginFrontmatter } = await entry.render();
             white-space: nowrap;
         }
 
-        :global(#post-list-container.grid-mode) .post-card__title::before {
-            top: 0.62rem;
-            left: -0.75rem;
-            display: block;
+        :global(#post-list-container.grid-mode) .post-card__signal-rail {
+            top: 1.42rem;
+            left: 0.5rem;
         }
 
         :global(#post-list-container.grid-mode) :global(.post-card__meta) {
@@ -301,6 +456,18 @@ const { remarkPluginFrontmatter } = await entry.render();
     }
 
     @media (prefers-reduced-motion: reduce) {
+        .post-card,
+        .post-card::after,
+        .post-card__signal-rail,
+        .post-card__cover-scan,
+        .post-card__access-label {
+            transition: none;
+        }
+
+        .post-card::before {
+            display: none;
+        }
+
         :global(#post-list-container.grid-mode) .post-card__cover :global(img) {
             transition: none;
         }

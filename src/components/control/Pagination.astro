@@ -51,34 +51,69 @@ const getPageUrl = (p: number) => {
 };
 ---
 
-<div class:list={[className, "flex flex-row gap-3 justify-center"]} style={style}>
+<nav class:list={[className, "pagination-industrial flex flex-row gap-3 justify-center"]} style={style} aria-label="Pagination">
     <a href={page.url.prev || ""} aria-label={page.url.prev ? "Previous Page" : null}
-       class:list={["btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
+       class:list={["signal-control signal-sweep signal-marker is-prev btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
            {"disabled": page.url.prev == undefined}
        ]}
     >
-        <Icon name="material-symbols:chevron-left-rounded" class="text-[1.75rem]"></Icon>
+        <Icon name="material-symbols:chevron-left-rounded" class="signal-arrow relative z-10 text-[1.75rem]"></Icon>
     </a>
-    <div class="bg-[var(--card-bg)] flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
+    <div class="pagination-industrial__pages flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
         {pages.map((p) => {
             if (p == HIDDEN)
                 return <Icon name="material-symbols:more-horiz" class="mx-1"/>;
             if (p == page.currentPage)
-                return <div class="h-11 w-11 rounded-lg bg-[var(--primary)] flex items-center justify-center
-                    font-bold text-white dark:text-black/70"
+                return <span class="signal-control signal-sweep signal-marker is-active h-11 w-11 rounded-lg flex items-center justify-center font-bold"
+                    aria-current="page"
                 >
-                    {p}
-                </div>
+                    <span class="relative z-10">{p}</span>
+                </span>
             return <a href={url(getPageUrl(p))} aria-label={`Page ${p}`}
-                class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
-            >{p}</a>
+                class="signal-control signal-sweep signal-marker btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
+            ><span class="relative z-10">{p}</span></a>
         })}
     </div>
     <a href={page.url.next || ""} aria-label={page.url.next ? "Next Page" : null}
-       class:list={["btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
+       class:list={["signal-control signal-sweep signal-marker is-next btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
            {"disabled": page.url.next == undefined}
        ]}
     >
-        <Icon name="material-symbols:chevron-right-rounded" class="text-[1.75rem]"></Icon>
+        <Icon name="material-symbols:chevron-right-rounded" class="signal-arrow relative z-10 text-[1.75rem]"></Icon>
     </a>
-</div>
+</nav>
+
+<style>
+    .pagination-industrial__pages {
+        overflow: hidden;
+        background: var(--industrial-surface);
+        border: 1px solid var(--signal-line);
+    }
+
+    .signal-control {
+        position: relative;
+        background-color: transparent !important;
+    }
+
+    .signal-control:is(:hover, :focus-visible, .is-active) {
+        color: var(--signal-ink) !important;
+    }
+
+    .signal-control.is-active {
+        border-radius: 0.25rem;
+    }
+
+    .signal-control.disabled {
+        opacity: 0.3;
+    }
+
+    .signal-control.is-prev:is(:hover, :focus-visible) .signal-arrow {
+        transform: translateX(-0.2rem);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .signal-control {
+            transform: none !important;
+        }
+    }
+</style>

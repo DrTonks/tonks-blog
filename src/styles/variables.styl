@@ -11,6 +11,10 @@ rainbow-dark = linear-gradient(to right, oklch(0.70 0.10 0), oklch(0.70 0.10 30)
 :root
   --radius-large 1rem
   --content-delay 150ms
+  --motion-signal-fast 160ms
+  --motion-signal-medium 260ms
+  --ease-signal cubic-bezier(0.2, 0.8, 0.2, 1)
+  --ease-cut cubic-bezier(0.7, 0, 0.3, 1)
 
 /* An util to define variables that vary with light and dark mode */
 define(vars)
@@ -24,6 +28,12 @@ define(vars)
 
 define({
   --primary: oklch(0.70 0.14 var(--hue)) oklch(0.75 0.14 var(--hue))
+  --signal: #fff200 oklch(0.78 0.16 98)
+  --signal-ink: oklch(0.20 0.02 98) oklch(0.17 0.02 98)
+  --signal-soft: rgba(255, 242, 0, 0.16) rgba(205, 190, 44, 0.12)
+  --signal-line: rgba(175, 160, 0, 0.52) rgba(238, 220, 87, 0.48)
+  --industrial-surface: oklch(0.97 0.008 98) oklch(0.205 0.012 98)
+  --industrial-surface-hover: oklch(0.93 0.025 98) oklch(0.255 0.025 98)
   --page-bg: oklch(0.95 0.01 var(--hue)) oklch(0.16 0.014 var(--hue))
   --card-bg: white oklch(0.23 0.015 var(--hue))
   --card-bg-transparent: rgba(255, 255, 255, 0.8) rgba(23, 23, 23, 0.8)

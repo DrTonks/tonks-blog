@@ -28,12 +28,12 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 <div class:list={["dropdown-container", className]} data-dropdown>
 	{hasChildren ? (
 		<button 
-			class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95 dropdown-trigger"
+			class="signal-nav signal-sweep signal-marker btn-plain rounded-lg h-11 font-bold px-5 active:scale-95 dropdown-trigger"
 			aria-expanded="false"
 			aria-haspopup="true"
 			data-dropdown-trigger
 		>
-			<div class="flex items-center">
+			<div class="relative z-10 flex items-center">
 				{processedLink.icon && <Icon name={processedLink.icon} class="text-[1.1rem] mr-2" />}
 				{processedLink.name}
 				<Icon name="material-symbols:keyboard-arrow-down-rounded" class="text-[1.25rem] transition-transform duration-200 dropdown-arrow ml-1" />
@@ -46,15 +46,15 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 						href={child.external ? child.url : url(child.url)} 
 						target={child.external ? "_blank" : null}
 						rel={child.external ? "noopener noreferrer" : null}
-						class="dropdown-item"
+						class="dropdown-item signal-sweep signal-marker"
 						aria-label={child.name}
 					>
-						<div class="flex items-center">
+						<div class="relative z-10 flex items-center">
 							{child.icon && <Icon name={child.icon} class="text-[1rem] mr-2" />}
 							<span>{child.name}</span>
 						</div>
 						{child.external && (
-							<Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.75rem] text-black/25 dark:text-white/25" />
+							<Icon name="fa6-solid:arrow-up-right-from-square" class="relative z-10 text-[0.75rem] text-black/25 dark:text-white/25" />
 						)}
 					</a>
 				))}
@@ -66,9 +66,9 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 			href={processedLink.external ? processedLink.url : url(processedLink.url)} 
 			target={processedLink.external ? "_blank" : null}
 			rel={processedLink.external ? "noopener noreferrer" : null}
-			class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
+			class="signal-nav signal-sweep signal-marker btn-plain rounded-lg h-11 font-bold px-5 active:scale-95"
 		>
-			<div class="flex items-center">
+			<div class="relative z-10 flex items-center">
 				{processedLink.icon && <Icon name={processedLink.icon} class="text-[1.1rem] mr-2" />}
 				{processedLink.name}
 				{processedLink.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.875rem] transition -translate-y-[1px] ml-1 text-black/[0.2] dark:text-white/[0.2]" />}
@@ -84,6 +84,9 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 
 	.dropdown-menu {
 		@apply absolute top-full left-0 pt-2 opacity-0 invisible pointer-events-none transition-all duration-200 ease-out transform translate-y-[-8px] z-50;
+		width: max-content;
+		min-width: 100%;
+		max-width: 12rem;
 	}
 
 	.dropdown-container:hover .dropdown-menu,
@@ -97,11 +100,53 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 	}
 
 	.dropdown-content {
-		@apply bg-[var(--float-panel-bg)] rounded-[var(--radius-large)] shadow-xl dark:shadow-none border border-black/5 dark:border-white/10 py-2 min-w-[12rem];
+		@apply rounded-[var(--radius-large)] shadow-xl dark:shadow-none py-2;
+		width: 100%;
+		min-width: 0;
+		background: var(--industrial-surface);
+		border: 1px solid var(--signal-line);
 	}
 
 	.dropdown-item {
-		@apply flex items-center justify-between px-4 py-2.5 text-black/75 dark:text-white/75 hover:text-[var(--primary)] hover:bg-[var(--btn-plain-bg-hover)] transition-colors duration-150 font-medium;
+		@apply flex items-center justify-between px-4 py-2.5 text-black/75 dark:text-white/75 font-medium;
+		width: 100%;
+		min-width: 0;
+		white-space: nowrap;
+	}
+
+	.dropdown-item > div {
+		min-width: 0;
+	}
+
+	.dropdown-item > div > span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.signal-nav,
+	.dropdown-item {
+		background-color: transparent !important;
+	}
+
+	.signal-nav::before,
+	.dropdown-item::before {
+		background: var(--signal);
+	}
+
+	.signal-nav:is(:hover, :focus-visible),
+	.signal-nav[aria-expanded="true"],
+	.dropdown-item:is(:hover, :focus-visible) {
+		color: var(--signal-ink) !important;
+	}
+
+	.signal-nav[aria-expanded="true"]::before {
+		transform: scaleX(1);
+		transform-origin: 0 50%;
+	}
+
+	.signal-nav:focus-visible,
+	.dropdown-item:focus-visible {
+		outline-color: var(--signal);
 	}
 
 	.dropdown-item:first-child {
