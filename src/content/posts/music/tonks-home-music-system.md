@@ -10,7 +10,7 @@ tags:
   - LRC
   - 音频可视化
   - 前端
-category: 前端
+category: 网站开发
 image: ./cover.png
 draft: false
 pinned: false
@@ -18,7 +18,9 @@ pinned: false
 
 # 音乐系统概述
 
-我的[个人网站](https://tonks.top/)在重构后上线了桌宠系统（老普，立绘来源于claude-code-but-prts项目，有进行二次创作）、一个音乐播放器和音频可视化组件，整合了 LRC 歌词解析、Canvas 环形频谱可视化、老普跟唱伴舞，以及背景的音频律动模式。
+我的[个人导航站](https://tonks.top/)在重构后上线了桌宠系统（老普，立绘来源于claude-code-but-prts项目，有进行二次创作）、一个音乐播放器和音频可视化组件，整合了 LRC 歌词解析、Canvas 环形频谱可视化、老普跟唱伴舞，以及背景的音频律动模式。
+
+作为区别于BLOG网站的旧站，我将其设计为导航站+个人状态主页，但是还是想要加点东西，想加点音乐，想养只桌宠......从此一发不可收拾。
 
 项目地址：
 

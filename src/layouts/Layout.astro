@@ -979,6 +979,7 @@ function initCarousel() {
 
 	const bannerWrapper = document.getElementById("banner-wrapper");
 	const deviceQuery = window.matchMedia("(max-width: 1023px)");
+	const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 	const carouselEnabled = Boolean(siteConfig.banner.carousel?.enable);
 	const interval = siteConfig.banner.carousel?.interval || 6;
 	let validItems: Element[] = [];
@@ -1011,7 +1012,7 @@ function initCarousel() {
 
 	function startCarousel() {
 		stopCarousel();
-		if (!carouselEnabled || validItems.length < 2 || disposed) return;
+		if (!carouselEnabled || validItems.length < 2 || disposed || motionQuery.matches || document.hidden) return;
 		carouselInterval = setInterval(() => {
 			if (!isPaused) {
 				void switchToSlide((currentIndex + 1) % validItems.length);
@@ -1109,8 +1110,12 @@ function initCarousel() {
 		isPaused = false;
 		startCarousel();
 	};
+	const handleVisibilityChange = () => document.hidden ? stopCarousel() : startCarousel();
+	const handleMotionChange = () => motionQuery.matches ? stopCarousel() : startCarousel();
 
 	deviceQuery.addEventListener("change", handleDeviceChange);
+	motionQuery.addEventListener("change", handleMotionChange);
+	document.addEventListener("visibilitychange", handleVisibilityChange);
 	const wrapperObserver = bannerWrapper
 		? new MutationObserver(rebuildForDevice)
 		: undefined;
@@ -1128,6 +1133,8 @@ function initCarousel() {
 		switchGeneration++;
 		stopCarousel();
 		deviceQuery.removeEventListener("change", handleDeviceChange);
+		motionQuery.removeEventListener("change", handleMotionChange);
+		document.removeEventListener("visibilitychange", handleVisibilityChange);
 		carousel.removeEventListener("touchstart", handleTouchStart);
 		carousel.removeEventListener("touchmove", handleTouchMove);
 		wrapperObserver?.disconnect();
@@ -1268,6 +1275,9 @@ const setup = () => {
 				bannerTextOverlay.classList.add('hidden')
 			}
 		}
+		window.dispatchEvent(new CustomEvent('tonks:home-stickers:state', {
+			detail: { active: isHomePage, refresh: isHomePage },
+		}))
 
 		// Control navbar transparency based on page
 		const navbar = document.getElementById('navbar')

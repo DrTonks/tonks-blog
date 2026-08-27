@@ -1,0 +1,495 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	active?: boolean;
+}
+
+const { active = false } = Astro.props;
+
+const stickers = [
+	{
+		id: "album-wuxi",
+		kind: "photo",
+		eyebrow: "RECENT / ALBUM",
+		title: "最近动态",
+		note: "无锡的三日留影",
+		image: "/images/albums/20260821wuxi/cover.jpg",
+		href: "/albums/20260821wuxi/",
+		tilt: -3.2,
+	},
+	{
+		id: "project-home",
+		kind: "blueprint",
+		eyebrow: "WORKBENCH / 01",
+		title: "正在施工",
+		note: "看看最近的项目",
+		image: "/images/projects/personalWebsite.png",
+		href: "/projects/",
+		tilt: 2.4,
+	},
+	{
+		id: "timeline-wuxi",
+		kind: "photo",
+		eyebrow: "MEMORY / 2026",
+		title: "时间留影",
+		note: "坐坐时光机",
+		image: "/images/projects/fc2026-wuxi1.png",
+		href: "/timeline/",
+		tilt: 3.5,
+	},
+	{
+		id: "about-site",
+		kind: "identity",
+		eyebrow: "FILE / ABOUT",
+		title: "关于这个小站",
+		note: "翻开站点档案",
+		image: "/assets/home/home.png",
+		href: "/about/",
+		tilt: -2.1,
+	},
+	{
+		id: "archive-random",
+		kind: "index",
+		eyebrow: "INDEX / ARCHIVE",
+		title: "从归档里翻一篇",
+		note: "旧文字也有回声",
+		image: "/images/projects/myblog.png",
+		href: "/archive/",
+		tilt: 1.8,
+	},
+];
+---
+
+<div
+	id="home-sticker-layer"
+	class="home-sticker-layer"
+	hidden={!active}
+	aria-label="主页随机入口"
+>
+	<div class="home-sticker-layer__veil" aria-hidden="true"></div>
+	<div class="home-sticker-layer__register" aria-hidden="true">
+		<span>PINBOARD</span>
+		<small>随机挂件 / 可揭下</small>
+	</div>
+
+	{stickers.map((sticker) => (
+		<article
+			class={`home-sticker home-sticker--${sticker.kind}`}
+			data-home-sticker
+			data-sticker-id={sticker.id}
+			style={`--sticker-tilt: ${sticker.tilt}deg`}
+			hidden
+			aria-hidden="true"
+		>
+			<div class="home-sticker__paper">
+				<span class="home-sticker__clip" aria-hidden="true"></span>
+				<a class="home-sticker__link" href={sticker.href} aria-label={`${sticker.title}：${sticker.note}`}>
+					<span class="home-sticker__photo">
+						<img data-sticker-src={sticker.image} alt="" loading="lazy" decoding="async" />
+					</span>
+					<span class="home-sticker__caption">
+						<small>{sticker.eyebrow}</small>
+						<strong>{sticker.title}</strong>
+						<em>{sticker.note}</em>
+					</span>
+				</a>
+				<button class="home-sticker__replace" type="button" aria-label={`揭下“${sticker.title}”，换一张贴纸`} title="换一张">
+					<Icon name="material-symbols:refresh-rounded" />
+				</button>
+			</div>
+		</article>
+	))}
+</div>
+
+<script>
+	type StickerStateEvent = CustomEvent<{ active: boolean; refresh?: boolean }>;
+	type StickerRuntime = Window & { __tonksHomeStickerCleanup?: () => void };
+
+	const runtime = window as StickerRuntime;
+	runtime.__tonksHomeStickerCleanup?.();
+
+	const layer = document.getElementById("home-sticker-layer");
+	if (layer) {
+		const cards = Array.from(layer.querySelectorAll<HTMLElement>("[data-home-sticker]"));
+		const compactQuery = window.matchMedia("(max-width: 1023px)");
+		const recentStorageKey = "tonksHomeStickerRecent";
+		let activeCards: HTMLElement[] = [];
+		let layerActive = false;
+		let replacementTimer: ReturnType<typeof setTimeout> | undefined;
+
+		const shuffle = <T,>(items: T[]) => {
+			const result = [...items];
+			for (let index = result.length - 1; index > 0; index--) {
+				const target = Math.floor(Math.random() * (index + 1));
+				[result[index], result[target]] = [result[target], result[index]];
+			}
+			return result;
+		};
+
+		const readRecent = () => {
+			try {
+				const value = JSON.parse(sessionStorage.getItem(recentStorageKey) || "[]");
+				return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+			} catch {
+				return [];
+			}
+		};
+
+		const remember = (shown: HTMLElement[]) => {
+			const current = shown.map((card) => card.dataset.stickerId).filter((id): id is string => Boolean(id));
+			const next = [...new Set([...current, ...readRecent()])].slice(0, 4);
+			try {
+				sessionStorage.setItem(recentStorageKey, JSON.stringify(next));
+			} catch {
+				// Storage can be unavailable in strict privacy modes; randomness still works without history.
+			}
+		};
+
+		const primeImage = (card: HTMLElement) => {
+			const image = card.querySelector<HTMLImageElement>("img[data-sticker-src]");
+			if (image && !image.getAttribute("src")) image.src = image.dataset.stickerSrc || "";
+		};
+
+		const hideCard = (card: HTMLElement) => {
+			card.classList.remove("is-active", "is-leaving");
+			card.hidden = true;
+			card.setAttribute("aria-hidden", "true");
+			delete card.dataset.slot;
+		};
+
+		const showCard = (card: HTMLElement, slot: number) => {
+			primeImage(card);
+			card.dataset.slot = String(slot);
+			card.hidden = false;
+			card.setAttribute("aria-hidden", "false");
+			requestAnimationFrame(() => card.classList.add("is-active"));
+		};
+
+		const chooseCards = (count: number) => {
+			const recent = new Set(readRecent());
+			const fresh = shuffle(cards.filter((card) => !recent.has(card.dataset.stickerId || "")));
+			const fallback = shuffle(cards.filter((card) => !fresh.includes(card)));
+			return [...fresh, ...fallback].slice(0, count);
+		};
+
+		const refreshAll = () => {
+			if (!layerActive) return;
+			if (replacementTimer) clearTimeout(replacementTimer);
+			replacementTimer = undefined;
+			cards.forEach(hideCard);
+			activeCards = chooseCards(compactQuery.matches ? 1 : 2);
+			activeCards.forEach(showCard);
+			remember(activeCards);
+		};
+
+		const setActive = (active: boolean, shouldRefresh = false) => {
+			layerActive = active;
+			layer.hidden = !active;
+			document.getElementById("banner-wrapper")?.classList.toggle("home-stickers-active", active);
+			if (active && (shouldRefresh || activeCards.length === 0)) refreshAll();
+			if (!active) {
+				if (replacementTimer) clearTimeout(replacementTimer);
+				replacementTimer = undefined;
+				cards.forEach(hideCard);
+			}
+		};
+
+		const replaceCard = (current: HTMLElement) => {
+			if (replacementTimer) return;
+			const slot = Number(current.dataset.slot || 0);
+			const activeSet = new Set(activeCards);
+			const recent = new Set(readRecent());
+			const available = cards.filter((card) => !activeSet.has(card));
+			const preferred = available.filter((card) => !recent.has(card.dataset.stickerId || ""));
+			const next = shuffle(preferred.length ? preferred : available)[0];
+			if (!next) return;
+
+			current.classList.remove("is-active");
+			current.classList.add("is-leaving");
+			replacementTimer = setTimeout(() => {
+				hideCard(current);
+				activeCards = activeCards.map((card) => card === current ? next : card);
+				showCard(next, slot);
+				remember(activeCards);
+				replacementTimer = undefined;
+			}, 210);
+		};
+
+		const handleLayerClick = (event: Event) => {
+			const target = event.target as Element | null;
+			const button = target?.closest<HTMLButtonElement>(".home-sticker__replace");
+			if (!button) return;
+			const card = button.closest<HTMLElement>("[data-home-sticker]");
+			if (card) replaceCard(card);
+		};
+
+		const handleState = (event: Event) => {
+			const detail = (event as StickerStateEvent).detail;
+			setActive(Boolean(detail?.active), Boolean(detail?.refresh));
+		};
+		const handleBreakpoint = () => refreshAll();
+
+		layer.addEventListener("click", handleLayerClick);
+		window.addEventListener("tonks:home-stickers:state", handleState);
+		compactQuery.addEventListener("change", handleBreakpoint);
+
+		runtime.__tonksHomeStickerCleanup = () => {
+			if (replacementTimer) clearTimeout(replacementTimer);
+			layer.removeEventListener("click", handleLayerClick);
+			window.removeEventListener("tonks:home-stickers:state", handleState);
+			compactQuery.removeEventListener("change", handleBreakpoint);
+		};
+
+		setActive(window.location.pathname.replace(/\/+$/, "") === "", true);
+	}
+</script>
+
+<style>
+	.home-sticker-layer {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.home-sticker-layer[hidden] { display: none; }
+
+	.home-sticker-layer__veil {
+		position: absolute;
+		z-index: 10;
+		inset: 0;
+		background:
+			linear-gradient(90deg, color-mix(in srgb, var(--page-bg) 32%, transparent), transparent 32% 68%, color-mix(in srgb, var(--page-bg) 32%, transparent)),
+			linear-gradient(to bottom, color-mix(in srgb, var(--page-bg) 12%, transparent), transparent 38%, color-mix(in srgb, var(--page-bg) 48%, transparent));
+	}
+
+	.home-sticker-layer__register {
+		position: absolute;
+		z-index: 31;
+		bottom: 18%;
+		left: clamp(1rem, 4vw, 4rem);
+		display: flex;
+		gap: 0.5rem;
+		align-items: baseline;
+		color: rgba(255, 255, 255, 0.72);
+		font: 800 0.52rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.12em;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+	}
+
+	.home-sticker-layer__register small {
+		font-size: 0.48rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		opacity: 0.72;
+	}
+
+	.home-sticker {
+		position: absolute;
+		z-index: 32;
+		width: clamp(10.25rem, 15vw, 12.25rem);
+		padding: 0.75rem;
+		opacity: 0;
+		pointer-events: auto;
+		visibility: hidden;
+		transition: opacity 180ms ease;
+	}
+
+	.home-sticker[data-slot="0"] {
+		top: 18%;
+		left: clamp(1.25rem, 7vw, 7.5rem);
+	}
+
+	.home-sticker[data-slot="1"] {
+		top: 12%;
+		right: clamp(1.25rem, 7vw, 7.5rem);
+	}
+
+	.home-sticker.is-active {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.home-sticker__paper {
+		position: relative;
+		padding: 0.55rem 0.55rem 0.8rem;
+		color: #26282b;
+		border: 1px solid color-mix(in srgb, var(--signal-line) 46%, #d8d0c1);
+		background:
+			linear-gradient(90deg, rgba(48, 45, 38, 0.035) 1px, transparent 1px),
+			linear-gradient(#faf6ec, #eee7d9);
+		background-size: 1.1rem 100%, auto;
+		box-shadow: 0.55rem 0.65rem 0 rgba(0, 0, 0, 0.2), 0 0.4rem 1.1rem rgba(0, 0, 0, 0.24);
+		transform: rotate(var(--sticker-tilt));
+		transform-origin: 50% 8%;
+		transition: transform 210ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms ease;
+	}
+
+	.home-sticker:hover .home-sticker__paper,
+	.home-sticker:focus-within .home-sticker__paper {
+		transform: rotate(0deg);
+	}
+
+	.home-sticker.is-leaving .home-sticker__paper {
+		opacity: 0;
+		transform: translateY(1.1rem) rotate(calc(var(--sticker-tilt) * 1.8));
+	}
+
+	.home-sticker__clip {
+		position: absolute;
+		z-index: 3;
+		top: -1.15rem;
+		left: 24%;
+		width: 1rem;
+		height: 2.35rem;
+		border: 2px solid rgba(66, 70, 73, 0.72);
+		border-bottom-color: transparent;
+		border-radius: 0.7rem 0.7rem 0 0;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+		transform: rotate(-8deg);
+	}
+
+	.home-sticker__link {
+		display: block;
+		color: inherit;
+	}
+
+	.home-sticker__link:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 4px;
+	}
+
+	.home-sticker__photo {
+		display: block;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		border: 1px solid rgba(26, 29, 31, 0.3);
+		background: #d7d2c8;
+	}
+
+	.home-sticker__photo img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: saturate(0.88) contrast(0.96);
+		transition: filter 180ms ease, transform 240ms ease;
+	}
+
+	.home-sticker:hover .home-sticker__photo img,
+	.home-sticker:focus-within .home-sticker__photo img {
+		filter: saturate(1) contrast(1);
+		transform: scale(1.025);
+	}
+
+	.home-sticker--identity .home-sticker__photo img { object-fit: contain; background: #f7f2e8; }
+
+	.home-sticker__caption {
+		position: relative;
+		display: block;
+		min-height: 3.5rem;
+		padding: 0.62rem 1.7rem 0 0.2rem;
+	}
+
+	.home-sticker__caption::after {
+		position: absolute;
+		bottom: 0;
+		left: 0.2rem;
+		width: 38%;
+		border-top: 2px solid color-mix(in srgb, var(--primary) 66%, #605c54);
+		content: "";
+		transform: rotate(-2deg);
+	}
+
+	.home-sticker__caption small,
+	.home-sticker__caption strong,
+	.home-sticker__caption em {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.home-sticker__caption small {
+		color: color-mix(in srgb, var(--primary) 72%, #343434);
+		font: 800 0.46rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.08em;
+	}
+
+	.home-sticker__caption strong {
+		margin-top: 0.28rem;
+		font-size: 0.84rem;
+		line-height: 1.15;
+	}
+
+	.home-sticker__caption em {
+		margin-top: 0.2rem;
+		color: rgba(38, 40, 43, 0.62);
+		font: 500 0.62rem/1.2 "JetBrains Mono Variable", monospace;
+		font-style: normal;
+	}
+
+	.home-sticker__replace {
+		position: absolute;
+		right: 0.68rem;
+		bottom: 0.68rem;
+		display: grid;
+		width: 1.55rem;
+		height: 1.55rem;
+		place-items: center;
+		padding: 0;
+		color: #343638;
+		border: 1px dashed color-mix(in srgb, var(--signal-line) 70%, #5b5852);
+		border-radius: 50%;
+		background: transparent;
+		cursor: pointer;
+	}
+
+	.home-sticker__replace:hover,
+	.home-sticker__replace:focus-visible {
+		color: color-mix(in srgb, var(--primary) 78%, #202020);
+		background: color-mix(in srgb, var(--primary) 10%, transparent);
+	}
+
+	.home-sticker__replace:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.home-sticker__replace :global(svg) { width: 0.9rem; }
+
+	:global(#banner-wrapper.home-stickers-active .carousel-item img) {
+		filter: saturate(0.82) contrast(0.92) brightness(0.88);
+	}
+
+	@media (max-width: 1023px) {
+		.home-sticker-layer__veil {
+			background: linear-gradient(to bottom, color-mix(in srgb, var(--page-bg) 18%, transparent), transparent 34%, color-mix(in srgb, var(--page-bg) 58%, transparent));
+		}
+
+		.home-sticker-layer__register { display: none; }
+
+		.home-sticker[data-slot="0"] {
+			top: 13%;
+			right: 0.7rem;
+			left: auto;
+			width: clamp(8.2rem, 37vw, 9.5rem);
+		}
+
+		.home-sticker__caption { min-height: 3rem; padding-top: 0.5rem; }
+		.home-sticker__caption small { display: none; }
+		.home-sticker__caption strong { margin-top: 0; font-size: 0.74rem; }
+		.home-sticker__caption em { font-size: 0.54rem; }
+		.home-sticker__replace { width: 1.4rem; height: 1.4rem; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.home-sticker,
+		.home-sticker__paper,
+		.home-sticker__photo img { transition: none; }
+
+		.home-sticker:hover .home-sticker__paper,
+		.home-sticker:focus-within .home-sticker__paper,
+		.home-sticker.is-leaving .home-sticker__paper { transform: rotate(var(--sticker-tilt)); }
+	}
+</style>

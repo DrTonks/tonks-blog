@@ -9,7 +9,7 @@ tags:
   - Vue3
   - TypeScript
   - 前端
-category: 金融
+category: 课设开发
 draft: false
 image: ./calculator.png
 ---

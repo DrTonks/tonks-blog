@@ -8,7 +8,7 @@ tags:
   - JavaScript
   - Markdown
   - 前端
-category: 前端练习
+category: 学习笔记
 draft: false
 series: Tonks
 ---

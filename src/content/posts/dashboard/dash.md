@@ -10,7 +10,7 @@ tags:
   - TypeScript
   - Three.js
   - 前端
-category: 前端
+category: 课设开发
 draft: false
 image: ./dashboard.png
 showCoverInContent: true

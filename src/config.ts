@@ -99,7 +99,7 @@ export const siteConfig: SiteConfig = {
 		carousel: {
 			enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
 
-			interval: 5.5, // 轮播间隔时间（秒）
+			interval: 10, // 轮播间隔时间（秒）
 		},
 
 		waves: {
