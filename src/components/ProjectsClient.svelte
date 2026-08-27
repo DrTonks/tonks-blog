@@ -582,6 +582,10 @@
 
   .tech-chip {
     --tech-chip-color: #94a3b8;
+  }
+
+  .tech-list .tech-chip,
+  .stack-list .tech-chip {
     border-color: color-mix(in srgb, var(--tech-chip-color) 74%, var(--project-accent-line));
     background: color-mix(in srgb, var(--tech-chip-color) 18%, var(--btn-regular-bg));
     box-shadow:
@@ -613,7 +617,56 @@
     --tech-chip-color: #f0a86b;
   }
 
-  .tech-chip:is(:hover, :focus-visible) {
+  :global(html:not(.dark)[data-accent-light='gold']) .tech-chip--ai {
+    --tech-chip-color: #b85bc8;
+  }
+
+  :global(html:not(.dark)[data-accent-light='gold']) .tech-chip--frontend {
+    --tech-chip-color: #d97732;
+  }
+
+  :global(html:not(.dark)[data-accent-light='gold']) .tech-chip--backend {
+    --tech-chip-color: #5f78b8;
+  }
+
+  :global(html:not(.dark)[data-accent-light='gold']) .tech-chip--language {
+    --tech-chip-color: #bd5f4e;
+  }
+
+  :global(html:not(.dark)[data-accent-light='gold']) .tech-chip--infra {
+    --tech-chip-color: #858172;
+  }
+
+  :global(html:not(.dark)[data-accent-light='gold']) .tech-chip--other {
+    --tech-chip-color: #8d877b;
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .tech-chip--ai {
+    --tech-chip-color: #de85ed;
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .tech-chip--frontend {
+    --tech-chip-color: #f0a05f;
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .tech-chip--backend {
+    --tech-chip-color: #86a3e6;
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .tech-chip--language {
+    --tech-chip-color: #e4816f;
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .tech-chip--infra {
+    --tech-chip-color: #aaa696;
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .tech-chip--other {
+    --tech-chip-color: #aaa393;
+  }
+
+  .tech-list .tech-chip:is(:hover, :focus-visible),
+  .stack-list .tech-chip:is(:hover, :focus-visible) {
     border-color: color-mix(in srgb, var(--tech-chip-color) 92%, var(--project-accent-line));
     background: color-mix(in srgb, var(--tech-chip-color) 25%, var(--btn-regular-bg));
     box-shadow:
