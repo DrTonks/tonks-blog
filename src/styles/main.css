@@ -4,6 +4,8 @@
 @import './anime.css';
 /* 归档样式常驻加载，避免开发模式页面切换时组件样式短暂缺失 */
 @import './archive-panel.css';
+/* 时间线基础样式常驻加载，避免开发模式页面切换时局部样式包偶发缺失 */
+@import './timeline.css';
 /* 导入动画样式 */
 @import './transition.css';
 @import './animation-enhancements.css';

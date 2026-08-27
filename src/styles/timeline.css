@@ -1,0 +1,553 @@
+/*
+ * Resident timeline fallback.
+ *
+ * The Svelte component keeps its scoped enhancement rules, while this stylesheet
+ * guarantees a complete, stable layout if a dev-time route transition delays or
+ * misses the island's generated CSS chunk.
+ */
+.timeline-state {
+  padding: 2rem;
+  color: var(--tw-prose-body, currentColor);
+}
+
+.timeline-state--error {
+  color: rgb(220 38 38);
+}
+
+.timeline-shell {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+  clip-path: inset(-100vh 0 -100vh 0);
+  isolation: isolate;
+  color: rgba(20, 31, 45, 0.92);
+}
+
+.dark .timeline-shell {
+  color: rgba(244, 248, 255, 0.9);
+}
+
+.timeline-register {
+  position: relative;
+  z-index: 8;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 2.25rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--signal-line) 28%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+}
+
+.timeline-register > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.timeline-register__eyebrow,
+.timeline-register__meta,
+.timeline-year__code,
+.timeline-year__count {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.12em;
+}
+
+.timeline-register__eyebrow {
+  color: var(--meta-divider);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.timeline-register strong {
+  color: var(--primary);
+  font: 800 1.35rem/1 "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.timeline-register__meta {
+  display: flex;
+  gap: 1rem;
+  color: var(--meta-divider);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.timeline-sequence {
+  --rail-left: 3.75rem;
+  position: relative;
+  padding-inline: 2.25rem;
+  padding-bottom: 6rem;
+}
+
+.timeline-rail {
+  position: absolute;
+  z-index: 1;
+  top: 7.8rem;
+  bottom: 7rem;
+  left: var(--rail-left);
+  width: 1px;
+  background: color-mix(in srgb, var(--meta-divider) 24%, transparent);
+}
+
+.timeline-rail span {
+  display: block;
+  width: 3px;
+  height: var(--timeline-progress);
+  margin-left: -1px;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, var(--primary), var(--signal-line));
+  box-shadow: 0 0 1rem color-mix(in srgb, var(--signal-line) 32%, transparent);
+}
+
+.timeline-year {
+  position: relative;
+  z-index: 2;
+  min-height: 20rem;
+  padding: 1rem 0 3.25rem;
+}
+
+.timeline-year + .timeline-year {
+  border-top: 1px solid color-mix(in srgb, var(--meta-divider) 13%, transparent);
+}
+
+.timeline-year__ghost {
+  position: absolute;
+  z-index: 3;
+  top: 5.25rem;
+  right: -3%;
+  width: max-content;
+  height: 0.82em;
+  margin: 0;
+  color: rgba(45, 88, 148, 0.024);
+  font: 900 clamp(9rem, 20vw, 18rem) / 0.82 "JetBrains Mono", "Arial Narrow", sans-serif;
+  letter-spacing: -0.1em;
+  -webkit-text-stroke: 1px rgba(45, 88, 148, 0.17);
+  -webkit-mask-image: linear-gradient(to left, #000 0 78%, transparent 100%);
+  mask-image: linear-gradient(to left, #000 0 78%, transparent 100%);
+  user-select: none;
+  pointer-events: none;
+}
+
+.dark .timeline-year__ghost {
+  color: rgba(154, 211, 255, 0.028);
+  -webkit-text-stroke-color: rgba(154, 211, 255, 0.2);
+}
+
+.dark .timeline-register__eyebrow,
+.dark .timeline-register__meta,
+.dark .timeline-year__header {
+  color: rgba(221, 233, 247, 0.5);
+}
+
+.timeline-year__header {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  width: min(27rem, calc(100% - 4rem));
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1.5rem 4rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--signal-line) 20%, transparent);
+  border-radius: 0.75rem;
+  color: var(--meta-divider);
+  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+  box-shadow: 0 0.45rem 1.3rem rgba(19, 45, 77, 0.045);
+  backdrop-filter: blur(12px);
+}
+
+.timeline-year.is-current .timeline-year__header {
+  border-color: color-mix(in srgb, var(--signal-line) 52%, transparent);
+  color: color-mix(in oklch, var(--primary) 75%, var(--tw-prose-body, currentColor));
+  background: color-mix(in srgb, var(--card-bg) 90%, var(--signal-soft));
+}
+
+.timeline-year__code,
+.timeline-year__count {
+  white-space: nowrap;
+  font-size: 0.69rem;
+  font-weight: 800;
+}
+
+.timeline-year__rule {
+  height: 1px;
+  flex: 1;
+  background: color-mix(in srgb, currentColor 28%, transparent);
+}
+
+.timeline-year__events {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 2rem;
+}
+
+.timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.timeline-card.active {
+  z-index: 4;
+}
+
+.timeline-node {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-top: 1.35rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--node-color) 52%, var(--card-bg));
+  border-radius: 0.72rem;
+  color: color-mix(in srgb, var(--node-color) 74%, var(--tw-prose-body, currentColor));
+  background: color-mix(in srgb, var(--card-bg) 90%, var(--node-color));
+  box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--card-bg) 92%, transparent);
+  transform: rotate(45deg);
+}
+
+.dark .timeline-node {
+  color: color-mix(in srgb, var(--node-color) 70%, white);
+  background: color-mix(in srgb, var(--card-bg) 88%, var(--node-color));
+}
+
+.timeline-node__icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  transform: rotate(-45deg);
+}
+
+.timeline-card.active .timeline-node {
+  border-color: var(--signal-line);
+  color: var(--signal-ink);
+  background: var(--signal);
+  box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--card-bg) 92%, transparent),
+    0 0 1.25rem color-mix(in srgb, var(--signal-line) 34%, transparent);
+}
+
+.timeline-card__body {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  padding: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--meta-divider) 17%, transparent);
+  border-radius: 1rem;
+  color: var(--tw-prose-body, currentColor);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 97%, var(--signal-soft)), var(--card-bg));
+  box-shadow: 0 0.45rem 1.6rem rgba(16, 40, 70, 0.045);
+  transform: scale(1);
+  transform-origin: center;
+}
+
+.dark .timeline-card__body {
+  background: color-mix(in srgb, var(--card-bg) 96%, #07121f);
+  box-shadow: 0 0.6rem 1.8rem rgba(0, 0, 0, 0.14);
+}
+
+.timeline-card__marker {
+  position: absolute;
+  top: 1.2rem;
+  bottom: 1.2rem;
+  left: 0;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
+  background: var(--signal-line);
+  opacity: 0;
+}
+
+.timeline-card.active .timeline-card__body {
+  transform: scale(1.015);
+  border-color: color-mix(in srgb, var(--signal-line) 54%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 91%, var(--signal-soft)), var(--card-bg));
+  box-shadow: 0 0.85rem 2.4rem rgba(28, 91, 158, 0.16),
+    0 0 1.6rem color-mix(in srgb, var(--signal-line) 16%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--signal-line) 12%, transparent);
+}
+
+.dark .timeline-card.active .timeline-card__body {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--card-bg) 78%, var(--signal-line)),
+    color-mix(in srgb, var(--card-bg) 91%, var(--signal-soft))
+  );
+  box-shadow: 0 0.95rem 2.5rem rgba(0, 0, 0, 0.28),
+    0 0 2rem color-mix(in srgb, var(--signal-line) 20%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--signal-line) 12%, transparent);
+}
+
+.timeline-card.active .timeline-card__marker {
+  opacity: 1;
+}
+
+.timeline-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.timeline-card__head h3 {
+  margin: 0 0 0.25rem;
+  color: color-mix(in srgb, currentColor 92%, transparent);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.timeline-card__organization,
+.timeline-card__date,
+.timeline-card__description {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.timeline-card__organization {
+  font-size: 0.875rem;
+}
+
+.timeline-badge {
+  flex: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.timeline-card__date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.timeline-card__dot {
+  color: var(--signal-line);
+}
+
+.timeline-card__description {
+  margin: 0 0 1rem;
+  line-height: 1.7;
+}
+
+.timeline-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.timeline-gallery__frame {
+  width: min(13.5rem, 100%);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--signal-soft) 45%, var(--card-bg));
+}
+
+.timeline-gallery img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.timeline-details {
+  margin-bottom: 1rem;
+}
+
+.timeline-details h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.timeline-details ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-details li {
+  display: flex;
+  gap: 0.5rem;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  font-size: 0.875rem;
+}
+
+.timeline-details li > span:first-child {
+  color: var(--signal-line);
+}
+
+.timeline-skills,
+.timeline-links {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.timeline-skills {
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.timeline-skills span {
+  padding: 0.28rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--signal-line) 18%, transparent);
+  border-radius: 0.45rem;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  background: color-mix(in srgb, var(--signal-soft) 48%, transparent);
+  font-size: 0.75rem;
+}
+
+.timeline-links {
+  gap: 0.75rem 1rem;
+}
+
+.timeline-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.timeline-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.timeline-links a:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .timeline-register {
+    align-items: flex-start;
+    padding: 1rem 1.1rem 0.85rem;
+  }
+
+  .timeline-register > div:first-child {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .timeline-register__meta {
+    display: grid;
+    justify-items: end;
+    gap: 0.3rem;
+    font-size: 0.6rem;
+  }
+
+  .timeline-sequence {
+    --rail-left: 2.35rem;
+    padding-inline: 1rem;
+    padding-bottom: 4.5rem;
+  }
+
+  .timeline-rail {
+    top: 6.5rem;
+    bottom: 5.5rem;
+  }
+
+  .timeline-year {
+    padding-bottom: 2.25rem;
+  }
+
+  .timeline-year__ghost {
+    z-index: 1;
+    top: 4.3rem;
+    right: -0.45rem;
+    height: auto;
+    font-size: clamp(5.4rem, 28vw, 7.5rem);
+    color: transparent;
+    -webkit-text-stroke-color: rgba(45, 88, 148, 0.095);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .dark .timeline-year__ghost {
+    color: transparent;
+    -webkit-text-stroke-color: rgba(154, 211, 255, 0.115);
+  }
+
+  .timeline-year__header {
+    width: calc(100% - 2.9rem);
+    margin: 0 0 1.2rem 2.9rem;
+    padding: 0.48rem 0.6rem;
+    backdrop-filter: blur(9px);
+  }
+
+  .timeline-year__code,
+  .timeline-year__count {
+    font-size: 0.61rem;
+  }
+
+  .timeline-year__events {
+    gap: 1.35rem;
+  }
+
+  .timeline-item {
+    grid-template-columns: 2.7rem minmax(0, 1fr);
+    gap: 0.7rem;
+  }
+
+  .timeline-node {
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-top: 1.05rem;
+    border-radius: 0.62rem;
+  }
+
+  .timeline-node__icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .timeline-card__body {
+    padding: 1.1rem;
+    border-radius: 0.85rem;
+  }
+
+  .timeline-card.active .timeline-card__body {
+    transform: scale(1.01);
+  }
+
+  .timeline-card__head {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .timeline-badge {
+    width: max-content;
+  }
+
+  .timeline-card__head h3 {
+    font-size: 1.05rem;
+  }
+
+  .timeline-card__date {
+    gap: 0.35rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-year__header {
+    backdrop-filter: none;
+  }
+
+  .timeline-card.active .timeline-card__body {
+    transform: none;
+  }
+}

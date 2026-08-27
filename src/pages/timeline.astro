@@ -1,64 +1,36 @@
 ---
-import Icon from "../components/misc/Icon.astro";
 import TimelineClient from "../components/TimelineClient.svelte";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import timelineData from "../../public/data/timeline.json";
 
-const { lang } = Astro.props;
-
-// Timeline data is loaded on the client via `TimelineClient.svelte` (fetch /data/timeline.json)
+// Render the complete timeline in HTML; Svelte adds scroll-state enhancement after hydration.
 
 const title = i18n(I18nKey.timeline);
 const subtitle = i18n(I18nKey.timelineSubtitle);
 ---
 
 <MainGridLayout title={title} description={subtitle}>
-  <section class="prose prose-lg dark:prose-invert mb-6 font-hanalei">
+  <section class="timeline-page-heading prose prose-lg dark:prose-invert mb-6 font-hanalei">
+    <span>TIME / PERSONAL CHRONICLE</span>
     <h1 class="text-2xl lg:text-3xl font-bold">{title}</h1>
     <p class="text-sm text-muted-foreground mt-2">{subtitle}</p>
   </section>
 
-  <TimelineClient client:only="svelte" />
+  <TimelineClient initialItems={timelineData} client:load />
 </MainGridLayout>
 
 <style>
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .timeline-page-heading > span {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--signal-line);
+    font: 800 0.68rem/1 "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    letter-spacing: 0.14em;
+  }
+
+  .timeline-page-heading h1 {
+    margin-top: 0;
   }
 </style>
-
-<script>
-  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    // 确保图标库已加载，并处理页面导航（仅在浏览器执行）
-    document.addEventListener('DOMContentLoaded', () => {
-      // 如果图标加载器存在，确保图标已加载
-  const loader = window['__iconifyLoader'];
-      if (loader) {
-        loader.load().then(() => {
-          // 图标加载完成后，触发时间线项目的重新渲染
-          const timelineItems = document.querySelectorAll('.timeline-item');
-          timelineItems.forEach(item => {
-            item.dispatchEvent(new CustomEvent('iconify-ready'));
-          });
-        }).catch(error => {
-          console.error('Failed to load icons on timeline page:', error);
-        });
-      }
-    });
-
-    // 处理页面导航时的图标重新加载
-    window.addEventListener('pageshow', (event) => {
-      const loader = window['__iconifyLoader'];
-      if (event.persisted && loader) {
-        // 页面从缓存恢复，重新检查图标状态
-        setTimeout(() => {
-          loader.load().catch(console.error);
-        }, 100);
-      }
-    });
-  }
-</script>

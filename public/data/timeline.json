@@ -2,13 +2,13 @@
 	{
 		"id": "2024-06-highschool-graduation",
 		"title": "高中毕业与升学",
-		"description": "2024年6月高中毕业，成为一名电兵。",
+		"description": "成为电兵之前...需要隐忍（）",
 		"type": "education",
 		"startDate": "2024-06-01",
 		"endDate": "2024-09-01",
 		"location": "福建 福清——四川 成都",
-		"organization": "福建省福清第一中学",
-		"position": "雏凤班",
+		"organization": "福清一中",
+		"position": "雏凤",
 		"icon": "material-symbols:school",
 		"color": "#2563EB"
 	},
@@ -22,7 +22,9 @@
 		"location": "四川 成都",
 		"organization": "微光工作室",
 		"position": "前端方向成员",
-		"skills": ["前端方向"],
+		"skills": [
+			"前端方向"
+		],
 		"links": [
 			{
 				"name": "工作室官网",
@@ -43,13 +45,23 @@
 		"type": "project",
 		"startDate": "2024-12-01",
 		"endDate": "2025-07-01",
-		"achievements": ["以赛区第九名的成绩获得西部赛区三等奖"],
+		"achievements": [
+			"以赛区第九名的成绩获得西部赛区三等奖"
+		],
 		"icon": "material-symbols:engineering",
 		"location": "陕西 西安",
 		"organization": "微光工作室-glimmer08小组",
 		"position": "前端工程师/组长",
-		"image": ["/images/projects/A08.png", "/images/projects/cardetect.png"],
-		"skills": ["ECharts", "JavaScript", "Element Plus", "Vue3"],
+		"image": [
+			"/images/projects/A08.png",
+			"/images/projects/cardetect.png"
+		],
+		"skills": [
+			"ECharts",
+			"JavaScript",
+			"Element Plus",
+			"Vue3"
+		],
 		"color": "#EA580C"
 	},
 	{
@@ -92,12 +104,18 @@
 	{
 		"id": "2025-08-personal-website",
 		"title": "个人网站建设计划",
-		"description": "2025年8月开始制作个人网站，包括 Sleepy 服务器后端建设、博客制作与相关状态组件的开发。",
+		"description": "2025年8月开始制作个人网站，包括 Sleepy 服务器后端建设、相关状态组件的开发、Astro博客的改造等。",
 		"type": "project",
 		"startDate": "2025-08-01",
 		"icon": "material-symbols:public",
 		"location": "四川 成都",
-		"skills": ["HTML", "Vue Bits", "TypeScript", "Vue3", "Tailwind CSS"],
+		"skills": [
+			"HTML",
+			"Vue Bits",
+			"TypeScript",
+			"Vue3",
+			"Tailwind CSS"
+		],
 		"image": [
 			"/images/projects/personalWebsite.png",
 			"/images/projects/myblog.png"
@@ -142,8 +160,10 @@
 		"icon": "material-symbols:emoji-events",
 		"location": "四川 成都",
 		"organization": "电子科技大学信息与软件工程学院",
-		"color": "#7F3FBF",
-		"image": ["/images/projects/jxj.jpg"]
+		"color": "#bf963f",
+		"image": [
+			"/images/projects/jxj.jpg"
+		]
 	},
 	{
 		"id": "2026-1-pgvector",
@@ -156,8 +176,16 @@
 		"location": "四川 成都",
 		"organization": "计系大赛-阿里云天池大赛",
 		"position": "混合索引算法优化/组长",
-		"skills": ["C", "SQL", "IVF/HNSW", "Postgresql"],
-		"image": ["/images/projects/tianchi.png", "/images/projects/tianchi2.png"],
+		"skills": [
+			"C",
+			"SQL",
+			"IVF/HNSW",
+			"Postgresql"
+		],
+		"image": [
+			"/images/projects/tianchi.png",
+			"/images/projects/tianchi2.png"
+		],
 		"color": "#7C3AED"
 	},
 	{
@@ -170,8 +198,12 @@
 		"icon": "material-symbols:emoji-events",
 		"location": "四川 成都",
 		"organization": "中国大学生计算机设计大赛",
-		"achievements": ["省二等奖"],
-		"image": ["/images/projects/js2026-1.png"],
+		"achievements": [
+			"省二等奖"
+		],
+		"image": [
+			"/images/projects/js2026-1.png"
+		],
 		"color": "#7C3AED"
 	},
 	{
@@ -185,9 +217,19 @@
 		"location": "四川 成都——陕西 西安",
 		"organization": "中国大学生服务外包创新创业大赛 · 西部赛区",
 		"position": "【A13】基于AI的大学生职业规划智能体",
-		"achievements": ["西部赛区一等奖"],
-		"image": ["/images/projects/fc2026-1.jpg", "/images/projects/fc2026-2.jpg"],
-		"skills": ["Vue3", "Springboot", "Agent", "LLM"],
+		"achievements": [
+			"西部赛区一等奖"
+		],
+		"image": [
+			"/images/projects/fc2026-1.jpg",
+			"/images/projects/fc2026-2.jpg"
+		],
+		"skills": [
+			"Vue3",
+			"Springboot",
+			"Agent",
+			"LLM"
+		],
 		"color": "#EA580C"
 	},
 	{
@@ -201,12 +243,19 @@
 		"location": "江苏 无锡",
 		"organization": "中国大学生服务外包创新创业大赛 · 无锡总决赛",
 		"position": "【A13】基于AI的大学生职业规划智能体",
-		"achievements": ["国家级二等奖"],
+		"achievements": [
+			"国家级二等奖"
+		],
 		"image": [
 			"/images/projects/fc2026-wuxi1.png",
 			"/images/projects/fc2026-wuxi2.png"
 		],
-		"skills": ["Vue3", "Springboot", "Agent", "LLM"],
+		"skills": [
+			"Vue3",
+			"Springboot",
+			"Agent",
+			"LLM"
+		],
 		"color": "#7C3AED"
 	}
 ]
