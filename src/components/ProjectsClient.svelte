@@ -9,6 +9,61 @@
   let loading = true;
   let error: string | null = null;
 
+  type TechFamily = "ai" | "frontend" | "backend" | "language" | "infra" | "other";
+
+  const techFamilyByAlias: Record<string, TechFamily> = {
+    ai: "ai",
+    llm: "ai",
+    agent: "ai",
+    tensorflow: "ai",
+    hnsw: "ai",
+    vue3: "frontend",
+    vuejs: "frontend",
+    react: "frontend",
+    nextjs: "frontend",
+    astro: "frontend",
+    svelte: "frontend",
+    html: "frontend",
+    css: "frontend",
+    tailwindcss: "frontend",
+    framermotion: "frontend",
+    threejs: "frontend",
+    springboot: "backend",
+    nodejs: "backend",
+    python: "backend",
+    flask: "backend",
+    express: "backend",
+    sql: "backend",
+    mysql: "backend",
+    postgresql: "backend",
+    pgvector: "backend",
+    sqlite: "backend",
+    firebase: "backend",
+    typescript: "language",
+    javascript: "language",
+    c: "language",
+    lodash: "language",
+    redux: "language",
+    pinia: "language",
+    docker: "infra",
+  };
+
+  const techFamilyPatterns: [RegExp, TechFamily][] = [
+    [/^(ai|llm|agent|tensorflow|pytorch|transformers|huggingface)/, "ai"],
+    [/^(vue|react|next|astro|svelte|tailwind|three|html|css|framer)/, "frontend"],
+    [/^(springboot|node|python|flask|express|sql|mysql|postgres|pgvector|sqlite|firebase)/, "backend"],
+    [/^(typescript|javascript|java|golang|rust|c$|lodash|redux|pinia)/, "language"],
+    [/^(docker|kubernetes|nginx|pnpm|npm|yarn)/, "infra"],
+  ];
+
+  const getTechFamily = (tech: string): TechFamily => {
+    const normalized = tech.toLowerCase().replace(/[\s._-]+/g, "");
+    if (techFamilyByAlias[normalized]) return techFamilyByAlias[normalized];
+    return techFamilyPatterns.find(([pattern]) => pattern.test(normalized))?.[1] ?? "other";
+  };
+
+  const getTechClass = (tech: string) => `tech-chip tech-chip--${getTechFamily(tech)}`;
+
   const firstLink = (links?: string[] | string) => {
     const link = Array.isArray(links) ? links.find((item) => item?.trim()) : links;
     return link?.trim() || undefined;
@@ -89,10 +144,10 @@
               <p>{project.description}</p>
               <div class="tech-list" aria-label="技术栈">
                 {#each project.techStack?.slice(0, 5) ?? [] as tech}
-                  <span>{tech}</span>
+                  <span class={getTechClass(tech)}>{tech}</span>
                 {/each}
                 {#if project.techStack && project.techStack.length > 5}
-                  <span>+{project.techStack.length - 5}</span>
+                  <span class="tech-chip tech-chip--other">+{project.techStack.length - 5}</span>
                 {/if}
               </div>
             </div>
@@ -141,10 +196,10 @@
               <p>{project.description}</p>
               <div class="tech-list" aria-label="技术栈">
                 {#each project.techStack?.slice(0, 4) ?? [] as tech}
-                  <span>{tech}</span>
+                  <span class={getTechClass(tech)}>{tech}</span>
                 {/each}
                 {#if project.techStack && project.techStack.length > 4}
-                  <span>+{project.techStack.length - 4}</span>
+                  <span class="tech-chip tech-chip--other">+{project.techStack.length - 4}</span>
                 {/if}
               </div>
             </div>
@@ -164,7 +219,7 @@
     </header>
     <div class="stack-list">
       {#each techSet as tech}
-        <span>{tech}</span>
+        <span class={getTechClass(tech)}>{tech}</span>
       {/each}
     </div>
   </section>
@@ -525,6 +580,60 @@
     font-weight: 700;
   }
 
+  .tech-chip {
+    --tech-chip-color: #94a3b8;
+    border-color: color-mix(in srgb, var(--tech-chip-color) 74%, var(--project-accent-line));
+    background: color-mix(in srgb, var(--tech-chip-color) 18%, var(--btn-regular-bg));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--tech-chip-color) 30%, transparent),
+      0 0.12rem 0.45rem color-mix(in srgb, var(--tech-chip-color) 10%, transparent);
+    transition:
+      border-color var(--motion-signal-fast) ease,
+      background-color var(--motion-signal-fast) ease,
+      box-shadow var(--motion-signal-fast) ease;
+  }
+
+  .tech-chip--ai {
+    --tech-chip-color: #a78bfa;
+  }
+
+  .tech-chip--frontend {
+    --tech-chip-color: #5cc8ff;
+  }
+
+  .tech-chip--backend {
+    --tech-chip-color: #3dd6b0;
+  }
+
+  .tech-chip--language {
+    --tech-chip-color: #91a8c5;
+  }
+
+  .tech-chip--infra {
+    --tech-chip-color: #f0a86b;
+  }
+
+  .tech-chip:is(:hover, :focus-visible) {
+    border-color: color-mix(in srgb, var(--tech-chip-color) 92%, var(--project-accent-line));
+    background: color-mix(in srgb, var(--tech-chip-color) 25%, var(--btn-regular-bg));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--tech-chip-color) 40%, transparent),
+      0 0 0.7rem color-mix(in srgb, var(--tech-chip-color) 16%, transparent);
+  }
+
+  :global(.dark) .tech-chip {
+    border-color: color-mix(in srgb, var(--tech-chip-color) 62%, var(--project-accent-line));
+    background: color-mix(in srgb, var(--tech-chip-color) 14%, var(--btn-regular-bg));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tech-chip-color) 28%, transparent);
+  }
+
+  :global(.dark) .tech-chip:is(:hover, :focus-visible) {
+    background: color-mix(in srgb, var(--tech-chip-color) 22%, var(--btn-regular-bg));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--tech-chip-color) 44%, transparent),
+      0 0 0.8rem color-mix(in srgb, var(--tech-chip-color) 18%, transparent);
+  }
+
   .stack-section {
     padding-top: 1.75rem;
     border-top: 1px solid color-mix(in srgb, var(--project-accent-line) 55%, transparent);
@@ -542,8 +651,16 @@
     box-shadow: inset 0 0 0.7rem color-mix(in srgb, var(--project-accent-glow) 34%, transparent);
   }
 
+  .stack-list .tech-chip {
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tech-chip-color) 24%, transparent);
+  }
+
   :global(.dark) .stack-list span {
     box-shadow: inset 0 1px 0 var(--project-panel-highlight);
+  }
+
+  :global(.dark) .stack-list .tech-chip {
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tech-chip-color) 28%, transparent);
   }
 
   /* Gold-on-dark stays legible without turning every metadata chip into a
@@ -552,13 +669,25 @@
   :global(html.dark[data-accent-dark='gold']) .project-card .project-index,
   :global(html.dark[data-accent-dark='gold']) .project-card .project-source,
   :global(html.dark[data-accent-dark='gold']) .project-card .award-label,
-  :global(html.dark[data-accent-dark='gold']) .project-card .status-label:not(.status-completed),
-  :global(html.dark[data-accent-dark='gold']) .project-card .tech-list span,
-  :global(html.dark[data-accent-dark='gold']) .stack-list span {
+  :global(html.dark[data-accent-dark='gold']) .project-card .status-label:not(.status-completed) {
     color: color-mix(in srgb, var(--project-accent-strong) 68%, var(--content-meta));
     border-color: color-mix(in srgb, var(--project-accent-line) 56%, transparent);
     background: color-mix(in srgb, var(--project-accent-surface) 42%, var(--industrial-surface));
     box-shadow: inset 0 1px 0 var(--project-panel-highlight);
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .project-card .tech-chip,
+  :global(html.dark[data-accent-dark='gold']) .stack-list .tech-chip {
+    color: color-mix(in srgb, var(--project-accent-strong) 68%, var(--content-meta));
+    border-color: color-mix(in srgb, var(--tech-chip-color) 58%, var(--project-accent-line));
+    background: color-mix(in srgb, var(--tech-chip-color) 12%, var(--industrial-surface));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tech-chip-color) 28%, transparent);
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .project-card .tech-chip:is(:hover, :focus-visible),
+  :global(html.dark[data-accent-dark='gold']) .stack-list .tech-chip:is(:hover, :focus-visible) {
+    border-color: color-mix(in srgb, var(--tech-chip-color) 78%, var(--project-accent-line));
+    background: color-mix(in srgb, var(--tech-chip-color) 19%, var(--industrial-surface));
   }
 
   :global(html.dark[data-accent-dark='gold']) .project-card .project-source:is(:hover, :focus-visible) {

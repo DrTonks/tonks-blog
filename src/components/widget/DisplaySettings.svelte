@@ -79,6 +79,7 @@ onMount(() => {
         >
             {i18n(I18nKey.themeColor)}
         </div>
+        <span class="theme-color-hint">点击切换到对应主题</span>
     </div>
 
     <div class="accent-groups">
@@ -192,6 +193,13 @@ onMount(() => {
     .accent-groups
       display grid
       gap 0.75rem
+
+    .theme-color-hint
+      color var(--content-meta)
+      font-size 0.68rem
+      font-weight 500
+      letter-spacing 0.02em
+      white-space nowrap
 
     .accent-group
       position relative
