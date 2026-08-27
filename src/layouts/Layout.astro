@@ -106,8 +106,8 @@ let pageTitle: string;
 if (title) {
 	pageTitle = `${title} - ${siteConfig.title}`;
 } else {
-	pageTitle = siteConfig.subtitle
-		? `${siteConfig.title} - ${siteConfig.subtitle}`
+	pageTitle = siteConfig.homeTitle
+		? `${siteConfig.homeTitle} - ${siteConfig.title}`
 		: siteConfig.title;
 }
 
@@ -132,7 +132,6 @@ const bannerOffsetByPosition = {
 };
 const bannerOffset =
 	bannerOffsetByPosition[siteConfig.banner.position || "center"];
-
 ---
 
 <!DOCTYPE html>

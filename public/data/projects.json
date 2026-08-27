@@ -186,7 +186,7 @@
 		"id": "myblog",
 		"title": "Tonks-Blog",
 		"description": "基于fuwari的个人博客，精简大部分内容，支持AI摘要/后端统计/首屏加载/主题切换等功能。",
-		"image": "/images/projects/myblog.png",
+		"image": "/images/projects/myblog2.png",
 		"category": "web",
 		"techStack": [
 			"Astro",

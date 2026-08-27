@@ -1,5 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
+import { homeStickerDefinitions } from "../../data/home-stickers";
+import { getProjectsByCategory } from "../../data/projects";
 
 interface Props {
 	active?: boolean;
@@ -7,58 +9,25 @@ interface Props {
 
 const { active = false } = Astro.props;
 
-const stickers = [
-	{
-		id: "album-wuxi",
-		kind: "photo",
-		eyebrow: "RECENT / ALBUM",
-		title: "最近动态",
-		note: "无锡的三日留影",
-		image: "/images/albums/20260821wuxi/cover.jpg",
-		href: "/albums/20260821wuxi/",
-		tilt: -3.2,
-	},
-	{
-		id: "project-home",
-		kind: "blueprint",
-		eyebrow: "WORKBENCH / 01",
-		title: "正在施工",
-		note: "看看最近的项目",
-		image: "/images/projects/personalWebsite.png",
-		href: "/projects/",
-		tilt: 2.4,
-	},
-	{
-		id: "timeline-wuxi",
-		kind: "photo",
-		eyebrow: "MEMORY / 2026",
-		title: "时间留影",
-		note: "坐坐时光机",
-		image: "/images/projects/fc2026-wuxi1.png",
-		href: "/timeline/",
-		tilt: 3.5,
-	},
-	{
-		id: "about-site",
-		kind: "identity",
-		eyebrow: "FILE / ABOUT",
-		title: "关于这个小站",
-		note: "翻开站点档案",
-		image: "/assets/home/home.png",
-		href: "/about/",
-		tilt: -2.1,
-	},
-	{
-		id: "archive-random",
-		kind: "index",
-		eyebrow: "INDEX / ARCHIVE",
-		title: "从归档里翻一篇",
-		note: "旧文字也有回声",
-		image: "/images/projects/myblog.png",
-		href: "/archive/",
-		tilt: 1.8,
-	},
-];
+const inProgressProjectImages = getProjectsByCategory()
+	.filter((project) => project.status === "in-progress" && project.image)
+	.map((project) => project.image);
+
+const stickers = homeStickerDefinitions.map((sticker) => {
+	const configuredImages = sticker.images?.length
+		? sticker.images
+		: sticker.image
+			? [sticker.image]
+			: [];
+	const images =
+		sticker.imageSource === "in-progress-projects"
+			? inProgressProjectImages.length
+				? inProgressProjectImages
+				: configuredImages
+			: configuredImages;
+
+	return { ...sticker, images };
+});
 ---
 
 <div
@@ -78,15 +47,22 @@ const stickers = [
 			class={`home-sticker home-sticker--${sticker.kind}`}
 			data-home-sticker
 			data-sticker-id={sticker.id}
+			data-sticker-images={JSON.stringify(sticker.images)}
 			style={`--sticker-tilt: ${sticker.tilt}deg`}
 			hidden
 			aria-hidden="true"
 		>
 			<div class="home-sticker__paper">
 				<span class="home-sticker__clip" aria-hidden="true"></span>
-				<a class="home-sticker__link" href={sticker.href} aria-label={`${sticker.title}：${sticker.note}`}>
+				<a
+					class="home-sticker__link"
+					href={sticker.href}
+					target={sticker.external ? "_blank" : undefined}
+					rel={sticker.external ? "noopener noreferrer" : undefined}
+					aria-label={`${sticker.title}：${sticker.note}`}
+				>
 					<span class="home-sticker__photo">
-						<img data-sticker-src={sticker.image} alt="" loading="lazy" decoding="async" />
+						<img alt="" loading="lazy" decoding="async" draggable="false" />
 					</span>
 					<span class="home-sticker__caption">
 						<small>{sticker.eyebrow}</small>
@@ -113,10 +89,12 @@ const stickers = [
 	if (layer) {
 		const cards = Array.from(layer.querySelectorAll<HTMLElement>("[data-home-sticker]"));
 		const compactQuery = window.matchMedia("(max-width: 1023px)");
+		const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 		const recentStorageKey = "tonksHomeStickerRecent";
 		let activeCards: HTMLElement[] = [];
 		let layerActive = false;
 		let replacementTimer: ReturnType<typeof setTimeout> | undefined;
+		let resizeFrame: number | undefined;
 
 		const shuffle = <T,>(items: T[]) => {
 			const result = [...items];
@@ -146,9 +124,59 @@ const stickers = [
 			}
 		};
 
+		const randomBetween = (minimum: number, maximum: number) => (
+			minimum + Math.random() * Math.max(0, maximum - minimum)
+		);
+
 		const primeImage = (card: HTMLElement) => {
-			const image = card.querySelector<HTMLImageElement>("img[data-sticker-src]");
-			if (image && !image.getAttribute("src")) image.src = image.dataset.stickerSrc || "";
+			const image = card.querySelector<HTMLImageElement>("img");
+			if (!image) return;
+			let images: string[] = [];
+			try {
+				const parsed = JSON.parse(card.dataset.stickerImages || "[]");
+				if (Array.isArray(parsed)) images = parsed.filter((item): item is string => typeof item === "string" && Boolean(item));
+			} catch {
+				images = [];
+			}
+			if (!images.length) return;
+			const current = image.getAttribute("src");
+			const candidates = images.length > 1 ? images.filter((item) => item !== current) : images;
+			image.src = shuffle(candidates.length ? candidates : images)[0];
+		};
+
+		const placeCard = (card: HTMLElement, slot: number) => {
+			const layerWidth = layer.clientWidth;
+			const layerHeight = layer.clientHeight;
+			const cardWidth = card.offsetWidth;
+			const cardHeight = card.offsetHeight;
+			let x = 0;
+			let y = 0;
+
+			if (compactQuery.matches) {
+				x = layerWidth - cardWidth - randomBetween(10, 22);
+				y = randomBetween(layerHeight * 0.09, layerHeight * 0.135);
+			} else {
+				// Keep both cards inside a centered content belt on ultrawide displays.
+				const bandWidth = Math.min(Math.max(layerWidth - 32, 0), 1280);
+				const bandLeft = (layerWidth - bandWidth) / 2;
+				const edgeInset = Math.min(44, Math.max(24, bandWidth * 0.025));
+				const centerHalf = Math.min(270, Math.max(220, bandWidth * 0.2));
+				const laneMinimum = slot === 0
+					? bandLeft + edgeInset
+					: layerWidth / 2 + centerHalf;
+				const laneMaximum = slot === 0
+					? layerWidth / 2 - centerHalf - cardWidth
+					: bandLeft + bandWidth - edgeInset - cardWidth;
+				x = randomBetween(Math.min(laneMinimum, laneMaximum), Math.max(laneMinimum, laneMaximum));
+				const yRange = slot === 0 ? [0.12, 0.23] : [0.085, 0.19];
+				y = randomBetween(layerHeight * yRange[0], layerHeight * yRange[1]);
+			}
+
+			const safeX = Math.max(8, Math.min(x, layerWidth - cardWidth - 8));
+			const safeY = Math.max(16, Math.min(y, layerHeight - cardHeight - 16));
+			card.style.setProperty("--sticker-x", `${Math.round(safeX)}px`);
+			card.style.setProperty("--sticker-y", `${Math.round(safeY)}px`);
+			card.style.setProperty("--peel-x", slot === 0 ? "-1.4rem" : "1.4rem");
 		};
 
 		const hideCard = (card: HTMLElement) => {
@@ -159,10 +187,11 @@ const stickers = [
 		};
 
 		const showCard = (card: HTMLElement, slot: number) => {
-			primeImage(card);
 			card.dataset.slot = String(slot);
 			card.hidden = false;
 			card.setAttribute("aria-hidden", "false");
+			primeImage(card);
+			placeCard(card, slot);
 			requestAnimationFrame(() => card.classList.add("is-active"));
 		};
 
@@ -213,7 +242,7 @@ const stickers = [
 				showCard(next, slot);
 				remember(activeCards);
 				replacementTimer = undefined;
-			}, 210);
+			}, reduceMotionQuery.matches ? 0 : 420);
 		};
 
 		const handleLayerClick = (event: Event) => {
@@ -229,15 +258,30 @@ const stickers = [
 			setActive(Boolean(detail?.active), Boolean(detail?.refresh));
 		};
 		const handleBreakpoint = () => refreshAll();
+		const handleResize = () => {
+			if (resizeFrame) cancelAnimationFrame(resizeFrame);
+			resizeFrame = requestAnimationFrame(() => {
+				activeCards.forEach((card, slot) => placeCard(card, slot));
+				resizeFrame = undefined;
+			});
+		};
+		const handleDragStart = (event: DragEvent) => {
+			if ((event.target as Element | null)?.closest(".home-sticker__photo img")) event.preventDefault();
+		};
 
 		layer.addEventListener("click", handleLayerClick);
+		layer.addEventListener("dragstart", handleDragStart);
 		window.addEventListener("tonks:home-stickers:state", handleState);
+		window.addEventListener("resize", handleResize);
 		compactQuery.addEventListener("change", handleBreakpoint);
 
 		runtime.__tonksHomeStickerCleanup = () => {
 			if (replacementTimer) clearTimeout(replacementTimer);
+			if (resizeFrame) cancelAnimationFrame(resizeFrame);
 			layer.removeEventListener("click", handleLayerClick);
+			layer.removeEventListener("dragstart", handleDragStart);
 			window.removeEventListener("tonks:home-stickers:state", handleState);
+			window.removeEventListener("resize", handleResize);
 			compactQuery.removeEventListener("change", handleBreakpoint);
 		};
 
@@ -287,26 +331,25 @@ const stickers = [
 	.home-sticker {
 		position: absolute;
 		z-index: 32;
+		top: var(--sticker-y, 12%);
+		left: var(--sticker-x, 2rem);
 		width: clamp(10.25rem, 15vw, 12.25rem);
 		padding: 0.75rem;
 		opacity: 0;
 		pointer-events: auto;
 		visibility: hidden;
-		transition: opacity 180ms ease;
-	}
-
-	.home-sticker[data-slot="0"] {
-		top: 18%;
-		left: clamp(1.25rem, 7vw, 7.5rem);
-	}
-
-	.home-sticker[data-slot="1"] {
-		top: 12%;
-		right: clamp(1.25rem, 7vw, 7.5rem);
+		transition: opacity 240ms ease, visibility 0s linear 420ms;
 	}
 
 	.home-sticker.is-active {
 		opacity: 1;
+		visibility: visible;
+		transition-delay: 0s;
+	}
+
+	.home-sticker.is-leaving {
+		opacity: 1;
+		pointer-events: none;
 		visibility: visible;
 	}
 
@@ -322,7 +365,7 @@ const stickers = [
 		box-shadow: 0.55rem 0.65rem 0 rgba(0, 0, 0, 0.2), 0 0.4rem 1.1rem rgba(0, 0, 0, 0.24);
 		transform: rotate(var(--sticker-tilt));
 		transform-origin: 50% 8%;
-		transition: transform 210ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms ease;
+		transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1), opacity 340ms ease, filter 340ms ease;
 	}
 
 	.home-sticker:hover .home-sticker__paper,
@@ -331,8 +374,25 @@ const stickers = [
 	}
 
 	.home-sticker.is-leaving .home-sticker__paper {
-		opacity: 0;
-		transform: translateY(1.1rem) rotate(calc(var(--sticker-tilt) * 1.8));
+		animation: home-sticker-peel 420ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+	}
+
+	@keyframes home-sticker-peel {
+		0% {
+			opacity: 1;
+			filter: none;
+			transform: rotate(0deg) scale(1);
+		}
+		38% {
+			opacity: 1;
+			filter: none;
+			transform: translate3d(calc(var(--peel-x, 1.4rem) * 0.2), -0.35rem, 0) rotate(calc(var(--sticker-tilt) * 0.45)) scale(1.018);
+		}
+		100% {
+			opacity: 0;
+			filter: blur(0.6px);
+			transform: translate3d(var(--peel-x, 1.4rem), -1.4rem, 0) rotate(calc(var(--sticker-tilt) * 2.1)) scale(0.92);
+		}
 	}
 
 	.home-sticker__clip {
@@ -371,7 +431,9 @@ const stickers = [
 		display: block;
 		width: 100%;
 		height: 100%;
+		-webkit-user-drag: none;
 		object-fit: cover;
+		user-select: none;
 		filter: saturate(0.88) contrast(0.96);
 		transition: filter 180ms ease, transform 240ms ease;
 	}
@@ -381,8 +443,6 @@ const stickers = [
 		filter: saturate(1) contrast(1);
 		transform: scale(1.025);
 	}
-
-	.home-sticker--identity .home-sticker__photo img { object-fit: contain; background: #f7f2e8; }
 
 	.home-sticker__caption {
 		position: relative;
@@ -469,10 +529,7 @@ const stickers = [
 
 		.home-sticker-layer__register { display: none; }
 
-		.home-sticker[data-slot="0"] {
-			top: 13%;
-			right: 0.7rem;
-			left: auto;
+		.home-sticker {
 			width: clamp(8.2rem, 37vw, 9.5rem);
 		}
 
@@ -491,5 +548,7 @@ const stickers = [
 		.home-sticker:hover .home-sticker__paper,
 		.home-sticker:focus-within .home-sticker__paper,
 		.home-sticker.is-leaving .home-sticker__paper { transform: rotate(var(--sticker-tilt)); }
+
+		.home-sticker.is-leaving .home-sticker__paper { animation: none; }
 	}
 </style>

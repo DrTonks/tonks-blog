@@ -8,6 +8,7 @@ export type AccentPreset = "blue" | "gold";
 
 export type SiteConfig = {
 	title: string;
+	homeTitle?: string;
 	subtitle: string;
 	keywords?: string[]; // 站点关键词，用于生成 <meta name="keywords">
 
