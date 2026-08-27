@@ -1,6 +1,6 @@
 ---
-title: CSS+JS动画名片轮播图练习
-published: 2024-10-01
+title: 前端练习(二) · CSS+JS动画名片轮播图练习
+published: 2024-11-02
 pinned: false
 description: 一个简单的前端轮播图动画练习.
 tags:
@@ -8,7 +8,7 @@ tags:
   - CSS
   - JavaScript
   - 前端
-category: 前端
+category: 前端练习
 draft: false
 ---
 在b站上偶然看到了一个CSS+JS动画名片的轮播图，感觉很酷，研究了一下发现居然没有用到很多js，惊为天人。仔细研究之后发现**思路是全都利用transition添加过渡**！

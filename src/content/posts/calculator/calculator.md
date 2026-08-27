@@ -1,6 +1,6 @@
 ---
-title: 金融学基础 - 通用计算器
-published: 2025-10-09
+title: 课设开发(三) · 金融学基础通用计算器
+published: 2025-10-20
 pinned: false
 description: 覆盖贷款、投资分析与项目评估的教学工具，包含贷款还款、NPV/IRR、折旧、敏感性分析等功能。
 tags:

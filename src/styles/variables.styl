@@ -5,16 +5,16 @@ white(a)
 black(a)
   rgba(0, 0, 0, a)
 
-rainbow-light = linear-gradient(to right, oklch(0.80 0.10 0), oklch(0.80 0.10 30), oklch(0.80 0.10 60), oklch(0.80 0.10 90), oklch(0.80 0.10 120), oklch(0.80 0.10 150), oklch(0.80 0.10 180), oklch(0.80 0.10 210), oklch(0.80 0.10 240), oklch(0.80 0.10 270), oklch(0.80 0.10 300), oklch(0.80 0.10 330), oklch(0.80 0.10 360))
-rainbow-dark = linear-gradient(to right, oklch(0.70 0.10 0), oklch(0.70 0.10 30), oklch(0.70 0.10 60), oklch(0.70 0.10 90), oklch(0.70 0.10 120), oklch(0.70 0.10 150), oklch(0.70 0.10 180), oklch(0.70 0.10 210), oklch(0.70 0.10 240), oklch(0.70 0.10 270), oklch(0.70 0.10 300), oklch(0.70 0.10 330), oklch(0.70 0.10 360))
-
 :root
+  --hue 250
   --radius-large 1rem
   --content-delay 150ms
   --motion-signal-fast 160ms
   --motion-signal-medium 260ms
   --ease-signal cubic-bezier(0.2, 0.8, 0.2, 1)
   --ease-cut cubic-bezier(0.7, 0, 0.3, 1)
+  --ambient-pointer-strength 13%
+  --ambient-pointer-opacity 1
 
 /* An util to define variables that vary with light and dark mode */
 define(vars)
@@ -43,6 +43,13 @@ define({
   --project-accent-surface: rgba(224, 240, 255, 0.72) rgba(16, 55, 82, 0.68)
   --project-accent-line: rgba(28, 111, 218, 0.34) rgba(93, 199, 255, 0.42)
   --project-accent-glow: rgba(35, 121, 231, 0.18) rgba(61, 187, 255, 0.22)
+  --project-panel-shadow: rgba(21, 38, 61, 0.12) rgba(0, 0, 0, 0.28)
+  --project-panel-highlight: rgba(255, 255, 255, 0.32) rgba(255, 255, 255, 0.07)
+  --timeline-ghost-fill: rgba(45, 88, 148, 0.024) rgba(154, 211, 255, 0.028)
+  --timeline-ghost-line: rgba(45, 88, 148, 0.17) rgba(154, 211, 255, 0.2)
+  --timeline-ghost-line-mobile: rgba(45, 88, 148, 0.095) rgba(154, 211, 255, 0.115)
+  --timeline-card-shadow: rgba(19, 45, 77, 0.045) rgba(16, 40, 70, 0.045)
+  --timeline-active-shadow: rgba(28, 91, 158, 0.16) rgba(100, 196, 255, 0.2)
   --page-bg: oklch(0.95 0.01 var(--hue)) oklch(0.16 0.014 var(--hue))
   --card-bg: white oklch(0.23 0.015 var(--hue))
   --card-bg-transparent: rgba(255, 255, 255, 0.8) rgba(23, 23, 23, 0.8)
@@ -100,8 +107,6 @@ define({
   --scrollbar-bg-hover: var(--scrollbar-bg-hover-light) var(--scrollbar-bg-hover-dark)
   --scrollbar-bg-active: var(--scrollbar-bg-active-light) var(--scrollbar-bg-active-dark)
 
-  --color-selection-bar: rainbow-light rainbow-dark
-
   --display-light-icon: 1 0
   --display-dark-icon: 0 1
 
@@ -117,3 +122,65 @@ define({
   --toc-width: unquote('min(calc((100vw - var(--page-width)) / 2 - 1rem), 31.25rem)')
   --toc-item-active: oklch(0.70 0.13 var(--hue)) oklch(0.35 0.07 var(--hue))
 })
+
+/* Presets own the complete semantic accent palette. `--hue` remains an
+   internal compatibility token for older generic components only. */
+:root:not(.dark)[data-accent-light='blue']
+  --hue 250
+
+:root:not(.dark)[data-accent-light='gold']
+  --hue 100
+  --primary oklch(0.62 0.16 98)
+  --signal oklch(0.93 0.14 101)
+  --signal-ink oklch(0.25 0.08 92)
+  --signal-soft rgba(222, 194, 22, 0.12)
+  --signal-line rgba(188, 168, 0, 0.48)
+  --industrial-surface oklch(0.975 0.009 100)
+  --industrial-surface-hover oklch(0.94 0.03 100)
+  --project-accent oklch(0.60 0.17 98)
+  --project-accent-strong oklch(0.52 0.18 96)
+  --project-accent-soft rgba(222, 194, 22, 0.11)
+  --project-accent-surface rgba(250, 247, 176, 0.58)
+  --project-accent-line rgba(188, 168, 0, 0.36)
+  --project-accent-glow rgba(222, 194, 22, 0.13)
+  --timeline-ghost-fill rgba(146, 132, 0, 0.022)
+  --timeline-ghost-line rgba(146, 132, 0, 0.15)
+  --timeline-ghost-line-mobile rgba(146, 132, 0, 0.085)
+  --timeline-card-shadow rgba(86, 82, 14, 0.05)
+  --timeline-active-shadow rgba(176, 160, 0, 0.15)
+  --page-bg oklch(0.965 0.008 100)
+  --card-bg white
+
+:root.dark[data-accent-dark='blue']
+  --hue 250
+
+:root.dark[data-accent-dark='gold']
+  --hue 98
+  --primary oklch(0.84 0.18 100)
+  --signal oklch(0.87 0.17 101)
+  --signal-ink oklch(0.17 0.04 92)
+  --signal-soft rgba(255, 224, 42, 0.11)
+  --signal-line rgba(255, 232, 94, 0.62)
+  --industrial-surface oklch(0.205 0.016 96)
+  --industrial-surface-hover oklch(0.265 0.03 98)
+  --project-accent oklch(0.84 0.16 99)
+  --project-accent-strong oklch(0.90 0.15 102)
+  --project-accent-soft rgba(255, 226, 44, 0.13)
+  --project-accent-surface rgba(78, 72, 14, 0.60)
+  --project-accent-line rgba(255, 232, 96, 0.46)
+  --project-accent-glow rgba(255, 226, 58, 0.17)
+  --project-panel-shadow rgba(0, 0, 0, 0.28)
+  --project-panel-highlight rgba(255, 255, 255, 0.06)
+  --timeline-ghost-fill rgba(255, 232, 112, 0.03)
+  --timeline-ghost-line rgba(255, 232, 112, 0.19)
+  --timeline-ghost-line-mobile rgba(255, 232, 112, 0.11)
+  --timeline-card-shadow rgba(255, 222, 76, 0.045)
+  --timeline-active-shadow rgba(255, 226, 74, 0.16)
+  --ambient-pointer-strength 7%
+  --ambient-pointer-opacity 0.82
+  --page-bg oklch(0.145 0.014 96)
+  --card-bg oklch(0.205 0.016 96)
+  --card-bg-transparent rgba(29, 30, 14, 0.82)
+  --float-panel-bg oklch(0.18 0.014 96)
+  --codeblock-bg oklch(0.15 0.014 96)
+  --codeblock-topbar-bg oklch(0.115 0.012 96)

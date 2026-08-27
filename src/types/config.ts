@@ -4,6 +4,8 @@ import type {
 	SYSTEM_MODE,
 } from "../constants/constants";
 
+export type AccentPreset = "blue" | "gold";
+
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
@@ -22,7 +24,8 @@ export type SiteConfig = {
 		| "id";
 
 	themeColor: {
-		hue: number;
+		defaultLight: AccentPreset;
+		defaultDark: AccentPreset;
 		fixed: boolean;
 	};
 

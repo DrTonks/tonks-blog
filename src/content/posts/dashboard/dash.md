@@ -1,5 +1,5 @@
 ---
-title: 贷款平台可视化数据大屏
+title: 课设开发(四) · 贷款平台可视化数据大屏
 published: 2025-10-23
 pinned: false
 description: 使用three.js与网上公开建模搭建的数据大屏，用于搭配Web管理端使用。

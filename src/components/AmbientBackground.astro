@@ -120,7 +120,7 @@
 
 	.ambient-pointer-glow {
 		opacity: 0;
-		background: radial-gradient(circle 18rem at var(--ambient-x, 50vw) var(--ambient-y, 50vh), color-mix(in oklch, var(--primary) 13%, transparent), transparent 72%);
+		background: radial-gradient(circle 18rem at var(--ambient-x, 50vw) var(--ambient-y, 50vh), color-mix(in oklch, var(--primary) var(--ambient-pointer-strength), transparent), transparent 72%);
 	}
 
 	:global(.ambient-light-art) {
@@ -190,7 +190,7 @@
 	}
 
 	:global(html.dark) .ambient-pointer-glow {
-		opacity: 1;
+		opacity: var(--ambient-pointer-opacity);
 	}
 
 	:global(html.dark .ambient-light-art) { opacity: 1; }

@@ -1,5 +1,5 @@
 ---
-title: 动态搜索框和具体搜索逻辑实现
+title: 前端练习(一) · 动态搜索框和搜索逻辑
 published: 2024-10-01
 updated: 2024-11-29
 description: 二编增加搜索逻辑的实现
@@ -8,7 +8,7 @@ tags:
   - JavaScript
   - Markdown
   - 前端
-category: 前端
+category: 前端练习
 draft: false
 series: Tonks
 ---

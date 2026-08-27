@@ -1,5 +1,5 @@
 ---
-title: 编译原理 · LR(0)/SLR(1)文法
+title: 编译原理(一) · LR(0)/SLR(1)文法
 published: 2025-09-30
 description: 大学生vs变异原理，你们知道吗
 tags:

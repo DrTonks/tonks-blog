@@ -4,29 +4,44 @@ import {
 	LIGHT_MODE,
 	SYSTEM_MODE,
 } from "@constants/constants";
-import { expressiveCodeConfig } from "@/config";
-import type { LIGHT_DARK_MODE } from "@/types/config";
+import type { AccentPreset, LIGHT_DARK_MODE } from "@/types/config";
 
 const WAVES_STORAGE_KEY = "bannerWavesEnabled";
+const ACCENT_STORAGE_KEYS = {
+	light: "accentLight",
+	dark: "accentDark",
+} as const;
+const DEFAULT_ACCENTS: Record<AccentMode, AccentPreset> = {
+	light: "blue",
+	dark: "gold",
+};
 
-export function getDefaultHue(): number {
-	const fallback = "250";
+export type AccentMode = keyof typeof ACCENT_STORAGE_KEYS;
+
+export function isAccentPreset(value: string | null): value is AccentPreset {
+	return value === "blue" || value === "gold";
+}
+
+export function getDefaultAccent(mode: AccentMode): AccentPreset {
 	const configCarrier = document.getElementById("config-carrier");
-	return Number.parseInt(configCarrier?.dataset.hue || fallback);
+	const configured = mode === "light"
+		? configCarrier?.dataset.accentLightDefault
+		: configCarrier?.dataset.accentDarkDefault;
+	const candidate = configured ?? null;
+	return isAccentPreset(candidate) ? candidate : DEFAULT_ACCENTS[mode];
 }
 
-export function getHue(): number {
-	const stored = localStorage.getItem("hue");
-	return stored ? Number.parseInt(stored) : getDefaultHue();
+export function getAccent(mode: AccentMode): AccentPreset {
+	const stored = localStorage.getItem(ACCENT_STORAGE_KEYS[mode]);
+	return isAccentPreset(stored) ? stored : getDefaultAccent(mode);
 }
 
-export function setHue(hue: number): void {
-	localStorage.setItem("hue", String(hue));
-	const r = document.querySelector(":root") as HTMLElement;
-	if (!r) {
-		return;
-	}
-	r.style.setProperty("--hue", String(hue));
+export function setAccent(mode: AccentMode, preset: AccentPreset): void {
+	localStorage.setItem(ACCENT_STORAGE_KEYS[mode], preset);
+	document.documentElement.dataset[mode === "light" ? "accentLight" : "accentDark"] = preset;
+	window.dispatchEvent(new CustomEvent("accent-change", {
+		detail: { mode, preset },
+	}));
 }
 
 export function getDefaultWavesEnabled(): boolean {

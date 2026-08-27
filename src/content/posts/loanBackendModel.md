@@ -1,7 +1,7 @@
 ---
-title: 多数据源贷款及风控平台后端模型设计思路
+title: 课设开发(一) · 多数据源贷款及风控平台后端模型设计思路
 published: 2025-10-08
-description: 综合设计1——评分卡/审批模型设计
+description: 综合设计——评分卡/审批模型设计
 encrypted: false
 pinned: false
 tags:

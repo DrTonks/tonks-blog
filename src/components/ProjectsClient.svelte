@@ -256,7 +256,9 @@
   }
 
   :global(.dark) .project-card {
-    background: var(--industrial-surface);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--project-panel-highlight) 42%, transparent), transparent 24%),
+      var(--industrial-surface);
   }
 
   .project-card::after {
@@ -278,6 +280,13 @@
   .project-card:focus-within {
     border-color: var(--project-accent-line);
     box-shadow: 0 0.85rem 2rem var(--project-accent-glow);
+  }
+
+  :global(.dark) .project-card:hover,
+  :global(.dark) .project-card:focus-within {
+    box-shadow:
+      0 0.85rem 2rem var(--project-panel-shadow),
+      inset 0 1px 0 var(--project-panel-highlight);
   }
 
   .project-card:hover::after,
@@ -332,6 +341,11 @@
     font-weight: 800;
   }
 
+  :global(.dark) .project-index,
+  :global(.dark) .project-source {
+    box-shadow: inset 0 1px 0 var(--project-panel-highlight);
+  }
+
   .project-source {
     position: absolute;
     z-index: 30;
@@ -369,6 +383,13 @@
     background: color-mix(in srgb, var(--project-accent-surface) 78%, var(--card-bg));
     box-shadow: 0 0 0 2px var(--project-accent-soft), 0 0.45rem 1.35rem var(--project-accent-glow);
     outline: none;
+  }
+
+  :global(.dark) .project-source:hover,
+  :global(.dark) .project-source:focus-visible {
+    box-shadow:
+      0 0 0 1px var(--project-accent-line),
+      inset 0 1px 0 var(--project-panel-highlight);
   }
 
   .project-source:is(:hover, :focus-visible) b {
@@ -433,11 +454,19 @@
       0 0.25rem 1rem color-mix(in srgb, var(--project-accent-glow) 58%, transparent);
   }
 
+  :global(.dark) .award-label {
+    box-shadow: inset 0 1px 0 var(--project-panel-highlight);
+  }
+
   .award-label :global(.award-label__icon) {
     width: 0.85rem;
     height: 0.85rem;
     flex: 0 0 auto;
     filter: drop-shadow(0 0 0.32rem var(--project-accent-glow));
+  }
+
+  :global(.dark) .award-label :global(.award-label__icon) {
+    filter: none;
   }
 
   .award-label span {
@@ -511,6 +540,30 @@
     font-family: "JetBrains Mono Variable", monospace;
     font-size: 0.72rem;
     box-shadow: inset 0 0 0.7rem color-mix(in srgb, var(--project-accent-glow) 34%, transparent);
+  }
+
+  :global(.dark) .stack-list span {
+    box-shadow: inset 0 1px 0 var(--project-panel-highlight);
+  }
+
+  /* Gold-on-dark stays legible without turning every metadata chip into a
+     luminous badge. The main accent remains available for headings and focus
+     states; only the project metadata labels are intentionally quietened. */
+  :global(html.dark[data-accent-dark='gold']) .project-card .project-index,
+  :global(html.dark[data-accent-dark='gold']) .project-card .project-source,
+  :global(html.dark[data-accent-dark='gold']) .project-card .award-label,
+  :global(html.dark[data-accent-dark='gold']) .project-card .status-label:not(.status-completed),
+  :global(html.dark[data-accent-dark='gold']) .project-card .tech-list span,
+  :global(html.dark[data-accent-dark='gold']) .stack-list span {
+    color: color-mix(in srgb, var(--project-accent-strong) 68%, var(--content-meta));
+    border-color: color-mix(in srgb, var(--project-accent-line) 56%, transparent);
+    background: color-mix(in srgb, var(--project-accent-surface) 42%, var(--industrial-surface));
+    box-shadow: inset 0 1px 0 var(--project-panel-highlight);
+  }
+
+  :global(html.dark[data-accent-dark='gold']) .project-card .project-source:is(:hover, :focus-visible) {
+    border-color: color-mix(in srgb, var(--project-accent-line) 78%, transparent);
+    background: color-mix(in srgb, var(--project-accent-surface) 54%, var(--industrial-surface));
   }
 
   @media (min-width: 769px) {

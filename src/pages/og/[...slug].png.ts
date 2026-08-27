@@ -102,7 +102,7 @@ export async function GET({
 	const iconBuffer = fs.readFileSync(iconPath);
 	const iconBase64 = `data:image/png;base64,${iconBuffer.toString("base64")}`;
 
-	const hue = siteConfig.themeColor.hue;
+	const hue = siteConfig.themeColor.defaultDark === "gold" ? 85 : 250;
 	const primaryColor = `hsl(${hue}, 90%, 65%)`;
 	const textColor = "hsl(0, 0%, 95%)";
 

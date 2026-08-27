@@ -4,7 +4,8 @@ import { siteConfig } from "../config";
 
 <div
 	id="config-carrier"
-	data-hue={siteConfig.themeColor.hue}
+	data-accent-light-default={siteConfig.themeColor.defaultLight}
+	data-accent-dark-default={siteConfig.themeColor.defaultDark}
 	data-waves-default={String(siteConfig.banner.waves?.defaultEnabled ?? false)}
 	data-waves-toggle={String(siteConfig.banner.waves?.allowUserToggle ?? false)}
 ></div>

@@ -51,7 +51,8 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
-const configHue = siteConfig.themeColor.hue;
+const defaultLightAccent = siteConfig.themeColor.defaultLight;
+const defaultDarkAccent = siteConfig.themeColor.defaultDark;
 const defaultWavesEnabled = siteConfig.banner.waves?.defaultEnabled ?? false;
 
 // 获取导航栏透明模式配置
@@ -137,6 +138,8 @@ const bannerOffset =
 <!DOCTYPE html>
 <html lang={siteLang} class="bg-[var(--page-bg)] text-[14px] md:text-[16px]"
 	  data-overlayscrollbars-initialize
+	  data-accent-light={defaultLightAccent}
+	  data-accent-dark={defaultDarkAccent}
 	  style={`--page-width-max: ${PAGE_WIDTH}rem`}
 >
 	<head>
@@ -181,7 +184,7 @@ const bannerOffset =
 		))}
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
-		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, SYSTEM_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue, defaultWavesEnabled}}>
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, SYSTEM_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, defaultLightAccent, defaultDarkAccent, defaultWavesEnabled}}>
 			// Load the theme from local storage
 			const storedTheme = localStorage.getItem('theme');
 			const theme = [LIGHT_MODE, DARK_MODE, SYSTEM_MODE].includes(storedTheme)
@@ -216,9 +219,19 @@ const bannerOffset =
 				}
 			});
 
-			// Load the hue from local storage
-			const hue = localStorage.getItem('hue') || configHue;
-			document.documentElement.style.setProperty('--hue', hue);
+			// Resolve independent light/dark accent presets before first paint.
+			const accentPresets = ['blue', 'gold'];
+			const storedLightAccent = localStorage.getItem('accentLight');
+			const storedDarkAccent = localStorage.getItem('accentDark');
+			document.documentElement.dataset.accentLight = accentPresets.includes(storedLightAccent)
+				? storedLightAccent
+				: defaultLightAccent;
+			document.documentElement.dataset.accentDark = accentPresets.includes(storedDarkAccent)
+				? storedDarkAccent
+				: defaultDarkAccent;
+			// The former free-form hue preference is intentionally retired.
+			localStorage.removeItem('hue');
+			document.documentElement.style.removeProperty('--hue');
 
 			// Resolve the optional wave preference before first paint.
 			const storedWaves = localStorage.getItem('bannerWavesEnabled');
@@ -234,9 +247,6 @@ const bannerOffset =
 			offset = offset - offset % 4;
 			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
 		</script>
-		<style define:vars={{
-			configHue,
-		}}></style>  <!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 		<style is:inline>
 			:root {
 				--page-width: var(--page-width-max);
@@ -766,7 +776,7 @@ import {
 	// SizeObserverPlugin,
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
-import {getHue, getStoredTheme, isThemeDark, setHue, setTheme} from "../utils/setting-utils";
+import {getStoredTheme, isThemeDark} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
 	BANNER_HEIGHT,
@@ -840,15 +850,6 @@ setClickOutsideToClose("display-setting", ["display-setting", "display-settings-
 setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
 setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
 
-
-function loadTheme() {
-	const theme = getStoredTheme()
-	setTheme(theme)
-}
-
-function loadHue() {
-	setHue(getHue())
-}
 
 function initCustomScrollbar() {
 	// 完全禁用OverlayScrollbars的body初始化，避免导致页面重新加载

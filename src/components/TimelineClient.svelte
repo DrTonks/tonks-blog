@@ -444,19 +444,14 @@
     height: 0.82em;
     margin: 0;
     transform: none;
-    color: rgba(45, 88, 148, 0.024);
+    color: var(--timeline-ghost-fill);
     font: 900 clamp(9rem, 20vw, 18rem) / 0.82 "JetBrains Mono", "Arial Narrow", sans-serif;
     letter-spacing: -0.1em;
-    -webkit-text-stroke: 1px rgba(45, 88, 148, 0.17);
+    -webkit-text-stroke: 1px var(--timeline-ghost-line);
     -webkit-mask-image: linear-gradient(to left, #000 0 78%, transparent 100%);
     mask-image: linear-gradient(to left, #000 0 78%, transparent 100%);
     user-select: none;
     pointer-events: none;
-  }
-
-  :global(.dark) .timeline-year__ghost {
-    color: rgba(154, 211, 255, 0.028);
-    -webkit-text-stroke-color: rgba(154, 211, 255, 0.2);
   }
 
   :global(.dark) .timeline-register__eyebrow,
@@ -478,7 +473,7 @@
     border-radius: 0.75rem;
     color: var(--meta-divider);
     background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-    box-shadow: 0 0.45rem 1.3rem rgba(19, 45, 77, 0.045);
+    box-shadow: 0 0.45rem 1.3rem var(--timeline-card-shadow);
     backdrop-filter: blur(12px);
     transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
   }
@@ -544,7 +539,7 @@
     border-radius: 1rem;
     color: var(--tw-prose-body, currentColor);
     background: linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 97%, var(--signal-soft)), var(--card-bg));
-    box-shadow: 0 0.45rem 1.6rem rgba(16, 40, 70, 0.045);
+    box-shadow: 0 0.45rem 1.6rem var(--timeline-card-shadow);
     transform: scale(1);
     transform-origin: center;
     transition:
@@ -576,7 +571,7 @@
     border-color: color-mix(in srgb, var(--signal-line) 54%, transparent);
     background: linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 91%, var(--signal-soft)), var(--card-bg));
     box-shadow:
-      0 0.85rem 2.4rem rgba(28, 91, 158, 0.16),
+      0 0.85rem 2.4rem var(--timeline-active-shadow),
       0 0 1.6rem color-mix(in srgb, var(--signal-line) 16%, transparent),
       inset 0 0 0 1px color-mix(in srgb, var(--signal-line) 12%, transparent);
   }
@@ -687,14 +682,13 @@
       transform: none;
       font-size: clamp(5.4rem, 28vw, 7.5rem);
       color: transparent;
-      -webkit-text-stroke-color: rgba(45, 88, 148, 0.095);
+      -webkit-text-stroke-color: var(--timeline-ghost-line-mobile);
       -webkit-mask-image: none;
       mask-image: none;
     }
 
     :global(.dark) .timeline-year__ghost {
       color: transparent;
-      -webkit-text-stroke-color: rgba(154, 211, 255, 0.115);
     }
 
     .timeline-year__header {

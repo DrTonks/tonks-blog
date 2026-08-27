@@ -1,5 +1,5 @@
 ---
-title: 编译原理 · 语义分析
+title: 编译原理(二) · 语义分析
 published: 2025-11-22
 description: 考前预习
 tags:

@@ -113,6 +113,10 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
       0 0.4rem 1.5rem color-mix(in srgb, var(--project-accent-glow) 48%, transparent);
   }
 
+  :global(html.dark) .project-intro__mark {
+    box-shadow: inset 0 1px 0 var(--project-panel-highlight), 0 0.4rem 1.5rem var(--project-panel-shadow);
+  }
+
   .project-intro__mark span {
     align-self: end;
     font-size: 1.45rem;
@@ -181,6 +185,15 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
   .project-stat--signal {
     border-color: var(--project-accent-line);
     box-shadow: 0 0.55rem 1.5rem color-mix(in srgb, var(--project-accent-glow) 58%, transparent);
+  }
+
+  :global(html.dark) .project-stat strong {
+    box-shadow: inset 0 1px 0 var(--project-panel-highlight);
+  }
+
+  :global(html.dark) .project-stat:hover,
+  :global(html.dark) .project-stat--signal {
+    box-shadow: inset 0 1px 0 var(--project-panel-highlight), 0 0.55rem 1.5rem var(--project-panel-shadow);
   }
 
   .project-stat--signal {
