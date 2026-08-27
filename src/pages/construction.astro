@@ -1,0 +1,330 @@
+---
+import { Icon } from "astro-icon/components";
+import { readFile } from "node:fs/promises";
+import { siteConfig } from "../config";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+type ConstructionStage = "seed" | "trunk" | "branch" | "leaf";
+
+interface ConstructionEntry {
+	id: string;
+	date: string;
+	title: string;
+	description: string;
+	stage: ConstructionStage;
+	tags: string[];
+}
+
+const constructionData: ConstructionEntry[] = JSON.parse(
+	await readFile(
+		new URL("../../public/data/construction.json", import.meta.url),
+		"utf-8",
+	),
+);
+
+if (!siteConfig.featurePages.construction) {
+	return Astro.redirect("/404/");
+}
+
+const title = "建设树";
+const latest = constructionData[0];
+const yearCount = new Set(constructionData.map((item) => item.date.slice(0, 4)))
+	.size;
+const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
+	seed: { label: "SEED", icon: "material-symbols:spa" },
+	trunk: { label: "TRUNK", icon: "material-symbols:forest" },
+	branch: { label: "BRANCH", icon: "material-symbols:account-tree" },
+	leaf: { label: "LEAF", icon: "material-symbols:eco" },
+};
+---
+
+<MainGridLayout title={title} description="记录这个网站从一粒种子到枝叶展开的过程。">
+	<section class="construction-tree card-base" aria-labelledby="construction-title">
+		<header class="construction-hero">
+			<div class="construction-hero__copy">
+				<span class="signal-kicker">SITE GROWTH / BUILD LOG</span>
+				<h1 id="construction-title" class="font-hanalei">建设树</h1>
+				<p>把每次重构、修补和新想法，记录成这棵树的一圈年轮。</p>
+			</div>
+			<div class="construction-rings" aria-hidden="true">
+				<span></span><span></span><span></span>
+				<strong>{constructionData.length}</strong>
+			</div>
+		</header>
+
+		<div class="construction-stats" aria-label="建设树统计">
+			<div><span>01 / NODES</span><strong>{String(constructionData.length).padStart(2, "0")}</strong><small>建设节点</small></div>
+			<div><span>02 / RINGS</span><strong>{String(yearCount).padStart(2, "0")}</strong><small>生长年轮</small></div>
+			<div><span>03 / LATEST</span><strong>{latest.date.slice(5).replace("-", ".")}</strong><small>最近更新</small></div>
+		</div>
+
+		<div class="tree-crown" aria-hidden="true">
+			<span>GROWING</span>
+			<i></i><i></i><i></i><i></i><i></i>
+		</div>
+
+		<ol class="tree-sequence">
+			{constructionData.map((item, index) => {
+				const meta = stageMeta[item.stage] ?? stageMeta.branch;
+				return (
+					<li class:list={["tree-node", { "tree-node--right": index % 2 === 1 }]}>
+						<div class="tree-node__branch" aria-hidden="true"></div>
+						<div class="tree-node__bud" aria-hidden="true"><Icon name={meta.icon} /></div>
+						<article class="tree-card">
+							<div class="tree-card__meta"><span>{meta.label}</span><time datetime={item.date}>{item.date.replaceAll("-", ".")}</time></div>
+							<h2>{item.title}</h2>
+							<p>{item.description}</p>
+							<div class="tree-card__tags">{item.tags.map((tag) => <span>{tag}</span>)}</div>
+						</article>
+					</li>
+				);
+			})}
+		</ol>
+
+		<footer class="tree-root">
+			<span>ROOT / 仍在继续生长</span>
+			<p>下一次更新，会从这里再长出一根新枝。</p>
+		</footer>
+	</section>
+</MainGridLayout>
+
+<style>
+	.construction-tree {
+		position: relative;
+		width: 100%;
+		padding: clamp(1.25rem, 3vw, 2.35rem);
+		overflow: hidden;
+		color: rgba(0, 0, 0, 0.9);
+		background: radial-gradient(circle at 86% 7%, var(--signal-soft), transparent 24%), linear-gradient(115deg, transparent 0 47%, color-mix(in srgb, var(--signal-line) 7%, transparent) 47% 53%, transparent 53%), var(--card-bg);
+	}
+
+	:global(html.dark) .construction-tree { color: rgba(255, 255, 255, 0.9); }
+
+	.construction-hero {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
+		padding-bottom: 1.6rem;
+		border-bottom: 1px solid var(--signal-line);
+	}
+
+	.construction-hero h1 {
+		margin: 0.65rem 0 0.5rem;
+		font-size: clamp(3rem, 8vw, 6rem);
+		line-height: 0.95;
+	}
+
+	.construction-hero p {
+		max-width: 38rem;
+		margin: 0;
+		color: color-mix(in srgb, currentColor 58%, transparent);
+	}
+
+	.construction-rings {
+		position: relative;
+		display: grid;
+		width: 7.2rem;
+		height: 7.2rem;
+		flex: 0 0 auto;
+		place-items: center;
+		border: 1px solid var(--signal-line);
+		border-radius: 50%;
+		background: var(--industrial-surface);
+		box-shadow: 0 0 2.2rem var(--signal-soft);
+	}
+
+	.construction-rings span {
+		position: absolute;
+		border: 1px solid color-mix(in srgb, var(--signal-line) 52%, transparent);
+		border-radius: 50%;
+	}
+
+	.construction-rings span:nth-child(1) { inset: 1rem; }
+	.construction-rings span:nth-child(2) { inset: 1.8rem; }
+	.construction-rings span:nth-child(3) { inset: 2.6rem; }
+	.construction-rings strong { z-index: 1; color: var(--primary); font: 900 1.45rem/1 "JetBrains Mono Variable", monospace; }
+
+	.construction-stats {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.75rem;
+		margin: 1rem 0 2rem;
+	}
+
+	.construction-stats > div {
+		display: grid;
+		min-height: 5.8rem;
+		align-content: space-between;
+		padding: 0.75rem;
+		border: 1px solid color-mix(in srgb, var(--signal-line) 55%, transparent);
+		border-radius: 0.8rem;
+		background: var(--industrial-surface);
+		font-family: "JetBrains Mono Variable", monospace;
+	}
+
+	.construction-stats span,
+	.construction-stats small { color: color-mix(in srgb, currentColor 48%, transparent); font-size: 0.58rem; font-weight: 800; letter-spacing: 0.08em; }
+	.construction-stats strong { color: var(--primary); font-size: 1.55rem; line-height: 1; }
+
+	.tree-crown {
+		position: relative;
+		display: grid;
+		width: min(16rem, 72vw);
+		height: 7rem;
+		margin: 1rem auto -0.25rem;
+		place-items: center;
+	}
+
+	.tree-crown span {
+		z-index: 2;
+		padding: 0.45rem 0.8rem;
+		color: var(--signal-ink);
+		border: 1px solid var(--signal-line);
+		border-radius: 999px;
+		background: var(--signal);
+		font: 900 0.62rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.12em;
+	}
+
+	.tree-crown i {
+		position: absolute;
+		width: 4.5rem;
+		height: 4.5rem;
+		border: 1px solid var(--signal-line);
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--industrial-surface) 74%, var(--signal-soft));
+		box-shadow: 0 0.8rem 1.8rem var(--signal-soft);
+	}
+
+	.tree-crown i:nth-of-type(1) { left: 0.4rem; bottom: 0.2rem; }
+	.tree-crown i:nth-of-type(2) { left: 3.5rem; top: 0; }
+	.tree-crown i:nth-of-type(3) { right: 3.5rem; top: 0.15rem; }
+	.tree-crown i:nth-of-type(4) { right: 0.4rem; bottom: 0.25rem; }
+	.tree-crown i:nth-of-type(5) { width: 5.2rem; height: 5.2rem; bottom: 0; }
+
+	.tree-sequence {
+		position: relative;
+		display: grid;
+		gap: 1.2rem;
+		margin: 0;
+		padding: 1.8rem 0 1.2rem;
+		list-style: none;
+	}
+
+	.tree-sequence::before {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 50%;
+		width: 0.65rem;
+		border: 1px solid var(--signal-line);
+		border-radius: 999px;
+		background: repeating-linear-gradient(0deg, transparent 0 0.8rem, color-mix(in srgb, var(--signal-line) 42%, transparent) 0.8rem 0.95rem), var(--industrial-surface);
+		box-shadow: inset 0 0 0 2px var(--signal-soft), 0 0 1.2rem var(--signal-soft);
+		content: "";
+		transform: translateX(-50%);
+	}
+
+	.tree-node {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 2.25rem minmax(0, 1fr);
+		align-items: center;
+		min-height: 10.5rem;
+	}
+
+	.tree-card {
+		grid-column: 1;
+		position: relative;
+		z-index: 1;
+		padding: 1.1rem 1.15rem;
+		border: 1px solid color-mix(in srgb, var(--signal-line) 62%, transparent);
+		border-radius: 0.9rem;
+		background: radial-gradient(circle at 92% 12%, var(--signal-soft), transparent 36%), var(--industrial-surface);
+		box-shadow: 0 0.75rem 1.7rem color-mix(in srgb, var(--signal-soft) 48%, transparent);
+		transition: border-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease;
+	}
+
+	.tree-node--right .tree-card { grid-column: 3; }
+	.tree-node__branch { position: absolute; z-index: 0; left: calc(50% - 1.125rem); width: calc(50% - 1.4rem); border-top: 1px dashed var(--signal-line); }
+	.tree-node:not(.tree-node--right) .tree-node__branch { transform: translateX(calc(-100% + 2.25rem)); }
+
+	.tree-node__bud {
+		z-index: 2;
+		display: grid;
+		grid-column: 2;
+		width: 2.25rem;
+		height: 2.25rem;
+		place-items: center;
+		color: var(--signal-ink);
+		border: 1px solid var(--signal-line);
+		border-radius: 48% 52% 48% 52%;
+		background: var(--signal);
+		box-shadow: 0 0 0 0.35rem var(--card-bg), 0 0 1.2rem var(--signal-soft);
+		transform: rotate(45deg);
+	}
+
+	.tree-node__bud :global(svg) { width: 1.15rem; transform: rotate(-45deg); }
+
+	.tree-card__meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		color: var(--signal-line);
+		font: 800 0.6rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.08em;
+	}
+
+	.tree-card h2 { margin: 0.7rem 0 0.4rem; font-size: 1.15rem; line-height: 1.35; }
+	.tree-card p { margin: 0; color: color-mix(in srgb, currentColor 64%, transparent); font-size: 0.86rem; line-height: 1.65; }
+	.tree-card__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+
+	.tree-card__tags span {
+		padding: 0.25rem 0.45rem;
+		color: var(--primary);
+		border: 1px solid color-mix(in srgb, var(--signal-line) 55%, transparent);
+		border-radius: 999px;
+		background: var(--signal-soft);
+		font: 700 0.58rem/1 "JetBrains Mono Variable", monospace;
+	}
+
+	.tree-card:hover { border-color: var(--signal-line); box-shadow: 0 0.9rem 2rem var(--signal-soft); }
+
+	.tree-root {
+		position: relative;
+		width: min(22rem, 86%);
+		margin: 0 auto;
+		padding: 1.2rem;
+		text-align: center;
+		border: 1px solid var(--signal-line);
+		border-radius: 50% 50% 1rem 1rem;
+		background: var(--industrial-surface);
+	}
+
+	.tree-root span { color: var(--primary); font: 900 0.62rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; }
+	.tree-root p { margin: 0.45rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.82rem; }
+
+	@media (max-width: 720px) {
+		.construction-hero { align-items: flex-start; }
+		.construction-rings { width: 5.2rem; height: 5.2rem; }
+		.construction-rings span:nth-child(1) { inset: 0.7rem; }
+		.construction-rings span:nth-child(2) { inset: 1.3rem; }
+		.construction-rings span:nth-child(3) { inset: 1.9rem; }
+		.construction-stats { grid-template-columns: 1fr; }
+		.construction-stats > div { min-height: 4.4rem; }
+		.tree-sequence::before { left: 1.1rem; }
+		.tree-node, .tree-node--right { grid-template-columns: 2.2rem minmax(0, 1fr); min-height: 0; }
+		.tree-node__bud, .tree-node--right .tree-node__bud { grid-column: 1; width: 2.2rem; height: 2.2rem; }
+		.tree-card, .tree-node--right .tree-card { grid-column: 2; margin: 0.55rem 0 0.55rem 0.8rem; }
+		.tree-node__branch, .tree-node:not(.tree-node--right) .tree-node__branch { left: 1.1rem; width: 1.8rem; transform: none; }
+	}
+
+	@media (max-width: 480px) {
+		.construction-rings { display: none; }
+		.tree-card__meta { align-items: flex-start; flex-direction: column; gap: 0.35rem; }
+	}
+
+	@media (prefers-reduced-motion: reduce) { .tree-card { transition: none; } }
+</style>

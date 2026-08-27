@@ -1,0 +1,74 @@
+[
+	{
+		"name": "Fuwari",
+		"description": "基于 Astro 开发的静态博客模板。",
+		"avatar": "https://fuwari.vercel.app/_astro/demo-avatar.CxcI0ivM_1nbuVe.webp",
+		"url": "https://fuwari.vercel.app/",
+		"category": "Blog",
+		"fastener": "pin"
+	},
+	{
+		"name": "Tonks Home",
+		"description": "记录我的近况，分享我的喜悦",
+		"avatar": "https://tonks.top/assets/avatar.jpg",
+		"url": "https://tonks.top/",
+		"category": "Friend",
+		"fastener": "tape"
+	},
+	{
+		"name": "伏枥之间",
+		"description": "何妨吟啸且徐行",
+		"avatar": "https://leehenry.top/friends/my-avatar-portrait.jpg",
+		"url": "https://www.leehenry.top",
+		"category": "Blog",
+		"fastener": "tape"
+	},
+	{
+		"name": "D-blog",
+		"description": "跑路的duck的技术分享和生活随笔",
+		"avatar": "https://blog.pldduck.com/logo-96.png",
+		"url": "https://blog.pldduck.com/",
+		"category": "Blog",
+		"fastener": "pin"
+	},
+	{
+		"name": "Detached",
+		"description": "A developer exploring the world online, seeking the same freedom offline.",
+		"avatar": "https://detached.online/favicon.svg",
+		"url": "https://detached.online/",
+		"category": "Blog",
+		"fastener": "pin"
+	},
+	{
+		"name": "Moyuin",
+		"avatar": "https://moyuin.top/avatar.webp",
+		"url": "https://moyuin.top",
+		"description": "缥缈，游荡，没有来路与归处。",
+		"category": "Blog",
+		"fastener": "tape"
+	},
+	{
+		"name": "LQQ",
+		"description": "记录所见，思考未完",
+		"avatar": "https://lqq.ai/assets/avatar-128.webp",
+		"url": "https://lqq.ai/",
+		"category": "Star",
+		"fastener": "pin"
+	},
+	{
+		"name": "时歌的博客",
+		"description": "理解以真实为本，但真实本身并不会自动呈现",
+		"avatar": "https://www.lapis.cafe/avatar.webp",
+		"url": "https: //www.lapis.cafe",
+		"category": "Star",
+		"fastener": "pin"
+	},
+	{
+		"name": "莫比乌斯",
+		"description": "写作，一场自我悖驳的旅程。",
+		"avatar": "https://i0.wp.com/mobius.blog/wp-content/uploads/2022/12/MobiusBlogLogo.png?resize=150%2C150&ssl=1",
+		"url": "https://mobius.blog/",
+		"category": "Star",
+		"fastener": "tape"
+	}
+]

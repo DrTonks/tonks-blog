@@ -136,6 +136,16 @@ html {
     .card-base-transparent {
         @apply rounded-[var(--radius-large)] overflow-hidden bg-[var(--card-bg-transparent)] backdrop-blur-sm transition-colors duration-150;
     }
+
+    /* Dark gold uses a restrained metal-panel depth treatment: the first
+       layer is a cool-white top-edge reflection, the second is a nearly black
+       purple-gray shadow. Neither layer is an accent glow. */
+    :root.dark[data-accent-dark='gold'] .card-base,
+    :root.dark[data-accent-dark='gold'] .card-base-transparent {
+        box-shadow:
+            inset 0 1px 0 var(--card-edge-highlight),
+            0 0.7rem 1.8rem var(--card-depth-shadow);
+    }
     
     /* 全屏壁纸模式下的半透明效果 */
     .wallpaper-transparent .card-base {

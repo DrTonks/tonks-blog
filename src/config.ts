@@ -35,7 +35,8 @@ export const siteConfig: SiteConfig = {
 	featurePages: {
 		anime: false, // 番剧页面开关（维护中，暂时关闭）
 		diary: false, // 日记页面开关
-		friends: false, // 友链页面开关
+		friends: true, // 友链页面开关
+		construction: false, // 建设树页面开关（暂不挂载，保留实现供后续重做）
 		projects: true, // 项目页面开关
 		skills: false, // 技能页面开关
 		timeline: true, // 时间线页面开关
@@ -219,7 +220,12 @@ export const navBarConfig: NavBarConfig = {
 				},
 			],
 		},
-		LinkPreset.About,
+		{
+			name: "关于",
+			url: "/about/",
+			icon: "material-symbols:person",
+			children: [LinkPreset.About, LinkPreset.Friends],
+		},
 		{
 			name: "项目",
 			url: "/projects/",

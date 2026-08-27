@@ -1,12 +1,29 @@
 ---
-import { siteConfig } from "../config";
+import { Icon } from "astro-icon/components";
 import { getEntry, render } from "astro:content";
+import { readFile } from "node:fs/promises";
 import Markdown from "@components/misc/Markdown.astro";
+import { siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-// 检查友链页面是否启用
+interface FriendLink {
+	name: string;
+	description: string;
+	avatar: string;
+	url: string;
+	category: string;
+	fastener?: "pin" | "tape";
+}
+
+const friendsData: FriendLink[] = JSON.parse(
+	await readFile(
+		new URL("../../public/data/friends.json", import.meta.url),
+		"utf-8",
+	),
+);
+
 if (!siteConfig.featurePages.friends) {
 	return Astro.redirect("/404/");
 }
@@ -18,71 +35,401 @@ if (!friendsPost) {
 }
 
 const { Content } = await render(friendsPost);
-const items = [
-	{
-		title: "Astro",
-		imgurl: "https://avatars.githubusercontent.com/u/44914786?v=4&s=640",
-		desc: "The web framework for content-driven websites. ⭐️ Star to support our work!",
-		siteurl: "https://github.com/withastro/astro",
-		tags: ["Framework"],
-	},
-	{
-		title: "Mizuki Docs",
-		imgurl:
-			"http://q.qlogo.cn/headimg_dl?dst_uin=3231515355&spec=640&img_type=jpg",
-		desc: "Mizuki User Manual",
-		siteurl: "https://docs.mizuki.mysqil.com",
-		tags: ["Docs"],
-	},
+const title = i18n(I18nKey.friends);
+const cardAngles = [
+	"-1.15deg",
+	"0.8deg",
+	"-0.45deg",
+	"1.1deg",
+	"-0.75deg",
+	"0.55deg",
 ];
-
-function shuffleArray(array) {
-	const newArray = [...array];
-	for (let i = newArray.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-	}
-	return newArray;
-}
-
-const shuffledItems = shuffleArray(items);
 ---
-<MainGridLayout title={i18n(I18nKey.friends)} description={i18n(I18nKey.friends)}>
-    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-        <div class="card-base z-10 px-9 py-6 relative w-full ">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 my-4">
-                {shuffledItems.map((item) => (
-                    <div class="flex flex-nowrap items-stretch h-28 gap-4 rounded-[var(--radius-large)]">
-                        <div class="w-28 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-900">
-                            <img src={item.imgurl} alt="站点头像" class="w-full h-full object-cover">
-                        </div>
-                        <div class="grow w-full">
-                            <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 mb-1">{item.title}</div>
-                            <div class="text-50 text-sm font-medium">{item.desc}</div>
-                            <div class:list={["items-center", {"flex": true, "hidden md:flex" : false}]}>
-                                <div class="flex flex-row flex-nowrap items-center">
-                                    {(item.tags && item.tags.length > 0) && item.tags.map((tag,i) => (
-                                    <div class:list={[{"hidden": i==0}, "mx-1.5 text-[var(--meta-divider)] text-sm" ]}>
-                                        /
-                                    </div>
-                                    <span class="transition text-50 text-sm font-medium">
-                                        {tag}
-                                    </span>))}
-                                    {!(item.tags && item.tags.length > 0) && <div class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags)}</div>}
-                                </div>
-                            </div>
-                        </div>
-                        <a href={item.siteurl} target="_blank" rel="noopener noreferrer"class="flex btn-regular w-[3.25rem] rounded-lg bg-[var(--enter-btn-bg)] hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="transition text-[var(--primary)] text-4xl mx-auto iconify iconify--material-symbols" width="1em" height="1em" viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M12.6 12L8.7 8.1q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l4.6 4.6q.15.15.213.325t.062.375t-.062.375t-.213.325l-4.6 4.6q-.275.275-.7.275t-.7-.275t-.275-.7t.275-.7z"></path>
-                            </svg>
-                        </a>
-                    </div>
-                ))}
-            </div>
-            <Markdown class="mt-2">
-                <Content />
-            </Markdown>
-        </div>
-    </div>
+
+<MainGridLayout title={title} description="把互联网中遇见的有趣灵魂，认真贴在这里。">
+	<section class="friend-wall card-base" aria-labelledby="friend-wall-title">
+		<header class="friend-wall__header">
+			<div class="friend-wall__copy">
+				<span class="signal-kicker">COMMUNITY / FRIEND WALL</span>
+				<div class="friend-wall__title-wrap">
+					<span class="friend-wall__tape" aria-hidden="true"></span>
+					<h1 id="friend-wall-title" class="font-hanalei">友链墙</h1>
+				</div>
+				<p>遇见有趣的灵魂</p>
+			</div>
+			<div class="friend-wall__counter" aria-label={`共 ${friendsData.length} 个友链`}>
+				<span>LINKS</span>
+				<strong>{String(friendsData.length).padStart(2, "0")}</strong>
+				<small>持续收集中</small>
+			</div>
+		</header>
+
+		<div class="friend-wall__rule" aria-hidden="true">
+			<span>PINNED CONNECTIONS</span>
+		</div>
+
+		<div class="friend-board">
+			{friendsData.map((friend, index) => (
+				<a
+					href={friend.url}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="friend-sticker signal-marker"
+					style={`--sticker-angle: ${cardAngles[index % cardAngles.length]};`}
+					aria-label={`访问 ${friend.name}`}
+				>
+					<div class="friend-sticker__paper">
+						<span class="friend-sticker__index" aria-hidden="true">LINK / {String(index + 1).padStart(2, "0")}</span>
+						<span class:list={["friend-sticker__fastener", `friend-sticker__fastener--${friend.fastener ?? "pin"}`]} aria-hidden="true"></span>
+						<div class="friend-sticker__avatar">
+							<img src={friend.avatar} alt="" loading="lazy" decoding="async" />
+							<span aria-hidden="true"></span>
+						</div>
+						<div class="friend-sticker__body">
+							<div class="friend-sticker__meta">
+								<strong>{friend.name}</strong>
+								<span>{friend.category}</span>
+							</div>
+							<p>{friend.description}</p>
+						</div>
+						<Icon name="fa6-solid:arrow-up-right-from-square" class="friend-sticker__arrow" />
+					</div>
+				</a>
+			))}
+		</div>
+
+		<Markdown class="friend-wall__notes">
+			<Content />
+		</Markdown>
+	</section>
 </MainGridLayout>
+
+<style>
+	.friend-wall {
+		position: relative;
+		width: 100%;
+		padding: clamp(1.25rem, 3vw, 2.25rem);
+		overflow: hidden;
+		color: rgba(0, 0, 0, 0.9);
+		background:
+			linear-gradient(90deg, color-mix(in srgb, currentColor 3.5%, transparent) 1px, transparent 1px),
+			linear-gradient(color-mix(in srgb, currentColor 3.5%, transparent) 1px, transparent 1px),
+			var(--card-bg);
+		background-size: 2rem 2rem, 2rem 2rem, auto;
+	}
+
+	:global(html.dark) .friend-wall { color: rgba(255, 255, 255, 0.9); }
+
+	.friend-wall::before,
+	.friend-wall::after {
+		position: absolute;
+		width: 2.4rem;
+		height: 2.4rem;
+		pointer-events: none;
+		content: "";
+		opacity: 0.55;
+	}
+
+	.friend-wall::before {
+		top: 0.85rem;
+		right: 0.85rem;
+		border-top: 1px solid var(--signal-line);
+		border-right: 1px solid var(--signal-line);
+	}
+
+	.friend-wall::after {
+		bottom: 0.85rem;
+		left: 0.85rem;
+		border-bottom: 1px solid var(--signal-line);
+		border-left: 1px solid var(--signal-line);
+	}
+
+	.friend-wall__header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1.5rem;
+	}
+
+	.friend-wall__copy p {
+		max-width: 35rem;
+		margin: 0.9rem 0 0;
+		color: color-mix(in srgb, currentColor 62%, transparent);
+	}
+
+	.friend-wall__title-wrap {
+		position: relative;
+		display: inline-grid;
+		margin-top: 1.4rem;
+		padding: 1rem 1.6rem 0.85rem;
+		place-items: center;
+		border: 1px solid var(--signal-line);
+		border-radius: 0.35rem 0.75rem 0.45rem 0.6rem;
+		background: var(--industrial-surface);
+		box-shadow: 0.35rem 0.4rem 0 rgba(0, 0, 0, 0.14);
+		transform: rotate(-1.2deg);
+	}
+
+	.friend-wall__title-wrap h1 {
+		margin: 0;
+		font-size: clamp(2.4rem, 6vw, 4.5rem);
+		line-height: 1;
+	}
+
+	.friend-wall__tape {
+		position: absolute;
+		top: -0.7rem;
+		left: 50%;
+		width: 6.8rem;
+		height: 1.5rem;
+		border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+		background: repeating-linear-gradient(135deg, color-mix(in srgb, currentColor 10%, var(--card-bg)) 0 0.45rem, color-mix(in srgb, currentColor 4%, var(--card-bg)) 0.45rem 0.9rem);
+		transform: translateX(-50%) rotate(1.5deg);
+	}
+
+	.friend-wall__counter {
+		display: grid;
+		min-width: 8.5rem;
+		padding: 0.8rem 1rem;
+		border-left: 2px solid var(--signal-line);
+		font-family: "JetBrains Mono Variable", monospace;
+		text-align: right;
+	}
+
+	.friend-wall__counter span,
+	.friend-wall__counter small {
+		color: color-mix(in srgb, currentColor 48%, transparent);
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+	}
+
+	.friend-wall__counter strong {
+		color: var(--primary);
+		font-size: 2.4rem;
+		line-height: 1.1;
+	}
+
+	.friend-wall__rule {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		margin: 2rem 0 1.5rem;
+		color: var(--signal-line);
+		font: 800 0.62rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.12em;
+	}
+
+	.friend-wall__rule::after {
+		width: 100%;
+		border-top: 1px dashed var(--signal-line);
+		content: "";
+		opacity: 0.65;
+	}
+
+	.friend-board {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.65rem 0.8rem;
+		padding: 0.8rem 0.1rem 1.2rem;
+	}
+
+	.friend-sticker {
+		position: relative;
+		display: block;
+		padding: 0.65rem 0.55rem 0.75rem;
+		color: inherit;
+		border-radius: 0.8rem;
+	}
+
+	.friend-sticker__paper {
+		position: relative;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		min-height: 8.4rem;
+		align-items: center;
+		gap: 1rem;
+		padding: 1.75rem 1.15rem 1.15rem;
+		border: 1px solid color-mix(in srgb, var(--signal-line) 78%, currentColor 14%);
+		border-radius: 0.5rem 0.8rem 0.45rem 0.7rem;
+		background: linear-gradient(180deg, color-mix(in srgb, white 4%, transparent), transparent 42%), var(--industrial-surface);
+		box-shadow: inset 0 1px color-mix(in srgb, white 12%, transparent), 0.38rem 0.42rem 0 rgba(0, 0, 0, 0.14);
+		transform: rotate(var(--sticker-angle));
+		transition: border-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal);
+	}
+
+	.friend-sticker:nth-child(3n + 2) .friend-sticker__paper { border-radius: 0.75rem 0.45rem 0.75rem 0.4rem; }
+
+	.friend-sticker__paper::before {
+		position: absolute;
+		top: 0.78rem;
+		left: 4.8rem;
+		right: 1rem;
+		border-top: 1px solid color-mix(in srgb, currentColor 11%, transparent);
+		content: "";
+	}
+
+	.friend-sticker__paper::after {
+		position: absolute;
+		right: -1px;
+		bottom: -1px;
+		width: 1.1rem;
+		height: 1.1rem;
+		border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+		border-left: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+		background: var(--card-bg);
+		clip-path: polygon(100% 0, 0 100%, 100% 100%);
+		content: "";
+	}
+
+	.friend-sticker__index {
+		position: absolute;
+		top: 0.48rem;
+		left: 0.8rem;
+		color: color-mix(in srgb, currentColor 42%, transparent);
+		font: 700 0.52rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.12em;
+	}
+
+	.friend-sticker__fastener {
+		position: absolute;
+		top: -0.55rem;
+		left: 50%;
+		z-index: 2;
+		width: 1.05rem;
+		height: 1.05rem;
+		border: 2px solid color-mix(in srgb, var(--signal) 72%, white);
+		border-radius: 999px;
+		background: var(--primary);
+		box-shadow: 0 0.22rem 0.45rem rgba(0, 0, 0, 0.24);
+		transform: translateX(-50%);
+	}
+
+	.friend-sticker__fastener--tape {
+		top: -0.55rem;
+		width: 4.8rem;
+		height: 1.05rem;
+		border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+		border-radius: 0.1rem;
+		background: repeating-linear-gradient(135deg, color-mix(in srgb, currentColor 9%, var(--card-bg)) 0 0.35rem, color-mix(in srgb, currentColor 3%, var(--card-bg)) 0.35rem 0.7rem);
+		box-shadow: none;
+		transform: translateX(-50%) rotate(-1deg);
+	}
+
+	.friend-sticker__avatar {
+		position: relative;
+		width: 4.5rem;
+		height: 4.5rem;
+		padding: 0.2rem;
+		border: 1px dashed var(--signal-line);
+		border-radius: 999px;
+		background: var(--card-bg);
+	}
+
+	.friend-sticker__avatar img {
+		width: 100%;
+		height: 100%;
+		border-radius: inherit;
+		object-fit: cover;
+	}
+
+	.friend-sticker__avatar span {
+		position: absolute;
+		right: 0.05rem;
+		bottom: 0.25rem;
+		width: 0.78rem;
+		height: 0.78rem;
+		border: 2px solid var(--industrial-surface);
+		border-radius: 999px;
+		background: #22c55e;
+	}
+
+	.friend-sticker__body { min-width: 0; }
+
+	.friend-sticker__meta {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.friend-sticker__meta strong {
+		overflow: hidden;
+		font-size: 1.05rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.friend-sticker__meta span {
+		flex: 0 0 auto;
+		color: var(--signal-line);
+		font: 800 0.55rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.friend-sticker__body p {
+		display: -webkit-box;
+		margin: 0.35rem 0 0;
+		overflow: hidden;
+		color: color-mix(in srgb, currentColor 68%, transparent);
+		font-size: 0.88rem;
+		line-height: 1.55;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+
+	.friend-sticker__arrow {
+		width: 0.95rem;
+		color: var(--signal-line);
+		transition: color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal);
+	}
+
+	.friend-sticker:hover .friend-sticker__paper,
+	.friend-sticker:focus-visible .friend-sticker__paper {
+		border-color: var(--signal-line);
+		box-shadow: inset 0 1px color-mix(in srgb, white 14%, transparent), 0.28rem 0.34rem 0 rgba(0, 0, 0, 0.19);
+		transform: rotate(0deg);
+	}
+
+	.friend-sticker:hover .friend-sticker__arrow,
+	.friend-sticker:focus-visible .friend-sticker__arrow {
+		color: var(--primary);
+		transform: translate(0.12rem, -0.12rem);
+	}
+
+	.friend-sticker:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 0;
+	}
+
+	.friend-wall__notes:empty { display: none; }
+
+	@media (max-width: 720px) {
+		.friend-wall__header { align-items: flex-start; flex-direction: column; }
+
+		.friend-wall__counter {
+			min-width: 0;
+			grid-template-columns: auto auto auto;
+			align-items: baseline;
+			gap: 0.6rem;
+			text-align: left;
+		}
+
+		.friend-wall__counter strong { font-size: 1.6rem; }
+		.friend-board { grid-template-columns: 1fr; padding-inline: 0; }
+
+		.friend-sticker__paper {
+			min-height: 7.6rem;
+			padding: 1.65rem 0.9rem 1rem;
+			transform: rotate(var(--sticker-angle));
+		}
+
+		.friend-sticker__avatar { width: 3.7rem; height: 3.7rem; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.friend-sticker__paper,
+		.friend-sticker__arrow { transition: none; }
+	}
+</style>

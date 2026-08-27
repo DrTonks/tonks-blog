@@ -1,0 +1,50 @@
+[
+	{
+		"id": "2026-theme-presets",
+		"date": "2026-08-27",
+		"title": "四套主题预设成形",
+		"description": "将亮色与暗色的蓝色、金色方案拆成独立语义预设，统一归档、项目、时间线与通用交互的主题信号。",
+		"stage": "leaf",
+		"tags": ["Theme", "Design System"]
+	},
+	{
+		"id": "2026-industrial-language",
+		"date": "2026-08-26",
+		"title": "引入克制的工业交互语言",
+		"description": "为文章卡片、导航、归档与项目页建立一致的信号色、边线、标记和动效，并保留 ACCESS 作为独立高注意提示。",
+		"stage": "branch",
+		"tags": ["Interaction", "UI"]
+	},
+	{
+		"id": "2026-content-expansion",
+		"date": "2026-08-23",
+		"title": "内容页面持续生长",
+		"description": "补充旅行相册、项目资料与个人历程，让博客从文章列表逐渐长成能够承载不同记忆的内容空间。",
+		"stage": "branch",
+		"tags": ["Albums", "Projects"]
+	},
+	{
+		"id": "2026-reading-experience",
+		"date": "2026-08-01",
+		"title": "重做阅读与环境体验",
+		"description": "完善网格文章卡片、主题扩散、环境装饰、Banner 衔接与文章摘要侧栏，让视觉装饰真正服务内容阅读。",
+		"stage": "branch",
+		"tags": ["Reading", "Motion"]
+	},
+	{
+		"id": "2026-loading-pipeline",
+		"date": "2026-07-26",
+		"title": "重构首屏加载链路",
+		"description": "加入蜂窝加载反馈、设备级 Banner 预加载、字体子集与缓存分层，减少无效资源并稳定页面切换。",
+		"stage": "trunk",
+		"tags": ["Performance", "Astro"]
+	},
+	{
+		"id": "2025-restart-writing",
+		"date": "2025-10-12",
+		"title": "决定重新认真经营博客",
+		"description": "在反复搁置与重构之后，重新确认这个站点的意义：记录生活、学习，以及那些不想被遗忘的片段。",
+		"stage": "seed",
+		"tags": ["Origin", "Writing"]
+	}
+]

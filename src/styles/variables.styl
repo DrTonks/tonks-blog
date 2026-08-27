@@ -161,16 +161,17 @@ define({
   --signal-ink oklch(0.17 0.04 92)
   --signal-soft rgba(255, 224, 42, 0.11)
   --signal-line rgba(255, 232, 94, 0.62)
-  --industrial-surface oklch(0.205 0.016 96)
-  --industrial-surface-hover oklch(0.265 0.03 98)
+  /* Gold remains the signal color; structural surfaces use neutral graphite. */
+  --industrial-surface #202429
+  --industrial-surface-hover #292e33
   --project-accent oklch(0.84 0.16 99)
   --project-accent-strong oklch(0.90 0.15 102)
   --project-accent-soft rgba(255, 226, 44, 0.13)
   --project-accent-surface rgba(78, 72, 14, 0.60)
   --project-accent-line rgba(255, 232, 96, 0.46)
   --project-accent-glow rgba(255, 226, 58, 0.17)
-  --project-panel-shadow rgba(0, 0, 0, 0.28)
-  --project-panel-highlight rgba(255, 255, 255, 0.06)
+  --project-panel-shadow rgba(18, 12, 23, 0.34)
+  --project-panel-highlight rgba(232, 240, 248, 0.055)
   --timeline-ghost-fill rgba(255, 232, 112, 0.03)
   --timeline-ghost-line rgba(255, 232, 112, 0.19)
   --timeline-ghost-line-mobile rgba(255, 232, 112, 0.11)
@@ -178,9 +179,20 @@ define({
   --timeline-active-shadow rgba(255, 226, 74, 0.16)
   --ambient-pointer-strength 7%
   --ambient-pointer-opacity 0.82
-  --page-bg oklch(0.145 0.014 96)
-  --card-bg oklch(0.205 0.016 96)
-  --card-bg-transparent rgba(29, 30, 14, 0.82)
-  --float-panel-bg oklch(0.18 0.014 96)
-  --codeblock-bg oklch(0.15 0.014 96)
-  --codeblock-topbar-bg oklch(0.115 0.012 96)
+  --card-depth-shadow rgba(18, 12, 23, 0.34)
+  --card-edge-highlight rgba(232, 240, 248, 0.055)
+  --page-bg #111315
+  --card-bg #1b1e21
+  --card-bg-transparent rgba(27, 30, 33, 0.82)
+  --float-panel-bg #181b1e
+  --btn-regular-bg #25292e
+  --btn-regular-bg-hover #2d3238
+  --btn-regular-bg-active #353b42
+  --btn-plain-bg-hover #23272c
+  --btn-plain-bg-active #1f2327
+  --btn-card-bg-hover #25292e
+  --btn-card-bg-active #2d3238
+  --toc-btn-hover #1f2327
+  --toc-btn-active #25292e
+  --codeblock-bg #141619
+  --codeblock-topbar-bg #0f1113

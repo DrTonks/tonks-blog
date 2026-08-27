@@ -23,7 +23,6 @@
 		],
 		"award": "国家二等奖 · 赛区一等奖",
 		"links": "https://career-planner.tonks.top/",
-		"sourceCode": "https://career-planner.tonks.top/",
 		"featured": true
 	},
 	{
@@ -224,7 +223,6 @@
 			"招新",
 			"三件套项目"
 		],
-		"links": "https://glimmer.org.cn/",
-		"sourceCode": "https://glimmer.org.cn/"
+		"links": "https://glimmer.org.cn/"
 	}
 ]
