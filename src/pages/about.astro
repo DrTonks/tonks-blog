@@ -5,6 +5,8 @@ import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import BlogLike from "../components/community/BlogLike.astro";
+import CommunityComments from "../components/community/CommunityComments.astro";
 
 const aboutPost = await getEntry("spec", "about");
 
@@ -57,8 +59,11 @@ const aboutRoutes = [
 			<span class="about-dossier__register" aria-hidden="true">FILE / ABOUT / 01</span>
 			<div class="about-dossier__copy">
 				<span class="signal-kicker">PERSONAL SITE / FIELD NOTES</span>
-				<h1 id="about-title" class="font-hanalei">{title}</h1>
-				<p>一个用来记录生活、学习，以及不断重做自己的小站。</p>
+				<div class="about-dossier__title-row">
+					<h1 id="about-title" class="font-hanalei">{title}</h1>
+					<BlogLike target="page:about" variant="about" />
+				</div>
+				<p>记录我的近况，分享我的喜悦</p>
 			</div>
 
 			<dl class="about-dossier__record" aria-label="站点档案">
@@ -90,6 +95,7 @@ const aboutRoutes = [
 			</Markdown>
 		</div>
 	</article>
+	<CommunityComments page="about" />
 </MainGridLayout>
 
 <style>
@@ -151,6 +157,12 @@ const aboutRoutes = [
 
 	.about-dossier__copy {
 		align-self: center;
+	}
+
+	.about-dossier__title-row {
+		display: flex;
+		align-items: flex-end;
+		gap: clamp(1rem, 3vw, 2.5rem);
 	}
 
 	.about-dossier__copy h1 {
@@ -308,7 +320,8 @@ const aboutRoutes = [
 		.about-route__index,
 		.about-route__arrow,
 		.about-route small { display: none; }
-		.about-dossier__copy h1 { font-size: clamp(2.8rem, 16vw, 4rem); }
+		.about-dossier__copy h1 { font-size: clamp(2.55rem, 13vw, 3.6rem); }
+		.about-dossier__title-row { align-items: center; justify-content: space-between; gap: 0.65rem; }
 	}
 
 	@media (prefers-reduced-motion: reduce) {

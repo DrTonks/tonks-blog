@@ -17,6 +17,7 @@ import utc from "dayjs/plugin/utc";
 import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
+import BlogLike from "../../components/community/BlogLike.astro";
 import { profileConfig, siteConfig } from "../../config";
 import manualSummaries from "../../content/ai-summaries.json";
 import {
@@ -425,4 +426,6 @@ const jsonLd = {
             }
         </a>
     </div>
+
+	<BlogLike target={`post:${entry.slug}`} variant="article" />
 </MainGridLayout>

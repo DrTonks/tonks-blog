@@ -7,6 +7,8 @@ import { siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import BlogLike from "../components/community/BlogLike.astro";
+import CommunityComments from "../components/community/CommunityComments.astro";
 
 interface FriendLink {
 	name: string;
@@ -57,6 +59,7 @@ const cardAngles = [
 				</div>
 				<p>遇见有趣的灵魂</p>
 			</div>
+			<BlogLike target="page:friends" variant="friends" class="friend-wall__like" />
 			<div class="friend-wall__counter" aria-label={`共 ${friendsData.length} 个友链`}>
 				<span>LINKS</span>
 				<strong>{String(friendsData.length).padStart(2, "0")}</strong>
@@ -102,6 +105,7 @@ const cardAngles = [
 			<Content />
 		</Markdown>
 	</section>
+	<CommunityComments page="friends" />
 </MainGridLayout>
 
 <style>
@@ -150,6 +154,9 @@ const cardAngles = [
 		justify-content: space-between;
 		gap: 1.5rem;
 	}
+
+	.friend-wall__copy { flex: 1 1 auto; min-width: 0; }
+	.friend-wall__header :global(.friend-wall__like) { flex: 0 0 auto; margin-left: auto; }
 
 	.friend-wall__copy p {
 		max-width: 35rem;
@@ -407,6 +414,7 @@ const cardAngles = [
 
 	@media (max-width: 720px) {
 		.friend-wall__header { align-items: flex-start; flex-direction: column; }
+		.friend-wall__header :global(.friend-wall__like) { margin-left: 0; }
 
 		.friend-wall__counter {
 			min-width: 0;

@@ -40,6 +40,21 @@ pnpm dev
 
 开发服务器默认运行在 `http://localhost:4321`。
 
+如需让本地开发服务器连接已部署的 sleepy 后端，复制 `.env.example` 为
+`.env.local`，并只在 `.env.local` 中填写真实地址：
+
+```dotenv
+SLEEPY_DEV_PROXY_TARGET=http://你的后端地址:端口
+```
+
+随后重新运行 `pnpm dev`。浏览器仍请求同源的 `/api`，Astro 开发服务器会把
+请求转发到该后端，因此无需为本地调试额外开放 CORS。`.env.local` 已被
+`.gitignore` 的 `.env*` 规则忽略，真实 IP 不会进入 Git；提交前仍可运行
+`git status --short --ignored` 确认它显示为 ignored。
+
+如果改用 `PUBLIC_SLEEPY_API_BASE` 让浏览器直接访问公网后端，则后端还需要在
+`SLEEPY_CORS_ORIGINS` 中允许 `http://localhost:4321` 和实际使用的本地 Origin。
+
 常用命令：
 
 | 命令 | 用途 |

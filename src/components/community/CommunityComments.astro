@@ -1,0 +1,130 @@
+---
+interface Props {
+	page: "about" | "friends";
+}
+
+const { page } = Astro.props;
+---
+
+<section class="community-comments card-base" data-community-comments={page} aria-labelledby={`comments-title-${page}`}>
+	<header class="community-comments__header">
+		<div>
+			<span class="signal-kicker">MESSAGE BOARD / 留言记录</span>
+			<h2 id={`comments-title-${page}`}>留言与回复</h2>
+			<p>邮箱不会公开，仅用于识别连续发言与后续联系。评论会经过内容审核。</p>
+		</div>
+		<strong class="community-comments__count"><span data-comment-count>—</span><small>COMMENTS</small></strong>
+	</header>
+
+	<form class="community-comment-form" data-comment-form novalidate>
+		<div class="community-comment-form__reply" data-reply-context hidden>
+			<span>正在回复 <strong data-reply-name></strong></span>
+			<button type="button" data-cancel-reply>取消回复</button>
+		</div>
+		<input type="hidden" name="parent_id" value="" />
+		<label>
+			<span>昵称 <b aria-hidden="true">*</b></span>
+			<input name="nickname" type="text" required maxlength="30" autocomplete="nickname" placeholder="怎么称呼你" />
+		</label>
+		<label>
+			<span>邮箱 <b aria-hidden="true">*</b></span>
+			<input name="email" type="email" required maxlength="254" autocomplete="email" placeholder="不会在页面公开" />
+		</label>
+		<label>
+			<span>网站</span>
+			<input name="website" type="url" maxlength="300" autocomplete="url" placeholder="https://（可选）" />
+		</label>
+		<label class="community-comment-form__content">
+			<span>想说的话 <b aria-hidden="true">*</b></span>
+			<textarea name="content" required maxlength="800" rows="5" placeholder="认真写下你的评论或回复…"></textarea>
+			<small><span data-content-count>0</span> / 800</small>
+		</label>
+		<div class="community-comment-form__footer">
+			<p data-comment-form-status aria-live="polite"></p>
+			<button type="submit" class="signal-marker">提交评论 <span aria-hidden="true">↗</span></button>
+		</div>
+	</form>
+
+	<div class="community-comments__rule"><span>PUBLIC MESSAGES</span></div>
+	<div class="community-comments__list" data-comment-list aria-live="polite">
+		<p class="community-comments__loading">正在读取留言…</p>
+	</div>
+</section>
+
+<style>
+	.community-comments {
+		position: relative;
+		width: 100%;
+		margin-top: 1rem;
+		padding: clamp(1.25rem, 3vw, 2rem);
+		overflow: hidden;
+		color: rgba(0, 0, 0, 0.9);
+		background:
+			linear-gradient(90deg, color-mix(in srgb, currentColor 3%, transparent) 1px, transparent 1px),
+			linear-gradient(color-mix(in srgb, currentColor 3%, transparent) 1px, transparent 1px),
+			var(--card-bg);
+		background-size: 2rem 2rem, 2rem 2rem, auto;
+	}
+
+	:global(html.dark) .community-comments { color: rgba(255, 255, 255, 0.9); }
+
+	.community-comments__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
+	.community-comments__header h2 { margin: 0.55rem 0 0; font-size: clamp(1.5rem, 3vw, 2rem); }
+	.community-comments__header p { max-width: 40rem; margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.78rem; line-height: 1.6; }
+	.community-comments__count { display: grid; min-width: 5rem; color: var(--primary); font: 800 2rem/1 "JetBrains Mono Variable", monospace; text-align: right; }
+	.community-comments__count small { margin-top: 0.35rem; color: color-mix(in srgb, currentColor 45%, transparent); font-size: 0.5rem; letter-spacing: 0.12em; }
+
+	.community-comment-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; margin-top: 1.4rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--signal-line) 48%, currentColor 10%); background: color-mix(in srgb, var(--industrial-surface) 88%, transparent); }
+	.community-comment-form__reply { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.55rem 0.7rem; color: var(--signal-line); border-left: 2px solid var(--signal-line); background: color-mix(in srgb, var(--signal-soft) 35%, transparent); font-size: 0.76rem; }
+	.community-comment-form__reply[hidden] { display: none; }
+	.community-comment-form__reply button { color: inherit; background: none; border: 0; cursor: pointer; text-decoration: underline; }
+	.community-comment-form label { display: grid; gap: 0.4rem; min-width: 0; color: color-mix(in srgb, currentColor 70%, transparent); font-size: 0.75rem; font-weight: 700; }
+	.community-comment-form label > span b { color: var(--signal-line); }
+	.community-comment-form input,
+	.community-comment-form textarea { width: 100%; min-width: 0; padding: 0.72rem 0.78rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: 0.25rem; outline: none; background: color-mix(in srgb, var(--card-bg) 91%, transparent); font: inherit; font-weight: 500; resize: vertical; transition: border-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease; }
+	.community-comment-form input:focus,
+	.community-comment-form textarea:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 17%, transparent); }
+	.community-comment-form__content { position: relative; grid-column: 1 / -1; }
+	.community-comment-form__content small { position: absolute; right: 0.65rem; bottom: 0.45rem; color: color-mix(in srgb, currentColor 38%, transparent); font: 600 0.55rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comment-form__footer { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 1rem; }
+	.community-comment-form__footer p { min-height: 1.2rem; margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.72rem; }
+	.community-comment-form__footer p[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
+	.community-comment-form__footer button { padding: 0.65rem 0.9rem; color: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal-line); cursor: pointer; font-size: 0.76rem; font-weight: 800; transition: transform var(--motion-signal-fast) var(--ease-signal), opacity var(--motion-signal-fast) ease; }
+	.community-comment-form__footer button:hover { transform: translateY(-0.1rem); }
+	.community-comment-form__footer button:disabled { cursor: wait; opacity: 0.58; transform: none; }
+
+	.community-comments__rule { display: flex; align-items: center; gap: 0.75rem; margin: 1.5rem 0 1rem; color: var(--signal-line); font: 800 0.55rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.12em; }
+	.community-comments__rule::after { width: 100%; border-top: 1px dashed var(--signal-line); content: ""; opacity: 0.55; }
+	.community-comments__loading { color: color-mix(in srgb, currentColor 48%, transparent); font-size: 0.78rem; }
+	.community-comments__list :global(.community-comment) { position: relative; padding: 0.9rem 0; border-bottom: 1px dashed color-mix(in srgb, currentColor 12%, transparent); }
+	.community-comments__list :global(.community-comment__main) { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem; }
+	.community-comments__list :global(.community-comment__avatar) { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; color: var(--card-bg); border: 1px solid color-mix(in srgb, var(--signal-line) 55%, currentColor); border-radius: 0.35rem 0.65rem 0.4rem 0.55rem; background: color-mix(in oklch, var(--primary) 76%, hsl(var(--avatar-hue) 42% 55%)); font: 800 0.78rem/1 "JetBrains Mono Variable", monospace; transform: rotate(var(--avatar-angle, -2deg)); }
+	.community-comments__list :global(.community-comment__meta) { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.45rem 0.7rem; }
+	.community-comments__list :global(.community-comment__name) { color: inherit; font-weight: 800; }
+	.community-comments__list :global(a.community-comment__name:hover) { color: var(--primary); }
+	.community-comments__list :global(.community-comment__reply-to),
+	.community-comments__list :global(.community-comment__time) { color: color-mix(in srgb, currentColor 43%, transparent); font-size: 0.64rem; }
+	.community-comments__list :global(.community-comment__content) { margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 76%, transparent); font-size: 0.82rem; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+	.community-comments__list :global(.community-comment__reply-button) { margin-top: 0.45rem; padding: 0; color: var(--signal-line); border: 0; background: none; cursor: pointer; font: 700 0.62rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list :global(.community-comment__replies) { margin: 0.3rem 0 0 3.25rem; padding-left: 0.85rem; border-left: 2px solid color-mix(in srgb, var(--signal-line) 38%, transparent); }
+	.community-comments__list :global(.community-comment__replies .community-comment) { padding: 0.7rem 0; }
+	.community-comments__list :global(.community-comments__empty) { padding: 1.2rem; color: color-mix(in srgb, currentColor 48%, transparent); border: 1px dashed color-mix(in srgb, currentColor 14%, transparent); text-align: center; }
+
+	@media (max-width: 720px) {
+		.community-comments__header { align-items: flex-start; }
+		.community-comments__count { min-width: 3.8rem; font-size: 1.45rem; }
+		.community-comment-form { grid-template-columns: 1fr; }
+		.community-comment-form__content,
+		.community-comment-form__footer,
+		.community-comment-form__reply { grid-column: auto; }
+		.community-comments__list :global(.community-comment__replies) { margin-left: 1rem; }
+		.community-comment-form__footer { align-items: flex-start; flex-direction: column; }
+		.community-comment-form__footer button { width: 100%; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.community-comment-form input,
+		.community-comment-form textarea,
+		.community-comment-form__footer button { transition: none; }
+	}
+</style>

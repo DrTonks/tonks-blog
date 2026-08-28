@@ -335,7 +335,7 @@ const bannerOffset =
 		<script src="/js/timeline-scroll-handler.js" defer></script>
 		<script src="/js/skills-progress-handler.js" defer></script>
 </head>
-	<body class=" min-h-screen " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner, "zen-maru-gothic-enabled": siteConfig.font.zenMaruGothic.enable}]}
+	<body class=" min-h-screen " class:list={[{"is-home": isHomePage, "lg:is-home": isHomePage, "enable-banner": enableBanner, "zen-maru-gothic-enabled": siteConfig.font.zenMaruGothic.enable}]}
 		  data-overlayscrollbars-initialize
 	>
 		<LoadingScreen />
@@ -347,6 +347,7 @@ const bannerOffset =
 		<AmbientBackground />
 		<script>
 			import "../utils/blog-views";
+			import "../utils/blog-community";
 		</script>
 		<slot />
 		
@@ -1101,14 +1102,6 @@ function initCarousel() {
 		isPaused = false;
 		startCarousel();
 	};
-	const handleMouseEnter = () => {
-		isPaused = true;
-		stopCarousel();
-	};
-	const handleMouseLeave = () => {
-		isPaused = false;
-		startCarousel();
-	};
 	const handleVisibilityChange = () => document.hidden ? stopCarousel() : startCarousel();
 	const handleMotionChange = () => motionQuery.matches ? stopCarousel() : startCarousel();
 
@@ -1124,8 +1117,6 @@ function initCarousel() {
 		carousel.addEventListener("touchmove", handleTouchMove, { passive: false });
 		carousel.addEventListener("touchend", handleTouchEnd, { passive: true });
 	}
-	carousel.addEventListener("mouseenter", handleMouseEnter);
-	carousel.addEventListener("mouseleave", handleMouseLeave);
 
 	bannerRuntime.__tonksBannerCarouselCleanup = () => {
 		disposed = true;
@@ -1138,8 +1129,6 @@ function initCarousel() {
 		carousel.removeEventListener("touchmove", handleTouchMove);
 		wrapperObserver?.disconnect();
 		carousel.removeEventListener("touchend", handleTouchEnd);
-		carousel.removeEventListener("mouseenter", handleMouseEnter);
-		carousel.removeEventListener("mouseleave", handleMouseLeave);
 	};
 
 	rebuildForDevice();
@@ -1258,25 +1247,40 @@ const setup = () => {
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')
 		const isHomePage = pathsEqual(visit.to.url, url('/'))
-		
-		if (isHomePage) {
-			bodyElement!.classList.add('lg:is-home');
-		} else {
-			bodyElement!.classList.remove('lg:is-home');
-		}
-
-		// Control banner text visibility based on page
+		const wasHomePage = bodyElement?.classList.contains('lg:is-home') ?? false
+		const isEnteringHome = isHomePage && !wasHomePage
+		const isLeavingHome = !isHomePage && wasHomePage
+		const bannerWrapper = document.getElementById('banner-wrapper')
+		const mainContentWrapper = document.querySelector('.absolute.w-full.z-30')
 		const bannerTextOverlay = document.querySelector('.banner-text-overlay')
-		if (bannerTextOverlay) {
-			if (isHomePage) {
-				bannerTextOverlay.classList.remove('hidden')
-			} else {
-				bannerTextOverlay.classList.add('hidden')
+
+		if (isEnteringHome) {
+			bodyElement?.classList.add('is-home', 'lg:is-home')
+			bannerTextOverlay?.classList.remove('hidden')
+			bannerWrapper?.classList.remove('mobile-hide-banner')
+			mainContentWrapper?.classList.remove('mobile-main-no-banner')
+			// 与 banner 展开同时开始遮罩淡入和贴纸贴入，避免等待展开完成后的滞后感。
+			window.dispatchEvent(new CustomEvent('tonks:home-stickers:state', {
+				detail: { active: true, refresh: true, revealDelay: 0 },
+			}))
+		} else if (isLeavingHome) {
+			// 遮罩、贴纸、banner 和正文从同一帧开始退场/位移。
+			window.dispatchEvent(new CustomEvent('tonks:home-stickers:state', {
+				detail: { active: false },
+			}))
+			bodyElement?.classList.remove('is-home', 'lg:is-home')
+			bannerTextOverlay?.classList.add('hidden')
+			bannerWrapper?.classList.add('mobile-hide-banner')
+			mainContentWrapper?.classList.add('mobile-main-no-banner')
+		} else {
+			bodyElement?.classList.toggle('is-home', isHomePage)
+			bodyElement?.classList.toggle('lg:is-home', isHomePage)
+			bannerTextOverlay?.classList.toggle('hidden', !isHomePage)
+			if (!isHomePage) {
+				bannerWrapper?.classList.add('mobile-hide-banner')
+				mainContentWrapper?.classList.add('mobile-main-no-banner')
 			}
 		}
-		window.dispatchEvent(new CustomEvent('tonks:home-stickers:state', {
-			detail: { active: isHomePage, refresh: isHomePage },
-		}))
 
 		// Control navbar transparency based on page
 		const navbar = document.getElementById('navbar')
@@ -1290,29 +1294,6 @@ const setup = () => {
 				if (typeof window.initSemifullScrollDetection === 'function') {
 					window.initSemifullScrollDetection()
 				}
-			}
-		}
-
-		// Control mobile banner visibility based on page with improved staging animation
-		const bannerWrapper = document.getElementById('banner-wrapper')
-		const mainContentWrapper = document.querySelector('.absolute.w-full.z-30')
-		
-		if (bannerWrapper && mainContentWrapper) {
-			if (isHomePage) {
-				// 首页：延迟移除隐藏类，让banner和内容优雅地出现
-				setTimeout(() => {
-					bannerWrapper.classList.remove('mobile-hide-banner')
-				}, 100)
-				setTimeout(() => {
-					mainContentWrapper.classList.remove('mobile-main-no-banner')
-				}, 150)
-			} else {
-				// 非首页：分阶段隐藏，先隐藏banner，再移动内容
-				bannerWrapper.classList.add('mobile-hide-banner')
-				// 延迟移动内容，让banner先完全消失
-				setTimeout(() => {
-					mainContentWrapper.classList.add('mobile-main-no-banner')
-				}, 100)
 			}
 		}
 

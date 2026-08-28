@@ -1,4 +1,5 @@
-const CLIENT_ID_KEY = "sleepy-blog-client-id";
+import { getBlogClientId } from "./visitor-id";
+
 const API_BASE = (import.meta.env.PUBLIC_SLEEPY_API_BASE || "/api").replace(/\/$/, "");
 const REQUIRED_VISIBLE_MS = 5_000;
 
@@ -21,18 +22,6 @@ type RecordViewResponse = {
 	views: number;
 	counted: boolean;
 };
-
-function getClientId(): string {
-	let clientId = localStorage.getItem(CLIENT_ID_KEY);
-	if (!clientId) {
-		clientId =
-			typeof crypto.randomUUID === "function"
-				? crypto.randomUUID()
-				: `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-		localStorage.setItem(CLIENT_ID_KEY, clientId);
-	}
-	return clientId;
-}
 
 function updateSlug(slug: string, views: number): void {
 	for (const element of document.querySelectorAll<HTMLElement>("[data-blog-views]")) {
@@ -65,7 +54,7 @@ async function recordDetailView(element: HTMLElement, slug: string): Promise<voi
 		method: "POST",
 		headers: {
 			Accept: "application/json",
-			"X-Client-ID": getClientId(),
+			"X-Client-ID": getBlogClientId(),
 		},
 	});
 	if (!response.ok) throw new Error(`view counter returned HTTP ${response.status}`);

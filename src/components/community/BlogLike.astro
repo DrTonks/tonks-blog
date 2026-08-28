@@ -1,0 +1,136 @@
+---
+interface Props {
+	target: string;
+	variant?: "article" | "about" | "friends" | "meta";
+	class?: string;
+}
+
+const { target, variant = "article", class: className = "" } = Astro.props;
+---
+
+<div
+	class:list={["community-like", `community-like--${variant}`, className]}
+	data-community-like={target}
+	data-like-variant={variant}
+>
+	<button type="button" class="community-like__button" aria-pressed="false" aria-label="为这里点个赞">
+		{variant === "meta" && (
+			<>
+				<span class="community-like__meta-heart" aria-hidden="true">♥</span>
+				<strong class="community-like__meta-count" data-like-count>—</strong>
+			</>
+		)}
+		{variant !== "meta" && <span class="community-like__heart" aria-hidden="true">♥</span>}
+		{variant === "article" && (
+			<span class="community-like__sentence">已有 <strong data-like-count>—</strong> 人喜欢~</span>
+		)}
+		{(variant === "about" || variant === "friends") && (
+			<span class="community-like__compact"><strong data-like-count>—</strong><small>喜欢</small></span>
+		)}
+	</button>
+	<span class="community-like__status" data-like-status aria-live="polite"></span>
+	<span class="community-like__particles" data-like-particles aria-hidden="true"></span>
+</div>
+
+<style>
+	.community-like {
+		position: relative;
+		display: grid;
+		justify-items: center;
+		isolation: isolate;
+	}
+
+	.community-like__button {
+		position: relative;
+		z-index: 2;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.55rem 0.85rem;
+		color: color-mix(in srgb, currentColor 62%, transparent);
+		border: 1px solid color-mix(in srgb, currentColor 13%, transparent);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+		cursor: pointer;
+		transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal), background-color var(--motion-signal-fast) ease;
+	}
+
+	.community-like__button:hover,
+	.community-like__button:focus-visible,
+	.community-like__button[aria-pressed="true"] {
+		color: var(--primary);
+		border-color: var(--signal-line);
+		background: color-mix(in srgb, var(--signal-soft) 38%, var(--card-bg));
+	}
+
+	.community-like__button:active { transform: scale(0.94) rotate(-1deg); }
+	.community-like__button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+	.community-like__button:disabled { cursor: wait; opacity: 0.68; }
+
+	.community-like__heart {
+		display: grid;
+		width: 1.55rem;
+		height: 1.55rem;
+		place-items: center;
+		color: currentColor;
+		font-size: 1.35rem;
+		line-height: 1;
+		filter: drop-shadow(0.12rem 0.14rem 0 color-mix(in srgb, currentColor 14%, transparent));
+		transition: transform 260ms var(--ease-signal);
+	}
+
+	.community-like__button[aria-pressed="true"] .community-like__heart { transform: rotate(-8deg) scale(1.12); }
+	.community-like.is-pulsing .community-like__heart { animation: community-heart-pulse 460ms var(--ease-signal); }
+
+	.community-like__sentence {
+		font-size: 0.82rem;
+		white-space: nowrap;
+	}
+
+	.community-like__sentence strong,
+	.community-like__compact strong {
+		color: inherit;
+		font-family: "JetBrains Mono Variable", monospace;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.community-like__compact { display: grid; line-height: 1; text-align: left; }
+	.community-like__compact small { margin-top: 0.2rem; font: 800 0.48rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+	.community-like__status { min-height: 1rem; margin-top: 0.25rem; color: color-mix(in srgb, currentColor 52%, transparent); font-size: 0.64rem; }
+	.community-like__particles { position: absolute; inset: -2rem -5rem -7rem; z-index: 1; overflow: visible; pointer-events: none; }
+	.community-like__particles :global(.community-heart-particle) { position: absolute; top: 0; left: 0; color: var(--primary); font-size: var(--heart-size, 1rem); line-height: 1; will-change: transform, opacity; }
+
+	.community-like--meta { display: inline-flex; min-width: 0; margin: 0; }
+	.community-like--meta .community-like__status,
+	.community-like--meta .community-like__particles { display: none; }
+	.community-like--meta .community-like__button { gap: 0.28rem; padding: 0.08rem 0.18rem; color: color-mix(in srgb, currentColor 58%, transparent); border: 0; border-radius: 0.2rem; background: transparent; }
+	.community-like--meta .community-like__button:hover,
+	.community-like--meta .community-like__button:focus-visible,
+	.community-like--meta .community-like__button[aria-pressed="true"] { color: var(--primary); border-color: transparent; background: color-mix(in srgb, var(--signal-soft) 30%, transparent); }
+	.community-like--meta .community-like__button:focus-visible { outline-offset: 2px; }
+	.community-like__meta-heart { font-size: 0.82rem; line-height: 1; }
+	.community-like__meta-count { font: 600 0.78rem/1 "JetBrains Mono Variable", monospace; font-variant-numeric: tabular-nums; }
+	.community-like--meta.is-pulsing .community-like__meta-heart { animation: community-heart-pulse 460ms var(--ease-signal); }
+
+	.community-like--article { margin: 0.75rem 0 1.5rem; }
+	.community-like--article .community-like__button { padding: 0.7rem 1.2rem; border-style: dashed; border-radius: 0.45rem; clip-path: polygon(0.45rem 0, 100% 0, 100% calc(100% - 0.45rem), calc(100% - 0.45rem) 100%, 0 100%, 0 0.45rem); }
+	.community-like--article .community-like__heart { font-size: 1.75rem; }
+
+	.community-like--about { display: inline-grid; min-width: 6rem; }
+	.community-like--about .community-like__button { border-style: dashed; border-radius: 0.4rem; transform: rotate(1.2deg); }
+	.community-like--about .community-like__heart { font-size: 1.7rem; }
+
+	.community-like--friends .community-like__button { padding: 0.5rem 0.7rem; border-radius: 0.35rem; box-shadow: 0.2rem 0.22rem 0 color-mix(in srgb, currentColor 9%, transparent); }
+
+	@keyframes community-heart-pulse {
+		0%, 100% { transform: rotate(-8deg) scale(1); }
+		42% { transform: rotate(7deg) scale(1.42); }
+		70% { transform: rotate(-3deg) scale(0.92); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.community-like__button,
+		.community-like__heart { transition: none; }
+		.community-like.is-pulsing .community-like__heart { animation: none; }
+	}
+</style>

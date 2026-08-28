@@ -79,21 +79,30 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 </div>
 
 <script>
-	type StickerStateEvent = CustomEvent<{ active: boolean; refresh?: boolean }>;
-	type StickerRuntime = Window & { __tonksHomeStickerCleanup?: () => void };
+	type StickerStateEvent = CustomEvent<{ active: boolean; refresh?: boolean; revealDelay?: number }>;
+	type StickerRuntime = Window & {
+		__tonksHomeStickerCleanup?: () => void;
+		__tonksHomeStickerLayer?: HTMLElement;
+	};
 
 	const runtime = window as StickerRuntime;
-	runtime.__tonksHomeStickerCleanup?.();
-
 	const layer = document.getElementById("home-sticker-layer");
-	if (layer) {
+	// Swup 的 ScriptsPlugin 可能在每次路由后再次执行这段脚本。
+	// 贴纸层位于持久的 banner 外壳中，同一个节点必须复用原控制器，
+	// 否则清理旧控制器会把正在进行的揭下/淡出动画直接截断。
+	if (layer && runtime.__tonksHomeStickerLayer !== layer) {
+		runtime.__tonksHomeStickerCleanup?.();
+		runtime.__tonksHomeStickerLayer = layer;
 		const cards = Array.from(layer.querySelectorAll<HTMLElement>("[data-home-sticker]"));
 		const compactQuery = window.matchMedia("(max-width: 1023px)");
 		const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const PEEL_DURATION = 420;
+		const LAYER_FADE_DURATION = 520;
 		const recentStorageKey = "tonksHomeStickerRecent";
 		let activeCards: HTMLElement[] = [];
 		let layerActive = false;
 		let replacementTimer: ReturnType<typeof setTimeout> | undefined;
+		let layerTransitionTimer: ReturnType<typeof setTimeout> | undefined;
 		let resizeFrame: number | undefined;
 
 		const shuffle = <T,>(items: T[]) => {
@@ -149,12 +158,17 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			const layerHeight = layer.clientHeight;
 			const cardWidth = card.offsetWidth;
 			const cardHeight = card.offsetHeight;
+			const navbarHeight = document.getElementById("navbar-wrapper")?.getBoundingClientRect().height ?? 64;
+			const navbarClearance = Math.max(88, navbarHeight + 24);
 			let x = 0;
 			let y = 0;
 
 			if (compactQuery.matches) {
 				x = layerWidth - cardWidth - randomBetween(10, 22);
-				y = randomBetween(layerHeight * 0.09, layerHeight * 0.135);
+				y = randomBetween(
+					Math.max(navbarClearance, layerHeight * 0.09),
+					Math.max(navbarClearance, layerHeight * 0.135),
+				);
 			} else {
 				// Keep both cards inside a centered content belt on ultrawide displays.
 				const bandWidth = Math.min(Math.max(layerWidth - 32, 0), 1280);
@@ -169,18 +183,24 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 					: bandLeft + bandWidth - edgeInset - cardWidth;
 				x = randomBetween(Math.min(laneMinimum, laneMaximum), Math.max(laneMinimum, laneMaximum));
 				const yRange = slot === 0 ? [0.12, 0.23] : [0.085, 0.19];
-				y = randomBetween(layerHeight * yRange[0], layerHeight * yRange[1]);
+				y = randomBetween(
+					Math.max(navbarClearance, layerHeight * yRange[0]),
+					Math.max(navbarClearance, layerHeight * yRange[1]),
+				);
 			}
 
 			const safeX = Math.max(8, Math.min(x, layerWidth - cardWidth - 8));
-			const safeY = Math.max(16, Math.min(y, layerHeight - cardHeight - 16));
+			const safeY = Math.max(
+				navbarClearance,
+				Math.min(y, Math.max(navbarClearance, layerHeight - cardHeight - 16)),
+			);
 			card.style.setProperty("--sticker-x", `${Math.round(safeX)}px`);
 			card.style.setProperty("--sticker-y", `${Math.round(safeY)}px`);
 			card.style.setProperty("--peel-x", slot === 0 ? "-1.4rem" : "1.4rem");
 		};
 
 		const hideCard = (card: HTMLElement) => {
-			card.classList.remove("is-active", "is-leaving");
+			card.classList.remove("is-active", "is-entering", "is-leaving", "is-hover-locked");
 			card.hidden = true;
 			card.setAttribute("aria-hidden", "true");
 			delete card.dataset.slot;
@@ -192,7 +212,31 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			card.setAttribute("aria-hidden", "false");
 			primeImage(card);
 			placeCard(card, slot);
+			card.classList.remove("is-active", "is-entering", "is-leaving");
+			card.classList.add("is-entering");
+			if (reduceMotionQuery.matches) {
+				card.classList.remove("is-entering");
+				card.classList.add("is-active");
+				return;
+			}
+			card.addEventListener(
+				"animationend",
+				() => {
+					// 在入场动画释放 transform 前判断，避免指针停在新贴纸上时立刻触发 hover 回正。
+					if (card.matches(":hover")) {
+						card.classList.add("is-hover-locked");
+						card.addEventListener("pointerleave", () => card.classList.remove("is-hover-locked"), { once: true });
+					}
+					card.classList.remove("is-entering");
+				},
+				{ once: true },
+			);
 			requestAnimationFrame(() => card.classList.add("is-active"));
+		};
+
+		const markLeaving = (card: HTMLElement) => {
+			card.classList.remove("is-active", "is-entering");
+			card.classList.add("is-leaving");
 		};
 
 		const chooseCards = (count: number) => {
@@ -212,16 +256,53 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			remember(activeCards);
 		};
 
-		const setActive = (active: boolean, shouldRefresh = false) => {
-			layerActive = active;
-			layer.hidden = !active;
-			document.getElementById("banner-wrapper")?.classList.toggle("home-stickers-active", active);
-			if (active && (shouldRefresh || activeCards.length === 0)) refreshAll();
-			if (!active) {
-				if (replacementTimer) clearTimeout(replacementTimer);
-				replacementTimer = undefined;
-				cards.forEach(hideCard);
+		const setActive = (active: boolean, shouldRefresh = false, revealDelay = 0) => {
+			const wasActive = layerActive;
+			const bannerWrapper = document.getElementById("banner-wrapper");
+			if (layerTransitionTimer) clearTimeout(layerTransitionTimer);
+			layerTransitionTimer = undefined;
+
+			if (active) {
+				layerActive = true;
+				layer.hidden = false;
+				if (!wasActive) {
+					cards.forEach(hideCard);
+					activeCards = [];
+				}
+
+				const revealHomeLayer = () => {
+					if (!layerActive) return;
+					layer.classList.add("is-layer-active");
+					bannerWrapper?.classList.add("home-stickers-active");
+					if (shouldRefresh || activeCards.length === 0) refreshAll();
+				};
+
+				if (!wasActive && !reduceMotionQuery.matches && revealDelay > 0) {
+					layerTransitionTimer = setTimeout(() => {
+						layerTransitionTimer = undefined;
+						revealHomeLayer();
+					}, revealDelay);
+				} else {
+					requestAnimationFrame(revealHomeLayer);
+				}
+				return;
 			}
+
+			layerActive = false;
+			layer.classList.remove("is-layer-active");
+			bannerWrapper?.classList.remove("home-stickers-active");
+			if (replacementTimer) clearTimeout(replacementTimer);
+			replacementTimer = undefined;
+			activeCards.filter((card) => !card.hidden).forEach(markLeaving);
+
+			const finishLeaving = () => {
+				cards.forEach(hideCard);
+				activeCards = [];
+				layer.hidden = true;
+				layerTransitionTimer = undefined;
+			};
+			if (reduceMotionQuery.matches) finishLeaving();
+			else layerTransitionTimer = setTimeout(finishLeaving, LAYER_FADE_DURATION);
 		};
 
 		const replaceCard = (current: HTMLElement) => {
@@ -234,15 +315,14 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			const next = shuffle(preferred.length ? preferred : available)[0];
 			if (!next) return;
 
-			current.classList.remove("is-active");
-			current.classList.add("is-leaving");
+			markLeaving(current);
 			replacementTimer = setTimeout(() => {
 				hideCard(current);
 				activeCards = activeCards.map((card) => card === current ? next : card);
 				showCard(next, slot);
 				remember(activeCards);
 				replacementTimer = undefined;
-			}, reduceMotionQuery.matches ? 0 : 420);
+			}, reduceMotionQuery.matches ? 0 : PEEL_DURATION);
 		};
 
 		const handleLayerClick = (event: Event) => {
@@ -255,9 +335,11 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 
 		const handleState = (event: Event) => {
 			const detail = (event as StickerStateEvent).detail;
-			setActive(Boolean(detail?.active), Boolean(detail?.refresh));
+			setActive(Boolean(detail?.active), Boolean(detail?.refresh), detail?.revealDelay);
 		};
-		const handleBreakpoint = () => refreshAll();
+		const handleBreakpoint = () => {
+			if (document.body.classList.contains("lg:is-home")) refreshAll();
+		};
 		const handleResize = () => {
 			if (resizeFrame) cancelAnimationFrame(resizeFrame);
 			resizeFrame = requestAnimationFrame(() => {
@@ -277,12 +359,14 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 
 		runtime.__tonksHomeStickerCleanup = () => {
 			if (replacementTimer) clearTimeout(replacementTimer);
+			if (layerTransitionTimer) clearTimeout(layerTransitionTimer);
 			if (resizeFrame) cancelAnimationFrame(resizeFrame);
 			layer.removeEventListener("click", handleLayerClick);
 			layer.removeEventListener("dragstart", handleDragStart);
 			window.removeEventListener("tonks:home-stickers:state", handleState);
 			window.removeEventListener("resize", handleResize);
 			compactQuery.removeEventListener("change", handleBreakpoint);
+			if (runtime.__tonksHomeStickerLayer === layer) runtime.__tonksHomeStickerLayer = undefined;
 		};
 
 		setActive(window.location.pathname.replace(/\/+$/, "") === "", true);
@@ -302,10 +386,14 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 		position: absolute;
 		z-index: 10;
 		inset: 0;
+		opacity: 0;
 		background:
 			linear-gradient(90deg, color-mix(in srgb, var(--page-bg) 32%, transparent), transparent 32% 68%, color-mix(in srgb, var(--page-bg) 32%, transparent)),
 			linear-gradient(to bottom, color-mix(in srgb, var(--page-bg) 12%, transparent), transparent 38%, color-mix(in srgb, var(--page-bg) 48%, transparent));
+		transition: opacity 520ms ease;
 	}
+
+	.home-sticker-layer.is-layer-active .home-sticker-layer__veil { opacity: 1; }
 
 	.home-sticker-layer__register {
 		position: absolute;
@@ -316,10 +404,14 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 		gap: 0.5rem;
 		align-items: baseline;
 		color: rgba(255, 255, 255, 0.72);
+		opacity: 0;
 		font: 800 0.52rem/1 "JetBrains Mono Variable", monospace;
 		letter-spacing: 0.12em;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		transition: opacity 420ms ease;
 	}
+
+	.home-sticker-layer.is-layer-active .home-sticker-layer__register { opacity: 1; }
 
 	.home-sticker-layer__register small {
 		font-size: 0.48rem;
@@ -365,33 +457,53 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 		box-shadow: 0.55rem 0.65rem 0 rgba(0, 0, 0, 0.2), 0 0.4rem 1.1rem rgba(0, 0, 0, 0.24);
 		transform: rotate(var(--sticker-tilt));
 		transform-origin: 50% 8%;
-		transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1), opacity 340ms ease, filter 340ms ease;
+		transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1), opacity 340ms ease, filter 220ms ease, box-shadow 220ms ease;
 	}
 
-	.home-sticker:hover .home-sticker__paper,
-	.home-sticker:focus-within .home-sticker__paper {
+	.home-sticker:not(.is-hover-locked):not(.is-entering):hover .home-sticker__paper,
+	.home-sticker:not(.is-entering):focus-within .home-sticker__paper {
+		filter: brightness(1.018);
+		box-shadow: 0.65rem 0.75rem 0 rgba(0, 0, 0, 0.18), 0 0.55rem 1.3rem rgba(0, 0, 0, 0.26);
 		transform: rotate(0deg);
 	}
 
-	.home-sticker.is-leaving .home-sticker__paper {
+	.home-sticker.is-leaving {
 		animation: home-sticker-peel 420ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+	}
+
+	.home-sticker.is-entering {
+		animation: home-sticker-press 460ms cubic-bezier(0.18, 0.82, 0.24, 1) both;
+	}
+
+	/* 外层负责单向旋入，纸张本身的最终倾角始终不被动画覆盖。 */
+	@keyframes home-sticker-press {
+		0% {
+			opacity: 0;
+			filter: blur(0.6px) drop-shadow(0 1rem 0.8rem rgba(8, 12, 18, 0.22));
+			transform: translate3d(var(--peel-x, 1.4rem), -1.4rem, 0) rotate(calc(var(--sticker-tilt) * 1.1)) scale(0.92);
+		}
+		100% {
+			opacity: 1;
+			filter: none;
+			transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+		}
 	}
 
 	@keyframes home-sticker-peel {
 		0% {
 			opacity: 1;
 			filter: none;
-			transform: rotate(0deg) scale(1);
+			transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
 		}
 		38% {
 			opacity: 1;
 			filter: none;
-			transform: translate3d(calc(var(--peel-x, 1.4rem) * 0.2), -0.35rem, 0) rotate(calc(var(--sticker-tilt) * 0.45)) scale(1.018);
+			transform: translate3d(calc(var(--peel-x, 1.4rem) * 0.2), -0.35rem, 0) rotate(calc(var(--sticker-tilt) * 0.2)) scale(1.018);
 		}
 		100% {
 			opacity: 0;
 			filter: blur(0.6px);
-			transform: translate3d(var(--peel-x, 1.4rem), -1.4rem, 0) rotate(calc(var(--sticker-tilt) * 2.1)) scale(0.92);
+			transform: translate3d(var(--peel-x, 1.4rem), -1.4rem, 0) rotate(calc(var(--sticker-tilt) * 1.1)) scale(0.92);
 		}
 	}
 
@@ -485,8 +597,12 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 	.home-sticker__caption em {
 		margin-top: 0.2rem;
 		color: rgba(38, 40, 43, 0.62);
-		font: 500 0.62rem/1.2 "JetBrains Mono Variable", monospace;
+		/* 不跟随站点的异步主题字体，避免 hover 恰好触发字体加载时发生跳变。 */
+		font-family: Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
+		font-size: 0.62rem;
+		font-weight: 500;
 		font-style: normal;
+		line-height: 1.2;
 	}
 
 	.home-sticker__replace {
@@ -522,7 +638,17 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 		filter: saturate(0.82) contrast(0.92) brightness(0.88);
 	}
 
+	:global(#banner-wrapper .carousel-item img) {
+		transition-property: transform, filter !important;
+		transition-duration: 1s, 520ms !important;
+		transition-timing-function: ease-out, ease !important;
+	}
+
 	@media (max-width: 1023px) {
+		:global(#banner-wrapper .carousel-item img) {
+			transition-duration: 0.5s, 520ms !important;
+		}
+
 		.home-sticker-layer__veil {
 			background: linear-gradient(to bottom, color-mix(in srgb, var(--page-bg) 18%, transparent), transparent 34%, color-mix(in srgb, var(--page-bg) 58%, transparent));
 		}
@@ -541,14 +667,17 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.home-sticker-layer__veil,
+		.home-sticker-layer__register { transition: none; }
+
 		.home-sticker,
 		.home-sticker__paper,
 		.home-sticker__photo img { transition: none; }
 
-		.home-sticker:hover .home-sticker__paper,
-		.home-sticker:focus-within .home-sticker__paper,
-		.home-sticker.is-leaving .home-sticker__paper { transform: rotate(var(--sticker-tilt)); }
+		.home-sticker:not(.is-hover-locked):hover .home-sticker__paper,
+		.home-sticker:focus-within .home-sticker__paper { filter: none; }
 
-		.home-sticker.is-leaving .home-sticker__paper { animation: none; }
+		.home-sticker.is-entering,
+		.home-sticker.is-leaving { animation: none; }
 	}
 </style>

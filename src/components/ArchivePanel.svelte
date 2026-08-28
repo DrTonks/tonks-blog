@@ -69,7 +69,7 @@
     <div>
       <span class="archive-kicker">ARCHIVE / CHRONOLOGICAL INDEX</span>
       <h1>{i18n(I18nKey.archive)}</h1>
-      <p>按时间索引所有公开文章，选择任意记录进入正文。</p>
+      <p>拾光落墨，旧事归藏。</p>
     </div>
     <div class="archive-summary" aria-label="归档统计">
       <span><strong>{String(filteredPosts.length).padStart(2, "0")}</strong><small>ENTRIES</small></span>

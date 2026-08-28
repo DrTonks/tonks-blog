@@ -1,4 +1,8 @@
 import sitemap from "@astrojs/sitemap";
+import { readFileSync } from "node:fs";
+import { Readable } from "node:stream";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import svelte from "@astrojs/svelte";
 import tailwind from "@astrojs/tailwind";
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
@@ -25,6 +29,109 @@ import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
+
+function getLocalEnvValue(name) {
+	const processValue = process.env[name]?.trim();
+	if (processValue) return processValue;
+	const projectRoot = dirname(fileURLToPath(import.meta.url));
+
+	for (const filename of [".env.local", ".env"]) {
+		let contents;
+		try {
+			contents = readFileSync(resolve(projectRoot, filename), "utf8");
+		} catch {
+			continue;
+		}
+
+		const match = contents.match(new RegExp(`^\\s*${name}\\s*=\\s*(.*?)\\s*$`, "m"));
+		if (!match) continue;
+
+		const value = match[1].trim();
+		if (
+			(value.startsWith('"') && value.endsWith('"')) ||
+			(value.startsWith("'") && value.endsWith("'"))
+		) {
+			return value.slice(1, -1).trim();
+		}
+		return value.replace(/\\s+#.*$/, "").trim();
+	}
+
+	return "";
+}
+
+const sleepyDevProxyTarget = getLocalEnvValue("SLEEPY_DEV_PROXY_TARGET");
+if (process.env.NODE_ENV !== "production") {
+	console.info(`[sleepy proxy] ${sleepyDevProxyTarget ? "configured" : "not configured"}`);
+}
+const sleepyProxyDiagnostics = {
+	name: "sleepy-proxy-diagnostics",
+	apply: "serve",
+	configureServer(server) {
+		console.info(`[sleepy proxy] effective ${server.config.server.proxy?.["/api"] ? "enabled" : "missing"}`);
+	},
+};
+const sleepyDevProxyFallback = {
+	name: "sleepy-dev-proxy-fallback",
+	apply: "serve",
+	enforce: "post",
+	configureServer(server) {
+		if (!sleepyDevProxyTarget) return;
+		const forwardRequest = async (request, response, next) => {
+			const requestUrl = request.url || "";
+			if (!requestUrl.startsWith("/api/")) {
+				next();
+				return;
+			}
+
+			try {
+				const upstreamUrl = new URL(requestUrl.replace(/^\/api/, ""), sleepyDevProxyTarget);
+				const headers = new Headers();
+				for (const [name, value] of Object.entries(request.headers)) {
+					if (value && !["connection", "content-length", "host"].includes(name)) {
+						headers.set(name, Array.isArray(value) ? value.join(", ") : value);
+					}
+				}
+
+				const init = {
+					method: request.method,
+					headers,
+				};
+				if (request.method !== "GET" && request.method !== "HEAD") {
+					init.body = request;
+					init.duplex = "half";
+				}
+
+				const upstream = await fetch(upstreamUrl, init);
+				response.statusCode = upstream.status;
+				upstream.headers.forEach((value, name) => {
+					if (!["connection", "content-encoding", "content-length", "transfer-encoding"].includes(name)) {
+						response.setHeader(name, value);
+					}
+				});
+				if (!upstream.body) {
+					response.end();
+					return;
+				}
+				Readable.fromWeb(upstream.body).pipe(response);
+				console.info(`[sleepy proxy] fallback ${request.method} ${requestUrl} -> ${upstream.status}`);
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				console.error(`[sleepy proxy] fallback ${request.method} ${requestUrl} failed: ${message}`);
+				if (!response.headersSent) {
+					response.statusCode = 502;
+					response.setHeader("Content-Type", "application/json");
+					response.end(JSON.stringify({ success: false, message: "开发代理无法连接后端" }));
+				}
+			}
+		};
+		return () => {
+			// Astro's trailing-slash middleware is unshifted during its
+			// configureServer post-hook, so unshift this one afterwards to
+			// let /api requests reach the development proxy first.
+			server.middlewares.stack.unshift({ route: "", handle: forwardRequest });
+		};
+	},
+};
 // https://astro.build/config
 export default defineConfig({
 	site: "https://blog.tonks.top/",
@@ -180,6 +287,29 @@ export default defineConfig({
 		],
 	},
 	vite: {
+		plugins: [sleepyProxyDiagnostics, sleepyDevProxyFallback],
+		server: {
+			host: "127.0.0.1",
+			...(sleepyDevProxyTarget
+				? {
+						proxy: {
+							"/api": {
+								target: sleepyDevProxyTarget,
+								changeOrigin: true,
+								rewrite: (path) => path.replace(/^\/api/, ""),
+								configure: (proxy) => {
+									proxy.on("proxyRes", (proxyResponse, request) => {
+										console.info(`[sleepy proxy] ${request.method} ${request.url} -> ${proxyResponse.statusCode}`);
+									});
+									proxy.on("error", (error, request) => {
+										console.error(`[sleepy proxy] ${request.method} ${request.url} failed: ${error.message}`);
+									});
+								},
+							},
+						},
+					}
+				: {}),
+		},
 		build: {
 			rollupOptions: {
 				onwarn(warning, warn) {

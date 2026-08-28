@@ -4,6 +4,7 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import { getCategoryUrl, getTagUrl } from "../utils/url-utils";
+import BlogLike from "./community/BlogLike.astro";
 
 export interface Props {
 	published: Date;
@@ -97,6 +98,10 @@ const {
 				— 浏览
 			</span>
 		</div>
+	)}
+
+	{slug && (
+		<BlogLike target={`post:${slug}`} variant="meta" class="post-meta-like" />
 	)}
 
 	{!showOnlyBasicMeta && (
