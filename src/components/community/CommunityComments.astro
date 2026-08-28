@@ -34,11 +34,6 @@ const { page } = Astro.props;
 	</header>
 
 	<form class="community-comment-form" data-comment-form novalidate hidden aria-hidden="true">
-		<div class="community-comment-form__reply" data-reply-context hidden>
-			<span>正在回复 <strong data-reply-name></strong></span>
-			<button type="button" data-cancel-reply>取消回复</button>
-		</div>
-		<input type="hidden" name="parent_id" value="" />
 		<label>
 			<span>昵称 <b aria-hidden="true">*</b></span>
 			<input name="nickname" type="text" required maxlength="30" autocomplete="nickname" placeholder="怎么称呼你" />
@@ -53,12 +48,12 @@ const { page } = Astro.props;
 		</label>
 		<label class="community-comment-form__content">
 			<span>想说的话 <b aria-hidden="true">*</b></span>
-			<textarea name="content" required maxlength="800" rows="5" placeholder="认真写下你的评论或回复…"></textarea>
+			<textarea name="content" required maxlength="800" rows="5" placeholder="认真写下你的留言…"></textarea>
 			<small><span data-content-count>0</span> / 800</small>
 		</label>
 		<div class="community-comment-form__footer">
 			<p data-comment-form-status aria-live="polite"></p>
-			<button type="submit" class="signal-marker">提交评论 <span aria-hidden="true">↗</span></button>
+			<button type="submit" class="signal-marker">提交留言 <span aria-hidden="true">↗</span></button>
 		</div>
 	</form>
 
@@ -128,9 +123,6 @@ const { page } = Astro.props;
 	.community-comments__icon-button :global(svg) { width: 1.05rem; height: 1.05rem; }
 
 	.community-comment-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; margin-top: 1.4rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--signal-line) 48%, currentColor 10%); background: color-mix(in srgb, var(--industrial-surface) 88%, transparent); }
-	.community-comment-form__reply { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.55rem 0.7rem; color: var(--signal-line); border-left: 2px solid var(--signal-line); background: color-mix(in srgb, var(--signal-soft) 35%, transparent); font-size: 0.76rem; }
-	.community-comment-form__reply[hidden] { display: none; }
-	.community-comment-form__reply button { color: inherit; background: none; border: 0; cursor: pointer; text-decoration: underline; }
 	.community-comment-form label { display: grid; gap: 0.4rem; min-width: 0; color: color-mix(in srgb, currentColor 70%, transparent); font-size: 0.75rem; font-weight: 700; }
 	.community-comment-form label > span b { color: var(--signal-line); }
 	.community-comment-form input,
@@ -159,8 +151,33 @@ const { page } = Astro.props;
 	.community-comments__list :global(.community-comment__time) { color: color-mix(in srgb, currentColor 43%, transparent); font-size: 0.64rem; }
 	.community-comments__list :global(.community-comment__content) { margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 76%, transparent); font-size: 0.82rem; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
 	.community-comments__list :global(.community-comment__reply-button) { margin-top: 0.45rem; padding: 0; color: var(--signal-line); border: 0; background: none; cursor: pointer; font: 700 0.62rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list :global(.community-comment__reply-button:hover),
+	.community-comments__list :global(.community-comment__reply-button:focus-visible) { color: var(--primary); text-decoration: underline; text-underline-offset: 0.2rem; }
 	.community-comments__list :global(.community-comment__replies) { margin: 0.3rem 0 0 3.25rem; padding-left: 0.85rem; border-left: 2px solid color-mix(in srgb, var(--signal-line) 38%, transparent); }
 	.community-comments__list :global(.community-comment__replies .community-comment) { padding: 0.7rem 0; }
+	.community-comments__list :global(.community-inline-reply) { position: relative; display: grid; gap: 0.75rem; margin: 0.85rem 0 0 3.25rem; padding: 0.9rem; color: inherit; border: 1px solid color-mix(in srgb, var(--signal-line) 58%, currentColor 10%); border-left-width: 3px; border-radius: 0.3rem; background: color-mix(in srgb, var(--industrial-surface) 90%, var(--signal-soft)); box-shadow: 0.18rem 0.2rem 0 color-mix(in srgb, var(--signal-line) 12%, transparent); animation: community-reply-enter 220ms var(--ease-signal) both; }
+	.community-comments__list :global(.community-inline-reply__heading) { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+	.community-comments__list :global(.community-inline-reply__heading strong) { color: var(--signal-line); font-size: 0.75rem; }
+	.community-comments__list :global(.community-inline-reply__heading small) { margin-left: 0.45rem; color: color-mix(in srgb, currentColor 42%, transparent); font: 700 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.08em; }
+	.community-comments__list :global(.community-inline-reply__close) { display: grid; width: 1.65rem; height: 1.65rem; flex: 0 0 auto; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 55%, transparent); border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--card-bg) 78%, transparent); cursor: pointer; font-size: 1rem; line-height: 1; }
+	.community-comments__list :global(.community-inline-reply__close:hover),
+	.community-comments__list :global(.community-inline-reply__close:focus-visible) { color: var(--signal-line); border-color: var(--signal-line); }
+	.community-comments__list :global(.community-inline-reply__identity) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; }
+	.community-comments__list :global(.community-inline-reply label) { display: grid; gap: 0.35rem; min-width: 0; color: color-mix(in srgb, currentColor 68%, transparent); font-size: 0.68rem; font-weight: 700; }
+	.community-comments__list :global(.community-inline-reply label b) { color: var(--signal-line); }
+	.community-comments__list :global(.community-inline-reply input),
+	.community-comments__list :global(.community-inline-reply textarea) { width: 100%; min-width: 0; padding: 0.68rem 0.72rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 0.25rem; outline: none; background: color-mix(in srgb, var(--card-bg) 92%, transparent); font: inherit; font-weight: 500; resize: vertical; transition: border-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease; }
+	.community-comments__list :global(.community-inline-reply input:focus),
+	.community-comments__list :global(.community-inline-reply textarea:focus) { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 17%, transparent); }
+	.community-comments__list :global(.community-inline-reply__content) { position: relative; }
+	.community-comments__list :global(.community-inline-reply__content small) { position: absolute; right: 0.6rem; bottom: 0.42rem; color: color-mix(in srgb, currentColor 38%, transparent); font: 600 0.52rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list :global(.community-inline-reply__footer) { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+	.community-comments__list :global(.community-inline-reply__status) { min-height: 1.1rem; margin: 0; color: color-mix(in srgb, currentColor 56%, transparent); font-size: 0.68rem; }
+	.community-comments__list :global(.community-inline-reply__status[data-state="error"]) { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
+	.community-comments__list :global(.community-inline-reply__actions) { display: inline-flex; align-items: center; gap: 0.45rem; }
+	.community-comments__list :global(.community-inline-reply__actions button) { padding: 0.55rem 0.72rem; color: var(--signal-line); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: transparent; cursor: pointer; font-size: 0.68rem; font-weight: 800; }
+	.community-comments__list :global(.community-inline-reply__actions button[type="submit"]) { color: var(--card-bg); background: var(--signal-line); }
+	.community-comments__list :global(.community-inline-reply__actions button:disabled) { cursor: wait; opacity: 0.58; }
 	.community-comments__list :global(.community-comments__empty) { padding: 1.2rem; color: color-mix(in srgb, currentColor 48%, transparent); border: 1px dashed color-mix(in srgb, currentColor 14%, transparent); text-align: center; }
 	.community-comments__list :global(.community-comment__avatar) { overflow: hidden; user-select: none; }
 	.community-comments__list :global(.community-comment__avatar img),
@@ -192,15 +209,24 @@ const { page } = Astro.props;
 	.community-admin-form__footer .community-admin-form__logout { color: var(--signal-line); border-color: var(--signal-line); background: transparent; }
 	.community-admin-form__footer button:disabled { cursor: wait; opacity: 0.55; }
 
+	@keyframes community-reply-enter {
+		from { opacity: 0; transform: translateY(-0.35rem) scale(0.99); }
+		to { opacity: 1; transform: translateY(0) scale(1); }
+	}
+
 	@media (max-width: 720px) {
 		.community-comments__header { align-items: flex-start; }
 		.community-comments__count { min-width: 3.8rem; font-size: 1.45rem; }
 		.community-comments__title-row { align-items: center; }
 		.community-comment-form { grid-template-columns: 1fr; }
 		.community-comment-form__content,
-		.community-comment-form__footer,
-		.community-comment-form__reply { grid-column: auto; }
+		.community-comment-form__footer { grid-column: auto; }
 		.community-comments__list :global(.community-comment__replies) { margin-left: 1rem; }
+		.community-comments__list :global(.community-inline-reply) { margin-left: 1rem; }
+		.community-comments__list :global(.community-inline-reply__identity) { grid-template-columns: 1fr; }
+		.community-comments__list :global(.community-inline-reply__footer) { align-items: stretch; flex-direction: column; }
+		.community-comments__list :global(.community-inline-reply__actions) { width: 100%; }
+		.community-comments__list :global(.community-inline-reply__actions button) { flex: 1; }
 		.community-comment-form__footer { align-items: flex-start; flex-direction: column; }
 		.community-comment-form__footer button { width: 100%; }
 	}
@@ -208,6 +234,9 @@ const { page } = Astro.props;
 	@media (prefers-reduced-motion: reduce) {
 		.community-comment-form input,
 		.community-comment-form textarea,
-		.community-comment-form__footer button { transition: none; }
+		.community-comment-form__footer button,
+		.community-comments__list :global(.community-inline-reply input),
+		.community-comments__list :global(.community-inline-reply textarea) { transition: none; }
+		.community-comments__list :global(.community-inline-reply) { animation: none; }
 	}
 </style>

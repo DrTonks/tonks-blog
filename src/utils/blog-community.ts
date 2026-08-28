@@ -47,6 +47,20 @@ type SubmitResponse = {
 	code?: string;
 };
 
+type CommentProfile = {
+	nickname?: string;
+	email?: string;
+	website?: string;
+};
+
+type CommentPayload = {
+	parent_id: number | null;
+	nickname: string;
+	email: string;
+	website: string;
+	content: string;
+};
+
 type FriendApplicationResponse = {
 	success: boolean;
 	status?: string;
@@ -370,6 +384,7 @@ function buildComment(
 	reply.type = "button";
 	reply.className = "community-comment__reply-button";
 	reply.textContent = "↳ 回复";
+	reply.setAttribute("aria-expanded", "false");
 	reply.addEventListener("click", () => onReply(comment));
 	const tools = document.createElement("span");
 	tools.className = "community-comment__admin-tools";
@@ -430,11 +445,7 @@ function renderComments(
 	}
 }
 
-function readProfile(): {
-	nickname?: string;
-	email?: string;
-	website?: string;
-} {
+function readProfile(): CommentProfile {
 	try {
 		return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}") as Record<
 			string,
@@ -442,6 +453,14 @@ function readProfile(): {
 		>;
 	} catch {
 		return {};
+	}
+}
+
+function saveProfile(profile: CommentProfile): void {
+	try {
+		localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+	} catch {
+		/* Local storage can be unavailable in private or restricted contexts. */
 	}
 }
 
@@ -502,6 +521,18 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 	);
 	let adminSecret = readAdminSecret();
 	let adminMode = false;
+	let activeReplyForm: HTMLFormElement | null = null;
+	let activeReplyId: number | null = null;
+
+	const closeInlineReply = () => {
+		activeReplyForm?.remove();
+		activeReplyForm = null;
+		activeReplyId = null;
+		for (const button of section.querySelectorAll<HTMLButtonElement>(
+			".community-comment__reply-button",
+		))
+			button.setAttribute("aria-expanded", "false");
+	};
 
 	const setComposerOpen = (open: boolean, focus = false) => {
 		form.hidden = !open;
@@ -518,7 +549,8 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 	};
 	setComposerOpen(false);
 	openComment?.addEventListener("click", () => {
-		const next = form.hidden;
+		const next = Boolean(form.hidden);
+		if (next) closeInlineReply();
 		setComposerOpen(next, next);
 	});
 
@@ -586,6 +618,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 				adminStatus.textContent = "站长模式已开启";
 			}
 			adminDialog?.close();
+			closeInlineReply();
 			setComposerOpen(true, true);
 			await load();
 		} catch (error) {
@@ -617,31 +650,224 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 		updateCount();
 	}
 
-	const parentInput = form.elements.namedItem("parent_id");
-	const replyContext = section.querySelector<HTMLElement>(
-		"[data-reply-context]",
-	);
-	const replyName = section.querySelector<HTMLElement>("[data-reply-name]");
-	const setReply = (comment?: PublicComment) => {
-		if (comment) setComposerOpen(true);
-		if (parentInput instanceof HTMLInputElement)
-			parentInput.value = comment ? String(comment.id) : "";
-		if (replyContext) replyContext.hidden = !comment;
-		if (replyName) replyName.textContent = comment?.nickname || "";
-		if (comment) {
-			form.scrollIntoView({
-				behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-					? "auto"
-					: "smooth",
-				block: "center",
-			});
-			if (content instanceof HTMLTextAreaElement)
-				setTimeout(() => content.focus(), 250);
+	const submitComment = async (
+		payload: CommentPayload,
+	): Promise<SubmitResponse> =>
+		readJson<SubmitResponse>(
+			await fetch(`${API_BASE}/blog/community/comments/${page}`, {
+				method: "POST",
+				headers:
+					adminMode && adminSecret
+						? adminHeaders(adminSecret, true)
+						: clientHeaders(true),
+				body: JSON.stringify(payload),
+			}),
+		);
+
+	const makeIdentityField = (
+		labelText: string,
+		name: "nickname" | "email" | "website",
+		type: "text" | "email" | "url",
+		placeholder: string,
+		value: string,
+		required = false,
+	): HTMLLabelElement => {
+		const label = document.createElement("label");
+		const caption = document.createElement("span");
+		caption.textContent = labelText;
+		if (required) {
+			const mark = document.createElement("b");
+			mark.setAttribute("aria-hidden", "true");
+			mark.textContent = " *";
+			caption.append(mark);
 		}
+		const input = document.createElement("input");
+		input.name = name;
+		input.type = type;
+		input.placeholder = placeholder;
+		input.value = value;
+		input.required = required;
+		input.maxLength = name === "nickname" ? 30 : name === "email" ? 254 : 300;
+		input.setAttribute(
+			"autocomplete",
+			name === "nickname" ? "nickname" : name === "email" ? "email" : "url",
+		);
+		label.append(caption, input);
+		return label;
 	};
-	section
-		.querySelector<HTMLButtonElement>("[data-cancel-reply]")
-		?.addEventListener("click", () => setReply());
+
+	const openInlineReply = (comment: PublicComment) => {
+		if (activeReplyId === comment.id) {
+			closeInlineReply();
+			return;
+		}
+		closeInlineReply();
+		setComposerOpen(false);
+
+		const target = [
+			...section.querySelectorAll<HTMLElement>("[data-comment-id]"),
+		].find((element) => element.dataset.commentId === String(comment.id));
+		const targetMain = target?.querySelector<HTMLElement>(
+			":scope > .community-comment__main",
+		);
+		if (!target || !targetMain) return;
+
+		const profile = readProfile();
+		const compact = Boolean(profile.nickname?.trim() && profile.email?.trim());
+		const replyForm = document.createElement("form");
+		replyForm.className = "community-inline-reply";
+		replyForm.dataset.replyTo = String(comment.id);
+		replyForm.noValidate = true;
+		replyForm.setAttribute("aria-label", `回复 ${comment.nickname}`);
+
+		const heading = document.createElement("div");
+		heading.className = "community-inline-reply__heading";
+		const headingText = document.createElement("div");
+		const title = document.createElement("strong");
+		title.textContent = `回复 @${comment.nickname}`;
+		const marker = document.createElement("small");
+		marker.textContent = compact ? `AS ${profile.nickname}` : "REPLY";
+		headingText.append(title, marker);
+		const close = document.createElement("button");
+		close.type = "button";
+		close.className = "community-inline-reply__close";
+		close.setAttribute("aria-label", "取消回复");
+		close.textContent = "×";
+		close.addEventListener("click", closeInlineReply);
+		heading.append(headingText, close);
+		replyForm.append(heading);
+
+		if (!compact) {
+			const identity = document.createElement("div");
+			identity.className = "community-inline-reply__identity";
+			identity.append(
+				makeIdentityField(
+					"昵称",
+					"nickname",
+					"text",
+					"怎么称呼你",
+					profile.nickname || "",
+					true,
+				),
+				makeIdentityField(
+					"邮箱",
+					"email",
+					"email",
+					"不会在页面公开",
+					profile.email || "",
+					true,
+				),
+				makeIdentityField(
+					"网站",
+					"website",
+					"url",
+					"https://（可选）",
+					profile.website || "",
+				),
+			);
+			replyForm.append(identity);
+		}
+
+		const contentLabel = document.createElement("label");
+		contentLabel.className = "community-inline-reply__content";
+		const contentCaption = document.createElement("span");
+		contentCaption.textContent = "回复内容";
+		const contentMark = document.createElement("b");
+		contentMark.setAttribute("aria-hidden", "true");
+		contentMark.textContent = " *";
+		contentCaption.append(contentMark);
+		const replyContent = document.createElement("textarea");
+		replyContent.name = "content";
+		replyContent.required = true;
+		replyContent.maxLength = 800;
+		replyContent.rows = compact ? 3 : 4;
+		replyContent.placeholder = `写下给 @${comment.nickname} 的回复…`;
+		const counter = document.createElement("small");
+		counter.textContent = "0 / 800";
+		replyContent.addEventListener("input", () => {
+			counter.textContent = `${replyContent.value.length} / 800`;
+		});
+		contentLabel.append(contentCaption, replyContent, counter);
+		replyForm.append(contentLabel);
+
+		const footer = document.createElement("div");
+		footer.className = "community-inline-reply__footer";
+		const status = document.createElement("p");
+		status.className = "community-inline-reply__status";
+		status.setAttribute("aria-live", "polite");
+		const actions = document.createElement("div");
+		actions.className = "community-inline-reply__actions";
+		const cancel = document.createElement("button");
+		cancel.type = "button";
+		cancel.textContent = "取消";
+		cancel.addEventListener("click", closeInlineReply);
+		const submit = document.createElement("button");
+		submit.type = "submit";
+		submit.textContent = "提交回复 ↗";
+		actions.append(cancel, submit);
+		footer.append(status, actions);
+		replyForm.append(footer);
+
+		replyForm.addEventListener("submit", async (event) => {
+			event.preventDefault();
+			if (!replyForm.reportValidity()) return;
+			const data = new FormData(replyForm);
+			const payload: CommentPayload = {
+				parent_id: comment.id,
+				nickname: String(
+					compact ? profile.nickname || "" : data.get("nickname") || "",
+				).trim(),
+				email: String(
+					compact ? profile.email || "" : data.get("email") || "",
+				).trim(),
+				website: String(
+					compact ? profile.website || "" : data.get("website") || "",
+				).trim(),
+				content: String(data.get("content") || "").trim(),
+			};
+			submit.disabled = true;
+			status.dataset.state = "busy";
+			status.textContent = "正在检查这条回复…";
+			try {
+				const result = await submitComment(payload);
+				saveProfile({
+					nickname: payload.nickname,
+					email: payload.email,
+					website: payload.website,
+				});
+				replyContent.value = "";
+				counter.textContent = "0 / 800";
+				status.dataset.state = "success";
+				status.textContent = result.message || "回复已提交";
+				if (result.status === "published" || adminMode) {
+					closeInlineReply();
+					await load();
+				}
+			} catch (error) {
+				status.dataset.state = "error";
+				status.textContent =
+					error instanceof Error ? error.message : "回复提交失败";
+			} finally {
+				submit.disabled = false;
+			}
+		});
+
+		activeReplyForm = replyForm;
+		activeReplyId = comment.id;
+		targetMain.after(replyForm);
+		target
+			.querySelector<HTMLButtonElement>(".community-comment__reply-button")
+			?.setAttribute("aria-expanded", "true");
+		replyForm.scrollIntoView({
+			behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+				? "auto"
+				: "smooth",
+			block: "nearest",
+		});
+		window.setTimeout(() => {
+			if (replyContent.isConnected) replyContent.focus({ preventScroll: true });
+		}, 180);
+	};
 
 	const load = async () => {
 		try {
@@ -653,8 +879,16 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 							: clientHeaders(),
 				}),
 			);
-			if (section.isConnected)
-				renderComments(section, result.comments, setReply, adminMode, onDelete);
+			if (section.isConnected) {
+				closeInlineReply();
+				renderComments(
+					section,
+					result.comments,
+					openInlineReply,
+					adminMode,
+					onDelete,
+				);
+			}
 		} catch (error) {
 			console.warn("[blog community] failed to load comments", error);
 			if (section.isConnected)
@@ -694,12 +928,12 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 			"[data-comment-form-status]",
 		);
 		const data = new FormData(form);
-		const payload = {
-			parent_id: data.get("parent_id") || null,
-			nickname: String(data.get("nickname") || ""),
-			email: String(data.get("email") || ""),
-			website: String(data.get("website") || ""),
-			content: String(data.get("content") || ""),
+		const payload: CommentPayload = {
+			parent_id: null,
+			nickname: String(data.get("nickname") || "").trim(),
+			email: String(data.get("email") || "").trim(),
+			website: String(data.get("website") || "").trim(),
+			content: String(data.get("content") || "").trim(),
 		};
 		if (submit) submit.disabled = true;
 		if (status) {
@@ -707,27 +941,14 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 			status.textContent = "正在检查这条留言…";
 		}
 		try {
-			const result = await readJson<SubmitResponse>(
-				await fetch(`${API_BASE}/blog/community/comments/${page}`, {
-					method: "POST",
-					headers:
-						adminMode && adminSecret
-							? adminHeaders(adminSecret, true)
-							: clientHeaders(true),
-					body: JSON.stringify(payload),
-				}),
-			);
-			localStorage.setItem(
-				PROFILE_KEY,
-				JSON.stringify({
-					nickname: payload.nickname,
-					email: payload.email,
-					website: payload.website,
-				}),
-			);
+			const result = await submitComment(payload);
+			saveProfile({
+				nickname: payload.nickname,
+				email: payload.email,
+				website: payload.website,
+			});
 			if (content instanceof HTMLTextAreaElement) content.value = "";
 			if (contentCount) contentCount.textContent = "0";
-			setReply();
 			if (status) {
 				status.dataset.state = "success";
 				status.textContent = result.message || "评论已提交";
