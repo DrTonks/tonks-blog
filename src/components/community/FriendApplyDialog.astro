@@ -18,18 +18,86 @@ import { Icon } from "astro-icon/components";
 				</div>
 				<button type="button" class="friend-apply__close" data-close-friend-apply aria-label="关闭申请友链弹窗">×</button>
 			</div>
-			<p class="friend-apply__intro">把你的站点信息留在这里，审核通过后会被认真贴到友链墙上。</p>
-			<div class="friend-apply__grid">
-				<label><span>站点名称 <b aria-hidden="true">*</b></span><input name="name" required maxlength="40" placeholder="你的站点名称" /></label>
-				<label><span>站点链接 <b aria-hidden="true">*</b></span><input name="website" type="url" required maxlength="300" placeholder="https://example.com" /></label>
-				<label><span>头像链接</span><input name="avatar" type="url" maxlength="300" placeholder="https://…/avatar.png（可选）" /></label>
-				<label><span>联系邮箱</span><input name="email" type="email" maxlength="254" autocomplete="email" placeholder="仅用于申请沟通（可选）" /></label>
-				<label class="friend-apply__description"><span>站点描述 <b aria-hidden="true">*</b></span><textarea name="description" required maxlength="240" rows="3" placeholder="一句话介绍你的站点"></textarea></label>
+			<p class="friend-apply__intro">欢迎交换友链。请先确认本站信息与申请约定，再留下你的站点资料。</p>
+
+			<div class="friend-apply__guide">
+				<section class="friend-apply__site" aria-labelledby="friend-site-title">
+					<div class="friend-apply__site-profile">
+						<img src="/assets/home/home.png" alt="Tonks' blog 头像" width="72" height="72" draggable="false" />
+						<div>
+							<span>THIS SITE / 本站信息</span>
+							<h3 id="friend-site-title">Tonks' blog</h3>
+							<p>我用全部记忆写下，你此刻的盛大</p>
+						</div>
+					</div>
+					<dl class="friend-apply__site-data">
+						<div>
+							<dt>站点名称</dt><dd>Tonks' blog</dd>
+							<button type="button" data-copy-value="Tonks' blog" aria-label="复制站点名称"><Icon name="material-symbols:content-copy-outline-rounded" /></button>
+						</div>
+						<div>
+							<dt>站点描述</dt><dd>我用全部记忆写下，你此刻的盛大</dd>
+							<button type="button" data-copy-value="我用全部记忆写下，你此刻的盛大" aria-label="复制站点描述"><Icon name="material-symbols:content-copy-outline-rounded" /></button>
+						</div>
+						<div>
+							<dt>站点链接</dt><dd>https://blog.tonks.top</dd>
+							<button type="button" data-copy-value="https://blog.tonks.top" aria-label="复制站点链接"><Icon name="material-symbols:content-copy-outline-rounded" /></button>
+						</div>
+						<div>
+							<dt>头像链接</dt><dd>https://blog.tonks.top/assets/home/home.png</dd>
+							<button type="button" data-copy-value="https://blog.tonks.top/assets/home/home.png" aria-label="复制头像链接"><Icon name="material-symbols:content-copy-outline-rounded" /></button>
+						</div>
+					</dl>
+					<button type="button" class="friend-apply__copy-all" data-copy-value={`站点名称：Tonks' blog\n站点描述：我用全部记忆写下，你此刻的盛大\n站点链接：https://blog.tonks.top\n头像链接：https://blog.tonks.top/assets/home/home.png`}>
+						<Icon name="material-symbols:content-copy-outline-rounded" /> 复制全部本站信息
+					</button>
+				</section>
+
+				<section class="friend-apply__steps" aria-labelledby="friend-steps-title">
+					<div class="friend-apply__section-title">
+						<Icon name="material-symbols:assignment-add-outline-rounded" />
+						<h3 id="friend-steps-title">申请步骤</h3>
+					</div>
+					<ol>
+						<li><span>1</span><div><strong>添加本站友链</strong><p>先把左侧资料添加到你的友链页，确保链接与头像可以正常访问。</p></div></li>
+						<li><span>2</span><div><strong>填写申请资料</strong><p>在弹窗底部展开申请表，留下站点名称、链接、头像和一句介绍。</p></div></li>
+						<li><span>3</span><div><strong>等待审核</strong><p>信息确认无误后会被贴到友链墙；需要补充时会通过邮箱或网站联系。</p></div></li>
+					</ol>
+				</section>
 			</div>
-			<div class="friend-apply__footer">
-				<span data-friend-apply-status aria-live="polite"></span>
-				<button type="submit" class="signal-marker">提交申请 <span aria-hidden="true">↗</span></button>
-			</div>
+
+			<aside class="friend-apply__notice" aria-labelledby="friend-notice-title">
+				<div class="friend-apply__section-title">
+					<Icon name="material-symbols:info-outline-rounded" />
+					<h3 id="friend-notice-title">申请注意事项</h3>
+				</div>
+				<ul>
+					<li><strong>互换原则：</strong>请先添加本站友链，确认后会尽快回访并添加你的站点。</li>
+					<li><strong>访问要求：</strong>支持 HTTPS，能够正常访问，近期仍有维护或内容更新。</li>
+					<li><strong>内容要求：</strong>以原创或长期维护内容为主，不收录广告、采集及违法违规站点。</li>
+					<li><strong>信息稳定：</strong>请使用稳定的站点与头像直链；信息变更可在评论区告知。</li>
+				</ul>
+			</aside>
+
+			<details class="friend-apply__application" data-friend-apply-details>
+				<summary>
+					<span><strong>填写申请资料</strong><small>资料会进入待审核列表，不会直接出现在友链墙</small></span>
+					<Icon name="material-symbols:keyboard-arrow-down-rounded" />
+				</summary>
+				<div class="friend-apply__application-body">
+					<div class="friend-apply__grid">
+						<label><span>站点名称 <b aria-hidden="true">*</b></span><input name="name" required maxlength="40" placeholder="你的站点名称" /></label>
+						<label><span>站点链接 <b aria-hidden="true">*</b></span><input name="website" type="url" required maxlength="300" placeholder="https://example.com" /></label>
+						<label><span>头像链接</span><input name="avatar" type="url" maxlength="300" placeholder="https://…/avatar.png（可选）" /></label>
+						<label><span>联系邮箱</span><input name="email" type="email" maxlength="254" autocomplete="email" placeholder="仅用于申请沟通（可选）" /></label>
+						<label class="friend-apply__description"><span>站点描述 <b aria-hidden="true">*</b></span><textarea name="description" required maxlength="240" rows="3" placeholder="一句话介绍你的站点"></textarea></label>
+					</div>
+					<div class="friend-apply__footer">
+						<span data-friend-apply-status aria-live="polite"></span>
+						<button type="submit" class="signal-marker">提交申请 <span aria-hidden="true">↗</span></button>
+					</div>
+				</div>
+			</details>
 		</form>
 	</dialog>
 </div>
@@ -42,14 +110,65 @@ import { Icon } from "astro-icon/components";
 	.friend-apply__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 	.friend-apply__trigger :global(svg) { width: 0.95rem; height: 0.95rem; }
 	.friend-apply__trigger :global(svg:last-child) { width: 0.7rem; height: 0.7rem; margin-left: 0.1rem; }
-	.friend-apply__dialog { width: min(42rem, calc(100vw - 2rem)); max-height: min(42rem, calc(100vh - 2rem)); padding: 0; color: rgba(0, 0, 0, 0.9); border: 1px solid var(--signal-line); border-radius: 0.45rem; background: var(--card-bg); box-shadow: 0.55rem 0.6rem 0 color-mix(in srgb, currentColor 13%, transparent); }
+	.friend-apply__dialog { width: min(58rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); padding: 0; overflow-x: hidden; overflow-y: auto; color: rgba(0, 0, 0, 0.9); border: 1px solid var(--signal-line); border-radius: 0.55rem; opacity: 0; background: var(--card-bg); box-shadow: 0.18rem 0.22rem 0 color-mix(in srgb, currentColor 7%, transparent); filter: blur(2px); transform: translateY(-0.7rem) scale(0.975) rotate(-0.18deg); transform-origin: 50% 12%; transition: opacity 180ms ease, filter 180ms ease, transform 260ms var(--ease-signal), box-shadow 260ms var(--ease-signal); }
+	.friend-apply__dialog.is-visible { opacity: 1; box-shadow: 0.55rem 0.6rem 0 color-mix(in srgb, currentColor 13%, transparent); filter: none; transform: translateY(0) scale(1) rotate(0); }
+	.friend-apply__dialog.is-closing { pointer-events: none; }
 	:global(html.dark) .friend-apply__dialog { color: rgba(255, 255, 255, 0.9); }
-	.friend-apply__dialog::backdrop { background: color-mix(in srgb, var(--card-bg) 70%, transparent); backdrop-filter: blur(3px); }
-	.friend-apply__form { display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 1.5rem); background: linear-gradient(135deg, color-mix(in srgb, var(--signal-soft) 27%, transparent), transparent 52%); }
+	.friend-apply__dialog::backdrop { opacity: 0; background: color-mix(in srgb, var(--card-bg) 70%, transparent); backdrop-filter: blur(0); transition: opacity 200ms ease, backdrop-filter 240ms ease; }
+	.friend-apply__dialog.is-visible::backdrop { opacity: 1; backdrop-filter: blur(3px); }
+	.friend-apply__form { display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 1.5rem); background: linear-gradient(135deg, color-mix(in srgb, var(--signal-soft) 32%, transparent), transparent 52%); }
 	.friend-apply__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 	.friend-apply__heading h2 { margin: 0.4rem 0 0; font-size: clamp(1.45rem, 4vw, 2rem); }
 	.friend-apply__close { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 54%, transparent); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: 50%; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; }
 	.friend-apply__intro { margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.75rem; line-height: 1.6; }
+	.friend-apply__guide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 0.9rem; }
+	.friend-apply__site,
+	.friend-apply__steps,
+	.friend-apply__notice,
+	.friend-apply__application { border: 1px solid color-mix(in srgb, var(--signal-line) 50%, currentColor 10%); border-radius: 0.4rem; background: color-mix(in srgb, var(--industrial-surface) 90%, transparent); }
+	.friend-apply__site,
+	.friend-apply__steps,
+	.friend-apply__notice { padding: 1rem; }
+	.friend-apply__site-profile { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.85rem; margin-bottom: 0.9rem; }
+	.friend-apply__site-profile img { width: 4.25rem; height: 4.25rem; object-fit: cover; border: 1px solid var(--signal-line); border-radius: 0.55rem 0.85rem 0.6rem 0.75rem; box-shadow: 0.16rem 0.18rem 0 color-mix(in srgb, var(--signal-line) 25%, transparent); user-select: none; -webkit-user-drag: none; }
+	.friend-apply__site-profile span { color: var(--signal-line); font: 800 0.5rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; }
+	.friend-apply__site-profile h3 { margin: 0.25rem 0; font-size: 1.1rem; }
+	.friend-apply__site-profile p { margin: 0; color: color-mix(in srgb, currentColor 57%, transparent); font-size: 0.68rem; line-height: 1.45; }
+	.friend-apply__site-data { display: grid; gap: 0.45rem; margin: 0; }
+	.friend-apply__site-data > div { display: grid; grid-template-columns: minmax(4rem, auto) minmax(0, 1fr) auto; align-items: center; gap: 0.55rem; min-height: 2.55rem; padding: 0.45rem 0.55rem; border: 1px solid color-mix(in srgb, currentColor 9%, transparent); border-radius: 0.28rem; background: color-mix(in srgb, var(--card-bg) 86%, transparent); }
+	.friend-apply__site-data dt { color: color-mix(in srgb, currentColor 45%, transparent); font-size: 0.58rem; }
+	.friend-apply__site-data dd { min-width: 0; margin: 0; overflow: hidden; font-size: 0.68rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+	.friend-apply__site-data button,
+	.friend-apply__copy-all { display: inline-grid; place-items: center; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.25rem; background: var(--signal); cursor: pointer; }
+	.friend-apply__site-data button { width: 1.8rem; height: 1.8rem; padding: 0; }
+	.friend-apply__site-data button :global(svg),
+	.friend-apply__copy-all :global(svg) { width: 0.9rem; height: 0.9rem; }
+	.friend-apply__site-data button.is-copied,
+	.friend-apply__copy-all.is-copied { border-color: var(--primary); background: color-mix(in srgb, var(--signal) 70%, var(--primary)); }
+	.friend-apply__copy-all { grid-auto-flow: column; gap: 0.4rem; margin-top: 0.65rem; padding: 0.5rem 0.65rem; font-size: 0.64rem; font-weight: 800; }
+	.friend-apply__section-title { display: flex; align-items: center; gap: 0.55rem; }
+	.friend-apply__section-title :global(svg) { width: 1.1rem; height: 1.1rem; color: var(--signal-line); }
+	.friend-apply__section-title h3 { margin: 0; font-size: 0.95rem; }
+	.friend-apply__steps ol { display: grid; gap: 0; margin: 0.8rem 0 0; padding: 0; list-style: none; }
+	.friend-apply__steps li { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.7rem; padding-bottom: 0.85rem; }
+	.friend-apply__steps li:last-child { padding-bottom: 0; }
+	.friend-apply__steps li:not(:last-child)::before { position: absolute; top: 1.7rem; bottom: 0.15rem; left: 0.78rem; border-left: 1px solid var(--signal-line); content: ""; opacity: 0.55; }
+	.friend-apply__steps li > span { display: grid; width: 1.6rem; height: 1.6rem; place-items: center; color: var(--signal-ink); border-radius: 50%; background: var(--signal); font: 800 0.65rem/1 "JetBrains Mono Variable", monospace; }
+	.friend-apply__steps strong { font-size: 0.76rem; }
+	.friend-apply__steps p { margin: 0.25rem 0 0; color: color-mix(in srgb, currentColor 55%, transparent); font-size: 0.66rem; line-height: 1.55; }
+	.friend-apply__notice ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 1rem; margin: 0.75rem 0 0; padding: 0; list-style: none; }
+	.friend-apply__notice li { position: relative; padding-left: 0.8rem; color: color-mix(in srgb, currentColor 60%, transparent); font-size: 0.66rem; line-height: 1.55; }
+	.friend-apply__notice li::before { position: absolute; top: 0.58em; left: 0; width: 0.3rem; height: 0.3rem; border-radius: 50%; background: var(--signal-line); content: ""; }
+	.friend-apply__notice strong { color: color-mix(in srgb, currentColor 82%, transparent); }
+	.friend-apply__application { overflow: hidden; }
+	.friend-apply__application summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.8rem 1rem; color: inherit; cursor: pointer; list-style: none; background: color-mix(in srgb, var(--signal-soft) 48%, var(--industrial-surface)); }
+	.friend-apply__application summary::-webkit-details-marker { display: none; }
+	.friend-apply__application summary > span { display: grid; gap: 0.2rem; }
+	.friend-apply__application summary strong { font-size: 0.78rem; }
+	.friend-apply__application summary small { color: color-mix(in srgb, currentColor 50%, transparent); font-size: 0.6rem; }
+	.friend-apply__application summary :global(svg) { width: 1.2rem; height: 1.2rem; color: var(--signal-line); transition: transform var(--motion-signal-fast) var(--ease-signal); }
+	.friend-apply__application[open] summary :global(svg) { transform: rotate(180deg); }
+	.friend-apply__application-body { display: grid; gap: 0.8rem; padding: 1rem; border-top: 1px dashed var(--signal-line); }
 	.friend-apply__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
 	.friend-apply__grid label { display: grid; gap: 0.4rem; color: color-mix(in srgb, currentColor 68%, transparent); font-size: 0.72rem; font-weight: 700; }
 	.friend-apply__grid label span b { color: var(--signal-line); }
@@ -63,10 +182,24 @@ import { Icon } from "astro-icon/components";
 	.friend-apply__footer > span[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
 	.friend-apply__footer button { padding: 0.6rem 0.8rem; color: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal-line); cursor: pointer; font-size: 0.7rem; font-weight: 800; }
 	.friend-apply__footer button:disabled { cursor: wait; opacity: 0.58; }
+	@media (max-width: 760px) {
+		.friend-apply__guide,
+		.friend-apply__notice ul { grid-template-columns: 1fr; }
+	}
 	@media (max-width: 560px) {
+		.friend-apply__dialog { width: calc(100vw - 1rem); max-height: calc(100dvh - 1rem); }
+		.friend-apply__form { padding: 0.85rem; }
+		.friend-apply__site,
+		.friend-apply__steps,
+		.friend-apply__notice { padding: 0.8rem; }
+		.friend-apply__site-data > div { grid-template-columns: 3.7rem minmax(0, 1fr) auto; }
 		.friend-apply__grid { grid-template-columns: 1fr; }
 		.friend-apply__description { grid-column: auto; }
 		.friend-apply__footer { align-items: stretch; flex-direction: column; }
 		.friend-apply__footer button { width: 100%; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.friend-apply__dialog { filter: none; transform: none; transition: none; }
+		.friend-apply__dialog::backdrop { backdrop-filter: none; transition: none; }
 	}
 </style>

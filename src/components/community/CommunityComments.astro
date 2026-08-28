@@ -10,27 +10,27 @@ const { page } = Astro.props;
 
 <section class="community-comments card-base" data-community-comments={page} aria-labelledby={`comments-title-${page}`}>
 	<header class="community-comments__header">
-		<div>
+		<div class="community-comments__heading">
 			<span class="signal-kicker">MESSAGE BOARD / 留言记录</span>
-			<h2 id={`comments-title-${page}`}>留言与回复</h2>
+			<div class="community-comments__title-row">
+				<h2 id={`comments-title-${page}`}>留言与回复</h2>
+				<div class="community-comments__actions" aria-label="留言操作">
+					<button type="button" class="community-comments__icon-button" data-open-comment aria-expanded="false" aria-label="参与留言" title="参与留言">
+						<Icon name="material-symbols:chat-bubble-outline-rounded" />
+					</button>
+					<button type="button" class="community-comments__icon-button" data-open-admin aria-label="管理员模式" title="管理员模式">
+						<Icon name="material-symbols:admin-panel-settings-outline-rounded" />
+					</button>
+					{page === "friends" && (
+						<button type="button" class="community-comments__icon-button" data-open-friend-apply aria-label="申请友链" title="申请友链">
+							<Icon name="material-symbols:link-rounded" />
+						</button>
+					)}
+				</div>
+			</div>
 			<p data-comment-description hidden>邮箱不会公开，仅用于识别连续发言与后续联系。评论会经过内容审核。</p>
 		</div>
-		<div class="community-comments__side">
-			<strong class="community-comments__count"><span data-comment-count>—</span><small>COMMENTS</small></strong>
-			<div class="community-comments__actions" aria-label="留言操作">
-				<button type="button" class="community-comments__icon-button" data-open-comment aria-expanded="false" aria-label="参与留言" title="参与留言">
-					<Icon name="material-symbols:chat-bubble-outline-rounded" />
-				</button>
-				<button type="button" class="community-comments__icon-button" data-open-admin aria-label="管理员模式" title="管理员模式">
-					<Icon name="material-symbols:admin-panel-settings-outline-rounded" />
-				</button>
-				{page === "friends" && (
-					<button type="button" class="community-comments__icon-button" data-open-friend-apply aria-label="申请友链" title="申请友链">
-						<Icon name="material-symbols:link-rounded" />
-					</button>
-				)}
-			</div>
-		</div>
+		<strong class="community-comments__count"><span data-comment-count>—</span><small>COMMENTS</small></strong>
 	</header>
 
 	<form class="community-comment-form" data-comment-form novalidate hidden aria-hidden="true">
@@ -110,19 +110,20 @@ const { page } = Astro.props;
 	:global(html.dark) .community-comments { color: rgba(255, 255, 255, 0.9); }
 
 	.community-comments__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
-	.community-comments__header h2 { margin: 0.55rem 0 0; font-size: clamp(1.5rem, 3vw, 2rem); }
+	.community-comments__heading { min-width: 0; }
+	.community-comments__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 0.85rem; margin-top: 0.55rem; }
+	.community-comments__header h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); }
 	.community-comments__header p { max-width: 40rem; margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.78rem; line-height: 1.6; }
 	.community-comments__header p[hidden],
 	.community-comment-form[hidden] { display: none; }
-	.community-comments__side { display: grid; justify-items: end; gap: 0.7rem; }
 	.community-comments__count { display: grid; min-width: 5rem; color: var(--primary); font: 800 2rem/1 "JetBrains Mono Variable", monospace; text-align: right; }
 	.community-comments__count small { margin-top: 0.35rem; color: color-mix(in srgb, currentColor 45%, transparent); font-size: 0.5rem; letter-spacing: 0.12em; }
 	.community-comments__actions { display: inline-flex; align-items: center; gap: 0.35rem; }
-	.community-comments__icon-button { display: grid; width: 2rem; height: 2rem; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 55%, transparent); border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: 0.25rem; background: color-mix(in srgb, var(--card-bg) 78%, transparent); cursor: pointer; transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal); }
+	.community-comments__icon-button { display: grid; width: 2.1rem; height: 2.1rem; place-items: center; padding: 0; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.3rem; background: var(--signal); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-bg) 40%, transparent), 0.12rem 0.14rem 0 color-mix(in srgb, var(--signal-line) 24%, transparent); cursor: pointer; transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal); }
 	.community-comments__icon-button:hover,
 	.community-comments__icon-button:focus-visible,
 	.community-comments__icon-button[aria-expanded="true"],
-	.community-comments__icon-button.is-active { color: var(--primary); border-color: var(--signal-line); background: var(--signal-soft); transform: translateY(-0.08rem); }
+	.community-comments__icon-button.is-active { color: var(--signal-ink); border-color: var(--primary); background: color-mix(in srgb, var(--signal) 72%, var(--primary)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-bg) 30%, transparent), 0.18rem 0.2rem 0 color-mix(in srgb, var(--signal-line) 32%, transparent); transform: translate(-0.04rem, -0.08rem); }
 	.community-comments__icon-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 	.community-comments__icon-button :global(svg) { width: 1.05rem; height: 1.05rem; }
 
@@ -194,7 +195,7 @@ const { page } = Astro.props;
 	@media (max-width: 720px) {
 		.community-comments__header { align-items: flex-start; }
 		.community-comments__count { min-width: 3.8rem; font-size: 1.45rem; }
-		.community-comments__side { gap: 0.5rem; }
+		.community-comments__title-row { align-items: center; }
 		.community-comment-form { grid-template-columns: 1fr; }
 		.community-comment-form__content,
 		.community-comment-form__footer,

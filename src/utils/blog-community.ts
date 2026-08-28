@@ -758,22 +758,91 @@ function initializeFriendApplications(): void {
 		"[data-friend-apply-dialog]",
 	);
 	if (!dialog) return;
+	const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+	let closeTimer: number | undefined;
+	const finishClose = (): void => {
+		if (closeTimer !== undefined) {
+			window.clearTimeout(closeTimer);
+			closeTimer = undefined;
+		}
+		dialog.classList.remove("is-visible", "is-closing");
+		if (dialog.open) dialog.close();
+	};
+	const closeFriendDialog = (): void => {
+		if (!dialog.open || dialog.classList.contains("is-closing")) return;
+		dialog.classList.remove("is-visible");
+		if (reducedMotion.matches) {
+			finishClose();
+			return;
+		}
+		dialog.classList.add("is-closing");
+		closeTimer = window.setTimeout(finishClose, 320);
+	};
+	const openFriendDialog = (): void => {
+		if (dialog.open) return;
+		if (closeTimer !== undefined) {
+			window.clearTimeout(closeTimer);
+			closeTimer = undefined;
+		}
+		dialog.classList.remove("is-visible", "is-closing");
+		dialog.showModal();
+		if (reducedMotion.matches) {
+			dialog.classList.add("is-visible");
+			return;
+		}
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				if (dialog.open) dialog.classList.add("is-visible");
+			});
+		});
+	};
 	for (const opener of document.querySelectorAll<HTMLButtonElement>(
 		"[data-open-friend-apply]",
 	)) {
 		if (opener.dataset.friendApplyBound === "true") continue;
 		opener.dataset.friendApplyBound = "true";
-		opener.addEventListener("click", () => {
-			if (!dialog.open) dialog.showModal();
-		});
+		opener.addEventListener("click", openFriendDialog);
 	}
 	if (dialog.dataset.friendApplyBound === "true") return;
 	dialog.dataset.friendApplyBound = "true";
+	for (const button of dialog.querySelectorAll<HTMLButtonElement>(
+		"[data-copy-value]",
+	)) {
+		button.addEventListener("click", async () => {
+			const value = button.dataset.copyValue || "";
+			if (!value) return;
+			try {
+				await navigator.clipboard.writeText(value);
+				button.classList.add("is-copied");
+				const previousLabel = button.getAttribute("aria-label");
+				button.setAttribute("aria-label", "已复制");
+				setTimeout(() => {
+					button.classList.remove("is-copied");
+					if (previousLabel) button.setAttribute("aria-label", previousLabel);
+					else button.removeAttribute("aria-label");
+				}, 1400);
+			} catch {
+				button.setAttribute("aria-label", "复制失败，请手动复制");
+			}
+		});
+	}
 	dialog
 		.querySelector<HTMLButtonElement>("[data-close-friend-apply]")
-		?.addEventListener("click", () => dialog.close());
+		?.addEventListener("click", closeFriendDialog);
 	dialog.addEventListener("click", (event) => {
-		if (event.target === dialog) dialog.close();
+		if (event.target === dialog) closeFriendDialog();
+	});
+	dialog.addEventListener("cancel", (event) => {
+		event.preventDefault();
+		closeFriendDialog();
+	});
+	dialog.addEventListener("transitionend", (event) => {
+		if (
+			dialog.classList.contains("is-closing") &&
+			event.target === dialog &&
+			event.propertyName === "opacity"
+		)
+			finishClose();
 	});
 	const form = dialog.querySelector<HTMLFormElement>(
 		"[data-friend-apply-form]",
