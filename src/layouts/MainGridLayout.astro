@@ -510,7 +510,6 @@ const transparentClass = shouldEnableTransparency
         height: 70vh !important; /* 保持较大高度优先显示banner */
         min-height: 450px;
         max-height: none; /* 移除最大高度限制 */
-        top: 0 !important; /* 移动端从顶部开始，避免被导航栏覆盖 */
     }
     
     /* 主内容区域位置调整 - 确保在banner下面 */
@@ -564,7 +563,6 @@ const transparentClass = shouldEnableTransparency
         height: 75vh !important;
         min-height: 500px;
         max-height: none; /* 移除最大高度限制 */
-        top: 0 !important; /* 移动端从顶部开始，避免被导航栏覆盖 */
     }
     
     /* 主内容区域位置调整 - 确保在banner下面 */
@@ -617,7 +615,6 @@ const transparentClass = shouldEnableTransparency
     #banner-wrapper {
         height: 70vh !important;
         min-height: 500px;
-        top: 0 !important; /* 移动端从顶部开始，避免被导航栏覆盖 */
     }
     
     /* 主内容区域位置调整 - 确保在banner下面 */
@@ -937,7 +934,6 @@ const transparentClass = shouldEnableTransparency
 /* 移动端横屏优化 */
 @media (max-width: 1023px) and (orientation: landscape) {
     #banner-wrapper:not(.mobile-hide-banner) {
-        top: 0 !important; /* 横屏模式从顶部开始，避免被导航栏覆盖 */
         height: 60vh !important;
     }
     
