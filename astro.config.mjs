@@ -101,7 +101,13 @@ const sleepyDevProxyFallback = {
 					init.duplex = "half";
 				}
 
-				const upstream = await fetch(upstreamUrl, init);
+				// Keep the backend's 302 visible to the browser. Following it here would
+				// make the dev proxy report qlogo's final status (for example 400) as if
+				// sleepy itself had rejected the avatar request.
+				const upstream = await fetch(upstreamUrl, {
+					...init,
+					redirect: "manual",
+				});
 				response.statusCode = upstream.status;
 				upstream.headers.forEach((value, name) => {
 					if (!["connection", "content-encoding", "content-length", "transfer-encoding"].includes(name)) {
