@@ -44,6 +44,7 @@ html.dark .archive-shell {
 }
 
 .archive-category-bar button {
+  position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: baseline;
@@ -57,7 +58,22 @@ html.dark .archive-shell {
   font-size: 0.72rem;
   font-weight: 750;
   white-space: nowrap;
-  transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal);
+  transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-medium) var(--ease-signal), transform var(--motion-signal-fast) var(--ease-signal);
+}
+
+.archive-category-bar button::after {
+  position: absolute;
+  right: 0.72rem;
+  bottom: 0.16rem;
+  left: 0.72rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--signal-line);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.2);
+  transform-origin: 50% 50%;
+  transition: opacity var(--motion-signal-fast) ease, transform var(--motion-signal-medium) var(--ease-signal);
 }
 
 .archive-category-bar button:hover,
@@ -67,7 +83,15 @@ html.dark .archive-shell {
   border-color: var(--signal-line);
   background: var(--signal);
   outline: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--signal-line) 20%, transparent), 0 0.18rem 0 color-mix(in srgb, var(--signal-line) 14%, transparent);
   transform: translateY(-0.06rem);
+}
+
+.archive-category-bar button:hover::after,
+.archive-category-bar button:focus-visible::after,
+.archive-category-bar button.active::after {
+  opacity: 0.72;
+  transform: scaleX(1);
 }
 
 .archive-category-bar button:focus-visible {
@@ -92,6 +116,28 @@ html.dark .archive-shell {
   margin: 0;
   color: color-mix(in srgb, currentColor 52%, transparent);
   font-size: 0.9rem;
+}
+
+.archive-results-view {
+  animation: archive-results-enter 360ms var(--ease-signal) both;
+}
+
+.archive-results-view .archive-year {
+  animation: archive-year-enter 420ms var(--ease-signal) both;
+}
+
+.archive-results-view .archive-year:nth-child(2) { animation-delay: 45ms; }
+.archive-results-view .archive-year:nth-child(3) { animation-delay: 90ms; }
+.archive-results-view .archive-year:nth-child(4) { animation-delay: 135ms; }
+
+@keyframes archive-results-enter {
+  from { opacity: 0; transform: translateY(0.45rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes archive-year-enter {
+  from { opacity: 0; transform: translateY(0.3rem); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .archive-kicker,
@@ -360,6 +406,9 @@ html.dark .archive-shell {
 
 @media (prefers-reduced-motion: reduce) {
   .archive-category-bar button,
+  .archive-category-bar button::after,
+  .archive-results-view,
+  .archive-results-view .archive-year,
   .archive-entry,
   .archive-entry::before,
   .entry-node i,

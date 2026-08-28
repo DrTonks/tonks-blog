@@ -339,14 +339,19 @@ function buildComment(
 	image.decoding = "async";
 	image.draggable = false;
 	image.referrerPolicy = "no-referrer";
+	image.dataset.avatarStage = "qq-or-gravatar";
 	image.src = `${API_BASE}/blog/community/avatar/${comment.id}`;
 	image.addEventListener("load", () => {
 		fallback.hidden = true;
 	});
 	image.addEventListener("error", () => {
-		if (image.dataset.fallback !== "true") {
-			image.dataset.fallback = "true";
+		const stage = image.dataset.avatarStage;
+		if (stage === "qq-or-gravatar") {
+			image.dataset.avatarStage = "gravatar";
 			image.src = `${API_BASE}/blog/community/avatar/${comment.id}?fallback=1`;
+		} else if (stage === "gravatar") {
+			image.dataset.avatarStage = "local";
+			image.src = `${API_BASE}/blog/community/avatar/${comment.id}?fallback=2`;
 		} else {
 			image.remove();
 			fallback.hidden = false;
@@ -472,6 +477,22 @@ function readAdminSecret(): string {
 	}
 }
 
+function saveAdminSecret(secret: string): void {
+	try {
+		localStorage.setItem(ADMIN_KEY, secret);
+	} catch {
+		/* Keep the current page session even when storage is unavailable. */
+	}
+}
+
+function clearAdminSecret(): void {
+	try {
+		localStorage.removeItem(ADMIN_KEY);
+	} catch {
+		/* Ignore storage cleanup failures. */
+	}
+}
+
 async function verifyAdminSecret(secret: string): Promise<boolean> {
 	const trimmed = secret.trim();
 	if (!trimmed) return false;
@@ -560,8 +581,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 			"aria-label",
 			adminMode ? "站长模式" : "管理员模式",
 		);
-		if (adminInput instanceof HTMLInputElement && adminSecret)
-			adminInput.value = adminSecret;
+		if (adminInput instanceof HTMLInputElement) adminInput.value = adminSecret;
 		if (adminLogout) adminLogout.hidden = !adminMode;
 		const submit = adminForm?.querySelector<HTMLButtonElement>(
 			"button[type='submit']",
@@ -583,7 +603,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 		if (event.target === adminDialog) adminDialog.close();
 	});
 	adminLogout?.addEventListener("click", () => {
-		localStorage.removeItem(ADMIN_KEY);
+		clearAdminSecret();
 		adminSecret = "";
 		adminMode = false;
 		updateAdminControls();
@@ -609,7 +629,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 		try {
 			if (!(await verifyAdminSecret(secret)))
 				throw new Error("管理员密钥不正确");
-			localStorage.setItem(ADMIN_KEY, secret);
+			saveAdminSecret(secret);
 			adminSecret = secret;
 			adminMode = true;
 			updateAdminControls();
@@ -916,7 +936,35 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 					error instanceof Error ? error.message : "删除失败";
 		}
 	};
-	void load();
+	const restoreAdminSession = async () => {
+		if (adminSecret) {
+			try {
+				if (await verifyAdminSecret(adminSecret)) {
+					adminMode = true;
+					updateAdminControls();
+					if (adminStatus) {
+						adminStatus.dataset.state = "success";
+						adminStatus.textContent = "站长模式已恢复";
+					}
+				} else {
+					clearAdminSecret();
+					adminSecret = "";
+					adminMode = false;
+					updateAdminControls();
+					if (adminStatus) {
+						adminStatus.dataset.state = "error";
+						adminStatus.textContent = "管理员密钥已失效，请重新验证";
+					}
+				}
+			} catch {
+				// Keep the cached secret for a later retry when the API is temporarily unavailable.
+				adminMode = false;
+				updateAdminControls();
+			}
+		}
+		await load();
+	};
+	void restoreAdminSession();
 
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
