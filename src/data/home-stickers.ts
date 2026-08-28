@@ -69,7 +69,7 @@ export const homeStickerDefinitions: HomeStickerDefinition[] = [
 		kind: "identity",
 		eyebrow: "FILE / ABOUT",
 		title: "关于本站",
-		note: "About me and this site",
+		note: "About my site.",
 		image: "/assets/desktop-banner/d5.png",
 		href: "/about/",
 		tilt: -2.1,
