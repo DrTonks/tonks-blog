@@ -1,4 +1,6 @@
 ---
+import { Icon } from "astro-icon/components";
+
 interface Props {
 	page: "about" | "friends";
 }
@@ -11,12 +13,27 @@ const { page } = Astro.props;
 		<div>
 			<span class="signal-kicker">MESSAGE BOARD / 留言记录</span>
 			<h2 id={`comments-title-${page}`}>留言与回复</h2>
-			<p>邮箱不会公开，仅用于识别连续发言与后续联系。评论会经过内容审核。</p>
+			<p data-comment-description hidden>邮箱不会公开，仅用于识别连续发言与后续联系。评论会经过内容审核。</p>
 		</div>
-		<strong class="community-comments__count"><span data-comment-count>—</span><small>COMMENTS</small></strong>
+		<div class="community-comments__side">
+			<strong class="community-comments__count"><span data-comment-count>—</span><small>COMMENTS</small></strong>
+			<div class="community-comments__actions" aria-label="留言操作">
+				<button type="button" class="community-comments__icon-button" data-open-comment aria-expanded="false" aria-label="参与留言" title="参与留言">
+					<Icon name="material-symbols:chat-bubble-outline-rounded" />
+				</button>
+				<button type="button" class="community-comments__icon-button" data-open-admin aria-label="管理员模式" title="管理员模式">
+					<Icon name="material-symbols:admin-panel-settings-outline-rounded" />
+				</button>
+				{page === "friends" && (
+					<button type="button" class="community-comments__icon-button" data-open-friend-apply aria-label="申请友链" title="申请友链">
+						<Icon name="material-symbols:link-rounded" />
+					</button>
+				)}
+			</div>
+		</div>
 	</header>
 
-	<form class="community-comment-form" data-comment-form novalidate>
+	<form class="community-comment-form" data-comment-form novalidate hidden aria-hidden="true">
 		<div class="community-comment-form__reply" data-reply-context hidden>
 			<span>正在回复 <strong data-reply-name></strong></span>
 			<button type="button" data-cancel-reply>取消回复</button>
@@ -49,6 +66,30 @@ const { page } = Astro.props;
 	<div class="community-comments__list" data-comment-list aria-live="polite">
 		<p class="community-comments__loading">正在读取留言…</p>
 	</div>
+
+	<dialog class="community-admin-dialog" data-admin-dialog aria-labelledby={`admin-dialog-title-${page}`}>
+		<form class="community-admin-form" data-admin-form>
+			<div class="community-admin-form__heading">
+				<div>
+					<span class="signal-kicker">ACCESS CONTROL / ADMIN</span>
+					<h3 id={`admin-dialog-title-${page}`}>管理员模式</h3>
+				</div>
+				<button type="button" class="community-admin-form__close" data-close-admin aria-label="关闭管理员弹窗">×</button>
+			</div>
+			<p>输入管理员密钥后，可以以“站长”身份留言，并删除不合适的公开评论。</p>
+			<label>
+				<span>管理员密钥</span>
+				<input name="secret" type="password" required autocomplete="current-password" placeholder="输入密钥" />
+			</label>
+			<div class="community-admin-form__footer">
+				<span data-admin-status aria-live="polite"></span>
+				<div>
+					<button type="button" class="community-admin-form__logout" data-admin-logout hidden>退出站长模式</button>
+					<button type="submit" class="signal-marker">验证密钥 <span aria-hidden="true">↗</span></button>
+				</div>
+			</div>
+		</form>
+	</dialog>
 </section>
 
 <style>
@@ -71,8 +112,19 @@ const { page } = Astro.props;
 	.community-comments__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
 	.community-comments__header h2 { margin: 0.55rem 0 0; font-size: clamp(1.5rem, 3vw, 2rem); }
 	.community-comments__header p { max-width: 40rem; margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.78rem; line-height: 1.6; }
+	.community-comments__header p[hidden],
+	.community-comment-form[hidden] { display: none; }
+	.community-comments__side { display: grid; justify-items: end; gap: 0.7rem; }
 	.community-comments__count { display: grid; min-width: 5rem; color: var(--primary); font: 800 2rem/1 "JetBrains Mono Variable", monospace; text-align: right; }
 	.community-comments__count small { margin-top: 0.35rem; color: color-mix(in srgb, currentColor 45%, transparent); font-size: 0.5rem; letter-spacing: 0.12em; }
+	.community-comments__actions { display: inline-flex; align-items: center; gap: 0.35rem; }
+	.community-comments__icon-button { display: grid; width: 2rem; height: 2rem; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 55%, transparent); border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: 0.25rem; background: color-mix(in srgb, var(--card-bg) 78%, transparent); cursor: pointer; transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal); }
+	.community-comments__icon-button:hover,
+	.community-comments__icon-button:focus-visible,
+	.community-comments__icon-button[aria-expanded="true"],
+	.community-comments__icon-button.is-active { color: var(--primary); border-color: var(--signal-line); background: var(--signal-soft); transform: translateY(-0.08rem); }
+	.community-comments__icon-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+	.community-comments__icon-button :global(svg) { width: 1.05rem; height: 1.05rem; }
 
 	.community-comment-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; margin-top: 1.4rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--signal-line) 48%, currentColor 10%); background: color-mix(in srgb, var(--industrial-surface) 88%, transparent); }
 	.community-comment-form__reply { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.55rem 0.7rem; color: var(--signal-line); border-left: 2px solid var(--signal-line); background: color-mix(in srgb, var(--signal-soft) 35%, transparent); font-size: 0.76rem; }
@@ -109,10 +161,40 @@ const { page } = Astro.props;
 	.community-comments__list :global(.community-comment__replies) { margin: 0.3rem 0 0 3.25rem; padding-left: 0.85rem; border-left: 2px solid color-mix(in srgb, var(--signal-line) 38%, transparent); }
 	.community-comments__list :global(.community-comment__replies .community-comment) { padding: 0.7rem 0; }
 	.community-comments__list :global(.community-comments__empty) { padding: 1.2rem; color: color-mix(in srgb, currentColor 48%, transparent); border: 1px dashed color-mix(in srgb, currentColor 14%, transparent); text-align: center; }
+	.community-comments__list :global(.community-comment__avatar) { overflow: hidden; user-select: none; }
+	.community-comments__list :global(.community-comment__avatar img),
+	.community-comments__list :global(.community-comment__avatar-fallback) { grid-area: 1 / 1; }
+	.community-comments__list :global(.community-comment__avatar img) { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+	.community-comments__list :global(.community-comment__avatar-fallback) { display: grid; width: 100%; height: 100%; place-items: center; }
+	.community-comments__list :global(.community-comment__owner-badge) { display: inline-flex; align-items: center; margin-left: 0.35rem; padding: 0.12rem 0.3rem; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal); font: 800 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.04em; vertical-align: 0.1em; }
+	.community-comments__list :global(.community-comment__status) { padding: 0.12rem 0.3rem; color: var(--signal-line); border: 1px dashed currentColor; border-radius: 0.2rem; font: 700 0.52rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list :global(.community-comment__admin-tools) { display: inline-flex; align-items: center; gap: 0.45rem; margin-left: auto; }
+	.community-comments__list :global(.community-comment__delete) { padding: 0; color: color-mix(in srgb, var(--signal-line) 72%, currentColor); border: 0; background: none; cursor: pointer; font: 700 0.58rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list :global(.community-comment__delete:hover) { color: var(--primary); text-decoration: underline; }
+
+	.community-admin-dialog { width: min(28rem, calc(100vw - 2rem)); padding: 0; color: rgba(0, 0, 0, 0.9); border: 1px solid var(--signal-line); border-radius: 0.45rem; background: var(--card-bg); box-shadow: 0.55rem 0.6rem 0 color-mix(in srgb, currentColor 13%, transparent); }
+	:global(html.dark) .community-admin-dialog { color: rgba(255, 255, 255, 0.9); }
+	.community-admin-dialog::backdrop { background: color-mix(in srgb, var(--card-bg) 68%, transparent); backdrop-filter: blur(3px); }
+	.community-admin-form { display: grid; gap: 1rem; padding: 1.25rem; background: linear-gradient(135deg, color-mix(in srgb, var(--signal-soft) 30%, transparent), transparent 50%); }
+	.community-admin-form__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+	.community-admin-form__heading h3 { margin: 0.4rem 0 0; font-size: 1.35rem; }
+	.community-admin-form > p { margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.75rem; line-height: 1.6; }
+	.community-admin-form label { display: grid; gap: 0.45rem; color: color-mix(in srgb, currentColor 68%, transparent); font-size: 0.72rem; font-weight: 700; }
+	.community-admin-form input { width: 100%; padding: 0.7rem 0.75rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 0.25rem; outline: none; background: color-mix(in srgb, var(--industrial-surface) 88%, transparent); font: inherit; }
+	.community-admin-form input:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 16%, transparent); }
+	.community-admin-form__close { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 54%, transparent); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: 50%; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; }
+	.community-admin-form__footer { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
+	.community-admin-form__footer > span { min-height: 1.1rem; color: color-mix(in srgb, currentColor 52%, transparent); font-size: 0.68rem; }
+	.community-admin-form__footer > span[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
+	.community-admin-form__footer > div { display: inline-flex; align-items: center; gap: 0.45rem; }
+	.community-admin-form__footer button { padding: 0.55rem 0.7rem; color: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal-line); cursor: pointer; font-size: 0.68rem; font-weight: 800; }
+	.community-admin-form__footer .community-admin-form__logout { color: var(--signal-line); border-color: var(--signal-line); background: transparent; }
+	.community-admin-form__footer button:disabled { cursor: wait; opacity: 0.55; }
 
 	@media (max-width: 720px) {
 		.community-comments__header { align-items: flex-start; }
 		.community-comments__count { min-width: 3.8rem; font-size: 1.45rem; }
+		.community-comments__side { gap: 0.5rem; }
 		.community-comment-form { grid-template-columns: 1fr; }
 		.community-comment-form__content,
 		.community-comment-form__footer,

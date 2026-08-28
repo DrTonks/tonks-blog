@@ -9,6 +9,7 @@ import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import BlogLike from "../components/community/BlogLike.astro";
 import CommunityComments from "../components/community/CommunityComments.astro";
+import FriendApplyDialog from "../components/community/FriendApplyDialog.astro";
 
 interface FriendLink {
 	name: string;
@@ -59,6 +60,7 @@ const cardAngles = [
 				</div>
 				<p>遇见有趣的灵魂</p>
 			</div>
+			<FriendApplyDialog />
 			<BlogLike target="page:friends" variant="friends" class="friend-wall__like" />
 			<div class="friend-wall__counter" aria-label={`共 ${friendsData.length} 个友链`}>
 				<span>LINKS</span>

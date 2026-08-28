@@ -1,0 +1,72 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<div class="friend-apply" data-friend-apply>
+	<button type="button" class="friend-apply__trigger signal-marker" data-open-friend-apply aria-haspopup="dialog">
+		<Icon name="material-symbols:link-rounded" aria-hidden="true" />
+		<span>申请友链</span>
+		<Icon name="material-symbols:arrow-outward-rounded" aria-hidden="true" />
+	</button>
+
+	<dialog class="friend-apply__dialog" data-friend-apply-dialog aria-labelledby="friend-apply-title">
+		<form class="friend-apply__form" data-friend-apply-form>
+			<div class="friend-apply__heading">
+				<div>
+					<span class="signal-kicker">COMMUNITY / CONNECTION REQUEST</span>
+					<h2 id="friend-apply-title">申请友链</h2>
+				</div>
+				<button type="button" class="friend-apply__close" data-close-friend-apply aria-label="关闭申请友链弹窗">×</button>
+			</div>
+			<p class="friend-apply__intro">把你的站点信息留在这里，审核通过后会被认真贴到友链墙上。</p>
+			<div class="friend-apply__grid">
+				<label><span>站点名称 <b aria-hidden="true">*</b></span><input name="name" required maxlength="40" placeholder="你的站点名称" /></label>
+				<label><span>站点链接 <b aria-hidden="true">*</b></span><input name="website" type="url" required maxlength="300" placeholder="https://example.com" /></label>
+				<label><span>头像链接</span><input name="avatar" type="url" maxlength="300" placeholder="https://…/avatar.png（可选）" /></label>
+				<label><span>联系邮箱</span><input name="email" type="email" maxlength="254" autocomplete="email" placeholder="仅用于申请沟通（可选）" /></label>
+				<label class="friend-apply__description"><span>站点描述 <b aria-hidden="true">*</b></span><textarea name="description" required maxlength="240" rows="3" placeholder="一句话介绍你的站点"></textarea></label>
+			</div>
+			<div class="friend-apply__footer">
+				<span data-friend-apply-status aria-live="polite"></span>
+				<button type="submit" class="signal-marker">提交申请 <span aria-hidden="true">↗</span></button>
+			</div>
+		</form>
+	</dialog>
+</div>
+
+<style>
+	.friend-apply { display: inline-flex; }
+	.friend-apply__trigger { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.75rem; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.25rem; background: var(--signal); cursor: pointer; font: 800 0.68rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.03em; transition: transform var(--motion-signal-fast) var(--ease-signal), box-shadow var(--motion-signal-fast) ease; }
+	.friend-apply__trigger:hover,
+	.friend-apply__trigger:focus-visible { box-shadow: 0.18rem 0.2rem 0 color-mix(in srgb, currentColor 18%, transparent); transform: translate(-0.06rem, -0.06rem); }
+	.friend-apply__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+	.friend-apply__trigger :global(svg) { width: 0.95rem; height: 0.95rem; }
+	.friend-apply__trigger :global(svg:last-child) { width: 0.7rem; height: 0.7rem; margin-left: 0.1rem; }
+	.friend-apply__dialog { width: min(42rem, calc(100vw - 2rem)); max-height: min(42rem, calc(100vh - 2rem)); padding: 0; color: rgba(0, 0, 0, 0.9); border: 1px solid var(--signal-line); border-radius: 0.45rem; background: var(--card-bg); box-shadow: 0.55rem 0.6rem 0 color-mix(in srgb, currentColor 13%, transparent); }
+	:global(html.dark) .friend-apply__dialog { color: rgba(255, 255, 255, 0.9); }
+	.friend-apply__dialog::backdrop { background: color-mix(in srgb, var(--card-bg) 70%, transparent); backdrop-filter: blur(3px); }
+	.friend-apply__form { display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 1.5rem); background: linear-gradient(135deg, color-mix(in srgb, var(--signal-soft) 27%, transparent), transparent 52%); }
+	.friend-apply__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+	.friend-apply__heading h2 { margin: 0.4rem 0 0; font-size: clamp(1.45rem, 4vw, 2rem); }
+	.friend-apply__close { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 54%, transparent); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: 50%; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; }
+	.friend-apply__intro { margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.75rem; line-height: 1.6; }
+	.friend-apply__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+	.friend-apply__grid label { display: grid; gap: 0.4rem; color: color-mix(in srgb, currentColor 68%, transparent); font-size: 0.72rem; font-weight: 700; }
+	.friend-apply__grid label span b { color: var(--signal-line); }
+	.friend-apply__grid input,
+	.friend-apply__grid textarea { width: 100%; min-width: 0; padding: 0.68rem 0.72rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 0.25rem; outline: none; background: color-mix(in srgb, var(--industrial-surface) 90%, transparent); font: inherit; font-size: 0.78rem; resize: vertical; }
+	.friend-apply__grid input:focus,
+	.friend-apply__grid textarea:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent); }
+	.friend-apply__description { grid-column: 1 / -1; }
+	.friend-apply__footer { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
+	.friend-apply__footer > span { min-height: 1.1rem; color: color-mix(in srgb, currentColor 52%, transparent); font-size: 0.68rem; }
+	.friend-apply__footer > span[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
+	.friend-apply__footer button { padding: 0.6rem 0.8rem; color: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal-line); cursor: pointer; font-size: 0.7rem; font-weight: 800; }
+	.friend-apply__footer button:disabled { cursor: wait; opacity: 0.58; }
+	@media (max-width: 560px) {
+		.friend-apply__grid { grid-template-columns: 1fr; }
+		.friend-apply__description { grid-column: auto; }
+		.friend-apply__footer { align-items: stretch; flex-direction: column; }
+		.friend-apply__footer button { width: 100%; }
+	}
+</style>

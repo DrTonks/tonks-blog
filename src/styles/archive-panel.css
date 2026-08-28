@@ -18,6 +18,67 @@ html.dark .archive-shell {
   border-bottom: 1px solid var(--signal-line);
 }
 
+.archive-category-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0.6rem 0.25rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--signal-line) 62%, transparent);
+}
+
+.archive-category-bar__label {
+  flex: 0 0 auto;
+  color: var(--signal-line);
+  font: 800 0.58rem/1 "JetBrains Mono Variable", monospace;
+  letter-spacing: 0.12em;
+}
+
+.archive-category-bar__scroll {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0.42rem;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.archive-category-bar button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.42rem 0.62rem;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--industrial-surface) 75%, transparent);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 750;
+  white-space: nowrap;
+  transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal);
+}
+
+.archive-category-bar button:hover,
+.archive-category-bar button:focus-visible,
+.archive-category-bar button.active {
+  color: var(--signal-ink);
+  border-color: var(--signal-line);
+  background: var(--signal);
+  outline: none;
+  transform: translateY(-0.06rem);
+}
+
+.archive-category-bar button:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.archive-category-bar button small {
+  color: color-mix(in srgb, currentColor 48%, transparent);
+  font: 700 0.55rem/1 "JetBrains Mono Variable", monospace;
+}
+
 .archive-header h1 {
   margin: 0.35rem 0 0.4rem;
   color: color-mix(in srgb, currentColor 92%, transparent);
@@ -259,6 +320,14 @@ html.dark .archive-shell {
     flex-direction: column;
   }
 
+  .archive-category-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .archive-category-bar__scroll { width: 100%; }
+
   .archive-year {
     display: block;
   }
@@ -290,6 +359,7 @@ html.dark .archive-shell {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .archive-category-bar button,
   .archive-entry,
   .archive-entry::before,
   .entry-node i,

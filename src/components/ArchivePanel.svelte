@@ -52,6 +52,33 @@
     return true;
   });
 
+  $: categoryOptions = Array.from(
+    new Set(sortedPosts.map((post) => post.data.category).filter((category): category is string => Boolean(category))),
+  ).sort((left, right) => left.localeCompare(right, "zh-CN"));
+
+  $: selectedCategory = categories.length === 1 && !uncategorized ? categories[0] : null;
+
+  function updateArchiveQuery() {
+    const params = new URLSearchParams();
+    for (const tag of tags) params.append("tag", tag);
+    for (const category of categories) params.append("category", category);
+    if (uncategorized) params.set("uncategorized", "");
+    const query = params.toString();
+    window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+  }
+
+  function selectCategory(category: string) {
+    categories = category ? [category] : [];
+    uncategorized = false;
+    updateArchiveQuery();
+  }
+
+  function selectUncategorized() {
+    categories = [];
+    uncategorized = true;
+    updateArchiveQuery();
+  }
+
   $: groups = Object.entries(
     filteredPosts.reduce((grouped, post) => {
       const year = asDate(post.data.published).getFullYear();
@@ -76,6 +103,17 @@
       <span><strong>{String(groups.length).padStart(2, "0")}</strong><small>YEARS</small></span>
     </div>
   </header>
+
+  <nav class="archive-category-bar" aria-label="按分类浏览归档">
+    <span class="archive-category-bar__label">CATEGORIES</span>
+    <div class="archive-category-bar__scroll">
+      <button type="button" class:active={categories.length === 0 && !uncategorized} on:click={() => selectCategory("")}>全部 <small>{sortedPosts.length}</small></button>
+      {#each categoryOptions as category}
+        <button type="button" class:active={selectedCategory === category} on:click={() => selectCategory(category)}>{category} <small>{sortedPosts.filter((post) => post.data.category === category).length}</small></button>
+      {/each}
+      <button type="button" class:active={uncategorized} on:click={selectUncategorized}>未分类 <small>{sortedPosts.filter((post) => !post.data.category).length}</small></button>
+    </div>
+  </nav>
 
   {#if groups.length > 0}
     <div class="archive-index">
