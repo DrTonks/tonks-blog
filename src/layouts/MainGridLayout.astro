@@ -369,17 +369,17 @@ const transparentClass = shouldEnableTransparency
 </div>}
 
 <!-- Main content -->
-<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!siteConfig.banner.enable ? 'no-banner-layout' : ''} ${transparentClass}`} style={`top: ${finalMainPanelTop}`}>
+<div id="main-panel-wrapper" class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!siteConfig.banner.enable ? 'no-banner-layout' : ''} ${transparentClass}`} style={`top: ${finalMainPanelTop}; --banner-extend-offset: ${BANNER_HEIGHT_EXTEND}vh; --main-banner-overlap: ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem`}>
 	<div class="ambient-document-stars" aria-hidden="true"><span class="ambient-document-stars__base"></span></div>
 	<div class="ambient-light-art" aria-hidden="true">
 		<div class="ambient-light-art__side ambient-light-art__side--left">
-			<div class="ambient-light-art__figure" style="--ambient-art-ratio: 1.493">
+			<div class="ambient-light-art__figure" style="--ambient-art-ratio: 1.465">
 				<img class="ambient-light-art__base" data-light-art-src="/assets/home/left.png" alt="" decoding="async" />
 				<img class="ambient-light-art__hover" data-light-art-src="/assets/home/left.png" alt="" decoding="async" />
 			</div>
 		</div>
 		<div class="ambient-light-art__side ambient-light-art__side--right">
-			<div class="ambient-light-art__figure" style="--ambient-art-ratio: 1.215">
+			<div class="ambient-light-art__figure" style="--ambient-art-ratio: 1.4675">
 				<img class="ambient-light-art__base" data-light-art-src="/assets/home/right.png" alt="" decoding="async" />
 				<img class="ambient-light-art__hover" data-light-art-src="/assets/home/right.png" alt="" decoding="async" />
 			</div>
@@ -513,9 +513,9 @@ const transparentClass = shouldEnableTransparency
     }
     
     /* 主内容区域位置调整 - 确保在banner下面 */
-    .absolute.w-full.z-30 {
-        top: 70vh !important; /* 与banner高度对应 */
-        min-height: calc(100vh - 70vh) !important;
+    #main-panel-wrapper {
+        top: calc(70vh - var(--banner-extend-offset) - var(--main-banner-overlap)) !important;
+        min-height: calc(100vh - 70vh + var(--banner-extend-offset) + var(--main-banner-overlap)) !important;
     }
     
     /* 横幅文本覆盖层优化 */
@@ -566,9 +566,9 @@ const transparentClass = shouldEnableTransparency
     }
     
     /* 主内容区域位置调整 - 确保在banner下面 */
-    .absolute.w-full.z-30 {
-        top: 75vh !important; /* 与banner高度对应 */
-        min-height: calc(100vh - 75vh) !important;
+    #main-panel-wrapper {
+        top: calc(75vh - var(--banner-extend-offset) - var(--main-banner-overlap)) !important;
+        min-height: calc(100vh - 75vh + var(--banner-extend-offset) + var(--main-banner-overlap)) !important;
     }
     
     /* 横幅文本覆盖层优化 */
@@ -618,9 +618,9 @@ const transparentClass = shouldEnableTransparency
     }
     
     /* 主内容区域位置调整 - 确保在banner下面 */
-    .absolute.w-full.z-30 {
-        top: 70vh !important; /* 与banner高度对应 */
-        min-height: calc(100vh - 70vh) !important;
+    #main-panel-wrapper {
+        top: calc(70vh - var(--banner-extend-offset) - var(--main-banner-overlap)) !important;
+        min-height: calc(100vh - 70vh + var(--banner-extend-offset) + var(--main-banner-overlap)) !important;
     }
     
     /* 横幅文本覆盖层优化 */
@@ -1211,4 +1211,49 @@ const transparentClass = shouldEnableTransparency
         min-height: 30px !important;
         max-height: 40px !important;
     }
+}
+
+/*
+ * 移动端 Banner 从 -30vh 开始绘制，内容起点必须使用“实际高度 - 延伸量 - 重叠量”。
+ * 统一变量同时覆盖宽度、高度和横屏规则，避免再次把隐藏在视口上方的 30vh 算进空白。
+ */
+@media (max-width: 1023px) {
+    :global(body) { --mobile-banner-height: max(70vh, 450px); }
+
+    #banner-wrapper:not(.mobile-hide-banner) {
+        height: var(--mobile-banner-height) !important;
+    }
+
+    #main-panel-wrapper:not(.mobile-main-no-banner):not(.no-banner-layout) {
+        top: calc(var(--mobile-banner-height) - var(--banner-extend-offset) - var(--main-banner-overlap)) !important;
+        min-height: calc(100vh - var(--mobile-banner-height) + var(--banner-extend-offset) + var(--main-banner-overlap)) !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+    :global(body) { --mobile-banner-height: max(75vh, 500px); }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+    :global(body) { --mobile-banner-height: max(70vh, 500px); }
+}
+
+@media (max-width: 1023px) and (orientation: landscape) {
+    :global(body) { --mobile-banner-height: max(60vh, 300px); }
+}
+
+@media (max-width: 1023px) and (max-height: 500px) {
+    :global(body) { --mobile-banner-height: max(85vh, 350px); }
+}
+
+@media (max-width: 1023px) and (min-height: 501px) and (max-height: 600px) {
+    :global(body) { --mobile-banner-height: max(80vh, 400px); }
+}
+
+@media (max-width: 1023px) and (min-height: 601px) and (max-height: 700px) {
+    :global(body) { --mobile-banner-height: max(75vh, 450px); }
+}
+
+@media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
+    :global(body) { --mobile-banner-height: max(90vh, 300px); }
 }

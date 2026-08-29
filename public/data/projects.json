@@ -26,21 +26,6 @@
 		"featured": true
 	},
 	{
-		"id": "jsj-contest-2026",
-		"title": "第19届C4参赛项目",
-		"description": "软件应用与开发：5月16号完成线上答辩并获省级二等奖，未入围国赛。",
-		"image": "/images/projects/js2026-1.png",
-		"category": "web",
-		"techStack": [],
-		"status": "completed",
-		"startDate": "2026-02-01",
-		"endDate": "2026-05-16",
-		"tags": [
-			"计设",
-			"软件应用与开发"
-		]
-	},
-	{
 		"id": "tianchi-polardb-2025",
 		"title": "PG数据库创新设计",
 		"description": "对pgvector的HNSW算法向量检索优化，性能排名44/3529，进入决赛第二阶段，未入围前20。",
