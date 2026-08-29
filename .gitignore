@@ -38,6 +38,7 @@ yarn.lock
 # ide
 .idea
 *.iml
+.tmp/
 
 cache/
 .cache/

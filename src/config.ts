@@ -219,6 +219,11 @@ export const navBarConfig: NavBarConfig = {
 					url: "/timeline/",
 					icon: "material-symbols:timeline",
 				},
+				{
+					name: "项目",
+					url: "/projects/",
+					icon: "material-symbols:work",
+				},
 			],
 		},
 		{
@@ -226,11 +231,6 @@ export const navBarConfig: NavBarConfig = {
 			url: "/about/",
 			icon: "material-symbols:person",
 			children: [LinkPreset.About, LinkPreset.Friends],
-		},
-		{
-			name: "项目",
-			url: "/projects/",
-			icon: "material-symbols:work",
 		},
 		{
 			name: "链接",

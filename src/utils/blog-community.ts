@@ -116,6 +116,11 @@ function setLikeState(target: string, state: LikeState): void {
 		const count = shell.querySelector<HTMLElement>("[data-like-count]");
 		button?.setAttribute("aria-pressed", String(state.liked));
 		if (count) count.textContent = String(state.count);
+		if (
+			shell.dataset.likeVariant === "about" ||
+			shell.dataset.likeVariant === "friends"
+		)
+			syncHeartPhysics(shell, state.count);
 	}
 }
 
@@ -126,67 +131,376 @@ function pulseLike(shell: HTMLElement): void {
 	setTimeout(() => shell.classList.remove("is-pulsing"), 500);
 }
 
-function dropAboutHearts(shell: HTMLElement): void {
-	pulseLike(shell);
-	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-	const layer = shell.querySelector<HTMLElement>("[data-like-particles]");
-	const button = shell.querySelector<HTMLElement>(".community-like__button");
-	if (!layer || !button) return;
+type HeartParticle = {
+	x: number;
+	y: number;
+	vx: number;
+	vy: number;
+	radius: number;
+	rotation: number;
+	angularVelocity: number;
+};
 
-	while (layer.childElementCount > 18) layer.firstElementChild?.remove();
-	const layerRect = layer.getBoundingClientRect();
-	const buttonRect = button.getBoundingClientRect();
-	const startX = buttonRect.left + buttonRect.width / 2 - layerRect.left;
-	const startY = buttonRect.top + buttonRect.height / 2 - layerRect.top;
-	const floor = Math.max(startY + 48, layerRect.height - 10);
+type HeartPhysicsField = {
+	canvas: HTMLCanvasElement;
+	context: CanvasRenderingContext2D;
+	hearts: HeartParticle[];
+	rawCount: number;
+	desiredCount: number;
+	width: number;
+	height: number;
+	dpr: number;
+	frameId: number;
+	spawnTimer: number;
+	lastFrame: number;
+	stepCount: number;
+	settledFrames: number;
+};
 
-	for (let index = 0; index < 9; index += 1) {
-		const heart = document.createElement("span");
-		heart.className = "community-heart-particle";
-		heart.textContent = "♥";
-		heart.style.setProperty(
-			"--heart-size",
-			`${0.72 + Math.random() * 0.75}rem`,
-		);
-		layer.append(heart);
+const HEART_VISUAL_LIMIT = 80;
+const heartPhysicsFields = new WeakMap<HTMLCanvasElement, HeartPhysicsField>();
+const activeHeartPhysicsFields = new Set<HeartPhysicsField>();
+let heartPhysicsGlobalsReady = false;
 
-		let x = startX + (Math.random() - 0.5) * 20;
-		let y = startY;
-		let velocityX = (Math.random() - 0.5) * 0.16;
-		let velocityY = -0.22 - Math.random() * 0.2;
-		let rotation = (Math.random() - 0.5) * 35;
-		let bounced = false;
-		let previous = performance.now();
-		const born = previous;
-
-		const frame = (now: number) => {
-			if (!heart.isConnected) return;
-			const delta = Math.min(32, now - previous);
-			previous = now;
-			velocityY += 0.00072 * delta;
-			x += velocityX * delta;
-			y += velocityY * delta;
-			rotation += velocityX * delta * 0.9;
-			if (y >= floor && !bounced) {
-				y = floor;
-				velocityY *= -0.38;
-				velocityX *= 0.72;
-				bounced = true;
-			}
-			const age = now - born;
-			const opacity = age > 1050 ? Math.max(0, 1 - (age - 1050) / 650) : 1;
-			heart.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg)`;
-			heart.style.opacity = String(opacity);
-			if (age < 1700) requestAnimationFrame(frame);
-			else heart.remove();
-		};
-		requestAnimationFrame(frame);
+function purgeHeartPhysicsFields(): void {
+	for (const field of activeHeartPhysicsFields) {
+		if (field.canvas.isConnected) continue;
+		cancelAnimationFrame(field.frameId);
+		window.clearTimeout(field.spawnTimer);
+		activeHeartPhysicsFields.delete(field);
 	}
 }
 
+function resizeHeartPhysicsField(field: HeartPhysicsField): void {
+	const { canvas, context } = field;
+	const rect = canvas.getBoundingClientRect();
+	const nextWidth = Math.max(72, rect.width);
+	const nextHeight = Math.max(48, rect.height);
+	const nextDpr = Math.min(2, window.devicePixelRatio || 1);
+	const scaleX = field.width > 0 ? nextWidth / field.width : 1;
+	const scaleY = field.height > 0 ? nextHeight / field.height : 1;
+
+	field.width = nextWidth;
+	field.height = nextHeight;
+	field.dpr = nextDpr;
+	canvas.width = Math.round(nextWidth * nextDpr);
+	canvas.height = Math.round(nextHeight * nextDpr);
+	context.setTransform(nextDpr, 0, 0, nextDpr, 0, 0);
+	for (const heart of field.hearts) {
+		heart.x = Math.min(
+			nextWidth - heart.radius,
+			Math.max(heart.radius, heart.x * scaleX),
+		);
+		heart.y = Math.min(
+			nextHeight - heart.radius,
+			Math.max(-heart.radius, heart.y * scaleY),
+		);
+	}
+}
+
+function drawHeart(
+	context: CanvasRenderingContext2D,
+	heart: HeartParticle,
+	color: string,
+): void {
+	const radius = heart.radius;
+	context.save();
+	context.translate(heart.x, heart.y);
+	context.rotate(heart.rotation);
+	context.beginPath();
+	context.moveTo(0, radius * 0.82);
+	context.bezierCurveTo(
+		-radius * 1.1,
+		radius * 0.12,
+		-radius * 0.92,
+		-radius * 0.75,
+		-radius * 0.42,
+		-radius * 0.72,
+	);
+	context.bezierCurveTo(
+		-radius * 0.14,
+		-radius * 0.7,
+		0,
+		-radius * 0.47,
+		0,
+		-radius * 0.3,
+	);
+	context.bezierCurveTo(
+		0,
+		-radius * 0.47,
+		radius * 0.14,
+		-radius * 0.7,
+		radius * 0.42,
+		-radius * 0.72,
+	);
+	context.bezierCurveTo(
+		radius * 0.92,
+		-radius * 0.75,
+		radius * 1.1,
+		radius * 0.12,
+		0,
+		radius * 0.82,
+	);
+	context.closePath();
+	context.globalAlpha = 0.76;
+	context.fillStyle = color;
+	context.fill();
+	context.globalAlpha = 0.18;
+	context.lineWidth = 0.8;
+	context.strokeStyle = color;
+	context.stroke();
+	context.restore();
+}
+
+function drawHeartPhysicsField(field: HeartPhysicsField): void {
+	field.context.clearRect(0, 0, field.width, field.height);
+	const color = getComputedStyle(field.canvas).color;
+	for (const heart of field.hearts) drawHeart(field.context, heart, color);
+	field.canvas.dataset.heartParticles = String(field.hearts.length);
+}
+
+function constrainHeart(field: HeartPhysicsField, heart: HeartParticle): void {
+	if (heart.x - heart.radius < 0) {
+		heart.x = heart.radius;
+		heart.vx = Math.abs(heart.vx) * 0.58;
+	} else if (heart.x + heart.radius > field.width) {
+		heart.x = field.width - heart.radius;
+		heart.vx = -Math.abs(heart.vx) * 0.58;
+	}
+
+	if (heart.y + heart.radius > field.height) {
+		heart.y = field.height - heart.radius;
+		heart.vy = Math.abs(heart.vy) < 0.045 ? 0 : -Math.abs(heart.vy) * 0.42;
+		heart.vx *= 0.88;
+		heart.angularVelocity *= 0.82;
+	}
+}
+
+function resolveHeartCollisions(field: HeartPhysicsField): void {
+	for (let pass = 0; pass < 2; pass += 1) {
+		for (let leftIndex = 0; leftIndex < field.hearts.length; leftIndex += 1) {
+			const left = field.hearts[leftIndex];
+			for (
+				let rightIndex = leftIndex + 1;
+				rightIndex < field.hearts.length;
+				rightIndex += 1
+			) {
+				const right = field.hearts[rightIndex];
+				const deltaX = right.x - left.x;
+				const deltaY = right.y - left.y;
+				const minimumDistance = left.radius + right.radius;
+				const distanceSquared = deltaX * deltaX + deltaY * deltaY;
+				if (distanceSquared >= minimumDistance * minimumDistance) continue;
+
+				const distance = Math.sqrt(distanceSquared) || 0.001;
+				const normalX = deltaX / distance;
+				const normalY = deltaY / distance;
+				const correction = (minimumDistance - distance) * 0.5;
+				left.x -= normalX * correction;
+				left.y -= normalY * correction;
+				right.x += normalX * correction;
+				right.y += normalY * correction;
+
+				const relativeVelocity =
+					(right.vx - left.vx) * normalX + (right.vy - left.vy) * normalY;
+				if (relativeVelocity < 0) {
+					const impulse = (-(1 + 0.34) * relativeVelocity) / 2;
+					left.vx -= impulse * normalX;
+					left.vy -= impulse * normalY;
+					right.vx += impulse * normalX;
+					right.vy += impulse * normalY;
+				}
+			}
+		}
+	}
+}
+
+function animateHeartPhysicsField(field: HeartPhysicsField, now: number): void {
+	if (!field.canvas.isConnected) {
+		activeHeartPhysicsFields.delete(field);
+		return;
+	}
+	const delta = Math.min(32, Math.max(8, now - (field.lastFrame || now - 16)));
+	field.lastFrame = now;
+	field.stepCount += 1;
+
+	for (const heart of field.hearts) {
+		heart.vy += 0.00105 * delta;
+		heart.x += heart.vx * delta;
+		heart.y += heart.vy * delta;
+		heart.rotation += heart.angularVelocity * delta;
+		heart.vx *= 0.995 ** (delta / 16);
+		heart.angularVelocity *= 0.993 ** (delta / 16);
+		constrainHeart(field, heart);
+	}
+	resolveHeartCollisions(field);
+	for (const heart of field.hearts) constrainHeart(field, heart);
+	drawHeartPhysicsField(field);
+
+	const isQuiet = field.hearts.every(
+		(heart) => Math.abs(heart.vx) + Math.abs(heart.vy) < 0.042,
+	);
+	field.settledFrames = isQuiet ? field.settledFrames + 1 : 0;
+	if (field.stepCount < 720 && field.settledFrames < 54) {
+		field.frameId = requestAnimationFrame((time) =>
+			animateHeartPhysicsField(field, time),
+		);
+	} else {
+		field.frameId = 0;
+		field.canvas.dataset.heartRunning = "false";
+	}
+}
+
+function wakeHeartPhysicsField(field: HeartPhysicsField): void {
+	field.stepCount = 0;
+	field.settledFrames = 0;
+	field.lastFrame = performance.now();
+	field.canvas.dataset.heartRunning = "true";
+	if (field.frameId === 0)
+		field.frameId = requestAnimationFrame((time) =>
+			animateHeartPhysicsField(field, time),
+		);
+}
+
+function createHeart(field: HeartPhysicsField): HeartParticle {
+	const radius = 5.5 + Math.random() * 4;
+	return {
+		x: field.width / 2 + (Math.random() - 0.5) * field.width * 0.4,
+		y: -radius - Math.random() * 10,
+		vx: (Math.random() - 0.5) * 0.09,
+		vy: 0.01 + Math.random() * 0.025,
+		radius,
+		rotation: (Math.random() - 0.5) * 0.8,
+		angularVelocity: (Math.random() - 0.5) * 0.004,
+	};
+}
+
+function buildReducedMotionPile(field: HeartPhysicsField): void {
+	field.hearts.length = 0;
+	const columns = Math.max(4, Math.floor(field.width / 18));
+	for (let index = 0; index < field.desiredCount; index += 1) {
+		const radius = 6 + ((index * 17) % 28) / 10;
+		const column = index % columns;
+		const row = Math.floor(index / columns);
+		const lane = field.width / columns;
+		field.hearts.push({
+			x: lane * (column + 0.5) + (((index * 13) % 7) - 3),
+			y: field.height - radius - row * 12,
+			vx: 0,
+			vy: 0,
+			radius,
+			rotation: ((((index * 29) % 31) - 15) * Math.PI) / 180,
+			angularVelocity: 0,
+		});
+	}
+	drawHeartPhysicsField(field);
+}
+
+function scheduleHeartSpawns(field: HeartPhysicsField): void {
+	window.clearTimeout(field.spawnTimer);
+	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+		buildReducedMotionPile(field);
+		return;
+	}
+
+	if (field.hearts.length > field.desiredCount) {
+		field.hearts.splice(field.desiredCount);
+		drawHeartPhysicsField(field);
+	}
+	if (field.hearts.length >= field.desiredCount) return;
+
+	const spawnNext = () => {
+		if (!field.canvas.isConnected || field.hearts.length >= field.desiredCount)
+			return;
+		field.hearts.push(createHeart(field));
+		wakeHeartPhysicsField(field);
+		if (field.hearts.length < field.desiredCount)
+			field.spawnTimer = window.setTimeout(spawnNext, 105);
+	};
+	spawnNext();
+}
+
+function ensureHeartPhysicsGlobals(): void {
+	if (heartPhysicsGlobalsReady) return;
+	heartPhysicsGlobalsReady = true;
+	window.addEventListener("resize", () => {
+		purgeHeartPhysicsFields();
+		for (const field of activeHeartPhysicsFields) {
+			resizeHeartPhysicsField(field);
+			field.desiredCount = heartVisualCount(field, field.rawCount);
+			scheduleHeartSpawns(field);
+			if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+				wakeHeartPhysicsField(field);
+		}
+	});
+	new MutationObserver(() => {
+		purgeHeartPhysicsFields();
+		for (const field of activeHeartPhysicsFields) drawHeartPhysicsField(field);
+	}).observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: [
+			"class",
+			"data-theme",
+			"data-accent-light",
+			"data-accent-dark",
+		],
+	});
+}
+
+function getHeartPhysicsField(shell: HTMLElement): HeartPhysicsField | null {
+	const canvas =
+		shell.querySelector<HTMLCanvasElement>("[data-heart-physics]") ??
+		shell
+			.closest<HTMLElement>(".friend-wall__affection")
+			?.querySelector<HTMLCanvasElement>("[data-heart-physics]");
+	if (!canvas) return null;
+	const existing = heartPhysicsFields.get(canvas);
+	if (existing) return existing;
+	const context = canvas.getContext("2d");
+	if (!context) return null;
+	const field: HeartPhysicsField = {
+		canvas,
+		context,
+		hearts: [],
+		rawCount: 0,
+		desiredCount: 0,
+		width: 0,
+		height: 0,
+		dpr: 1,
+		frameId: 0,
+		spawnTimer: 0,
+		lastFrame: 0,
+		stepCount: 0,
+		settledFrames: 0,
+	};
+	heartPhysicsFields.set(canvas, field);
+	activeHeartPhysicsFields.add(field);
+	ensureHeartPhysicsGlobals();
+	resizeHeartPhysicsField(field);
+	return field;
+}
+
+function heartVisualCount(field: HeartPhysicsField, rawCount: number): number {
+	const capacity = Math.max(
+		12,
+		Math.min(
+			HEART_VISUAL_LIMIT,
+			Math.floor((field.width * field.height) / 180),
+		),
+	);
+	return Math.min(capacity, Math.max(0, Math.floor(rawCount)));
+}
+
+function syncHeartPhysics(shell: HTMLElement, rawCount: number): void {
+	const field = getHeartPhysicsField(shell);
+	if (!field) return;
+	field.rawCount = rawCount;
+	field.desiredCount = heartVisualCount(field, rawCount);
+	scheduleHeartSpawns(field);
+}
+
 function runLikeEffect(shell: HTMLElement): void {
-	if (shell.dataset.likeVariant === "about") dropAboutHearts(shell);
-	else pulseLike(shell);
+	pulseLike(shell);
 }
 
 function setTransientStatus(
@@ -226,6 +540,11 @@ async function initializeLikes(): Promise<void> {
 		for (const shell of shells) {
 			const count = shell.querySelector<HTMLElement>("[data-like-count]");
 			if (count) count.textContent = "0";
+			if (
+				shell.dataset.likeVariant === "about" ||
+				shell.dataset.likeVariant === "friends"
+			)
+				syncHeartPhysics(shell, 0);
 		}
 	}
 

@@ -13,6 +13,9 @@ const { target, variant = "article", class: className = "" } = Astro.props;
 	data-community-like={target}
 	data-like-variant={variant}
 >
+	{variant === "about" && (
+		<canvas class="community-like__physics-canvas" data-heart-physics aria-hidden="true"></canvas>
+	)}
 	<button type="button" class="community-like__button" aria-pressed="false" aria-label="为这里点个赞">
 		{variant === "meta" && (
 			<>
@@ -99,6 +102,7 @@ const { target, variant = "article", class: className = "" } = Astro.props;
 	.community-like__status { min-height: 1rem; margin-top: 0.25rem; color: color-mix(in srgb, currentColor 52%, transparent); font-size: 0.64rem; }
 	.community-like__particles { position: absolute; inset: -2rem -5rem -7rem; z-index: 1; overflow: visible; pointer-events: none; }
 	.community-like__particles :global(.community-heart-particle) { position: absolute; top: 0; left: 0; color: var(--primary); font-size: var(--heart-size, 1rem); line-height: 1; will-change: transform, opacity; }
+	.community-like__physics-canvas { display: block; color: var(--primary); pointer-events: none; }
 
 	.community-like--meta { display: inline-flex; min-width: 0; margin: 0; }
 	.community-like--meta .community-like__status,
@@ -116,9 +120,12 @@ const { target, variant = "article", class: className = "" } = Astro.props;
 	.community-like--article .community-like__button { padding: 0.7rem 1.2rem; border-style: dashed; border-radius: 0.45rem; clip-path: polygon(0.45rem 0, 100% 0, 100% calc(100% - 0.45rem), calc(100% - 0.45rem) 100%, 0 100%, 0 0.45rem); }
 	.community-like--article .community-like__heart { font-size: 1.75rem; }
 
-	.community-like--about { display: inline-grid; min-width: 6rem; }
+	.community-like--about { display: inline-grid; min-width: clamp(7.5rem, 13vw, 9rem); min-height: 5rem; padding-top: 2.55rem; align-content: end; }
+	.community-like--about .community-like__physics-canvas { position: absolute; inset: 0 0 1.55rem; z-index: 1; width: 100%; height: calc(100% - 1.55rem); min-height: 3.45rem; border-bottom: 1px dashed color-mix(in srgb, var(--signal-line) 32%, transparent); }
 	.community-like--about .community-like__button { border-style: dashed; border-radius: 0.4rem; transform: rotate(1.2deg); }
 	.community-like--about .community-like__heart { font-size: 1.7rem; }
+	.community-like--about .community-like__status { position: absolute; right: 0; bottom: -1.1rem; left: 0; }
+	.community-like--about .community-like__particles { display: none; }
 
 	.community-like--friends .community-like__button { padding: 0.5rem 0.7rem; border-radius: 0.35rem; box-shadow: 0.2rem 0.22rem 0 color-mix(in srgb, currentColor 9%, transparent); }
 

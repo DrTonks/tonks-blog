@@ -1,12 +1,12 @@
 ---
-import { Icon } from "astro-icon/components";
 import { getCollection, getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
+import { Icon } from "astro-icon/components";
+import BlogLike from "../components/community/BlogLike.astro";
+import CommunityComments from "../components/community/CommunityComments.astro";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import BlogLike from "../components/community/BlogLike.astro";
-import CommunityComments from "../components/community/CommunityComments.astro";
 
 const aboutPost = await getEntry("spec", "about");
 
@@ -16,7 +16,10 @@ if (!aboutPost) {
 
 const { Content } = await render(aboutPost);
 const title = i18n(I18nKey.about);
-const publishedPosts = await getCollection("posts", ({ data }) => data.draft !== true);
+const publishedPosts = await getCollection(
+	"posts",
+	({ data }) => data.draft !== true,
+);
 const postWordCounts = await Promise.all(
 	publishedPosts.map(async (post) => {
 		const { remarkPluginFrontmatter } = await render(post);
@@ -24,7 +27,9 @@ const postWordCounts = await Promise.all(
 	}),
 );
 const totalWords = postWordCounts.reduce((total, words) => total + words, 0);
-const totalWordsInThousands = (totalWords / 1000).toFixed(1).replace(/\.0$/, "");
+const totalWordsInThousands = (totalWords / 1000)
+	.toFixed(1)
+	.replace(/\.0$/, "");
 const siteStartTime = new Date("2025-10-01T00:00:00+08:00").getTime();
 const siteRunningDays = Math.max(
 	1,
@@ -68,7 +73,7 @@ const aboutRoutes = [
 
 			<dl class="about-dossier__record" aria-label="站点档案">
 				<div><dt>UPTIME</dt><dd><span aria-hidden="true"></span>{siteRunningDays} 天</dd></div>
-				<div><dt>ENGINE</dt><dd>Astro / Fuwari</dd></div>
+				<div><dt>VISITS</dt><dd data-site-visit-count>— 次</dd></div>
 				<div><dt>POSTS</dt><dd>{publishedPosts.length} 篇</dd></div>
 				<div><dt>WORDS</dt><dd>{totalWordsInThousands}K</dd></div>
 			</dl>

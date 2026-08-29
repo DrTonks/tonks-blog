@@ -769,6 +769,7 @@ const bannerOffset =
 
 <script>
 import { animationManager } from '../utils/animation-utils';
+import { installSiteVisits } from '../utils/site-visits';
 import { installVisibilityTitle } from '../utils/visibility-title';
 import 'overlayscrollbars/overlayscrollbars.css';
 import {
@@ -788,6 +789,7 @@ import {
 import { siteConfig } from '../config';
 
 installVisibilityTitle();
+installSiteVisits();
 
 /* Preload fonts */
 // (async function() {

@@ -1,4 +1,4 @@
-export const AWAY_PAGE_TITLE = "再逛逛呗~不要走(;﹏;)";
+export const AWAY_PAGE_TITLE = "再逛逛呗~不要走嘛(;﹏;)";
 
 interface VisibilityTitleRuntime extends Window {
 	__tonksVisibilityTitleCleanup?: () => void;

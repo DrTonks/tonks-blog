@@ -1,15 +1,15 @@
 ---
-import { Icon } from "astro-icon/components";
 import { getEntry, render } from "astro:content";
 import { readFile } from "node:fs/promises";
 import Markdown from "@components/misc/Markdown.astro";
+import { Icon } from "astro-icon/components";
+import BlogLike from "../components/community/BlogLike.astro";
+import CommunityComments from "../components/community/CommunityComments.astro";
+import FriendApplyDialog from "../components/community/FriendApplyDialog.astro";
 import { siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import BlogLike from "../components/community/BlogLike.astro";
-import CommunityComments from "../components/community/CommunityComments.astro";
-import FriendApplyDialog from "../components/community/FriendApplyDialog.astro";
 
 interface FriendLink {
 	name: string;
@@ -61,7 +61,12 @@ const cardAngles = [
 				<p>遇见有趣的灵魂</p>
 			</div>
 			<FriendApplyDialog />
-			<BlogLike target="page:friends" variant="friends" class="friend-wall__like" />
+			<div class="friend-wall__affection" aria-label="友链墙喜欢收集区">
+				<span class="friend-wall__heart-stage" aria-hidden="true">
+					<canvas class="friend-wall__heart-canvas" data-heart-physics></canvas>
+				</span>
+				<BlogLike target="page:friends" variant="friends" class="friend-wall__like" />
+			</div>
 			<div class="friend-wall__counter" aria-label={`共 ${friendsData.length} 个友链`}>
 				<span>LINKS</span>
 				<strong>{String(friendsData.length).padStart(2, "0")}</strong>
@@ -79,12 +84,20 @@ const cardAngles = [
 					href={friend.url}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="friend-sticker signal-marker"
+					class:list={[
+						"friend-sticker signal-marker",
+						{ "friend-sticker--star": friend.category === "Star" },
+					]}
 					style={`--sticker-angle: ${cardAngles[index % cardAngles.length]};`}
 					aria-label={`访问 ${friend.name}`}
 				>
 					<div class="friend-sticker__paper">
 						<span class="friend-sticker__index" aria-hidden="true">LINK / {String(index + 1).padStart(2, "0")}</span>
+						{friend.category === "Star" && (
+							<span class="friend-sticker__favorite-mark" aria-hidden="true">
+								<Icon name="material-symbols:star-rounded" />
+							</span>
+						)}
 						<span class:list={["friend-sticker__fastener", `friend-sticker__fastener--${friend.fastener ?? "pin"}`]} aria-hidden="true"></span>
 						<div class="friend-sticker__avatar">
 							<img src={friend.avatar} alt="" loading="lazy" decoding="async" />
@@ -158,7 +171,49 @@ const cardAngles = [
 	}
 
 	.friend-wall__copy { flex: 1 1 auto; min-width: 0; }
-	.friend-wall__header :global(.friend-wall__like) { flex: 0 0 auto; margin-left: auto; }
+
+	.friend-wall__affection {
+		position: relative;
+		flex: 0 1 clamp(9.5rem, 18vw, 13.5rem);
+		align-self: flex-end;
+		height: 7rem;
+		min-width: 8rem;
+		min-height: 7rem;
+	}
+
+	.friend-wall__heart-stage {
+		position: absolute;
+		inset: 0.15rem 0 1.9rem;
+		display: block;
+		overflow: hidden;
+		border-bottom: 1px dashed color-mix(in srgb, var(--signal-line) 36%, transparent);
+		background: linear-gradient(180deg, transparent 68%, color-mix(in srgb, var(--signal-soft) 20%, transparent));
+		pointer-events: none;
+	}
+
+	.friend-wall__heart-canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+		color: var(--primary);
+	}
+
+	.friend-wall__heart-stage::after {
+		position: absolute;
+		right: 0;
+		bottom: 0.28rem;
+		color: color-mix(in srgb, currentColor 28%, transparent);
+		font: 700 0.46rem/1 "JetBrains Mono Variable", monospace;
+		letter-spacing: 0.1em;
+		content: "HEART ARCHIVE";
+	}
+
+	.friend-wall__affection :global(.friend-wall__like) {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		z-index: 3;
+	}
 
 	.friend-wall__copy p {
 		max-width: 35rem;
@@ -291,6 +346,28 @@ const cardAngles = [
 		content: "";
 	}
 
+	.friend-sticker__favorite-mark {
+		position: absolute;
+		top: 1rem;
+		right: 1.35rem;
+		z-index: 0;
+		width: 4.6rem;
+		height: 4.6rem;
+		color: var(--signal-line);
+		opacity: 0.09;
+		pointer-events: none;
+		transform: rotate(-11deg) scale(0.94);
+		transition: opacity var(--motion-signal-fast) ease, transform var(--motion-signal-medium) var(--ease-signal);
+	}
+
+	.friend-sticker__favorite-mark :global(svg) { width: 100%; height: 100%; }
+
+	.friend-sticker--star:hover .friend-sticker__favorite-mark,
+	.friend-sticker--star:focus-visible .friend-sticker__favorite-mark {
+		opacity: 0.18;
+		transform: rotate(-4deg) scale(1);
+	}
+
 	.friend-sticker__index {
 		position: absolute;
 		top: 0.48rem;
@@ -327,6 +404,7 @@ const cardAngles = [
 
 	.friend-sticker__avatar {
 		position: relative;
+		z-index: 1;
 		width: 4.5rem;
 		height: 4.5rem;
 		padding: 0.2rem;
@@ -353,7 +431,7 @@ const cardAngles = [
 		background: #22c55e;
 	}
 
-	.friend-sticker__body { min-width: 0; }
+	.friend-sticker__body { position: relative; z-index: 1; min-width: 0; }
 
 	.friend-sticker__meta {
 		display: flex;
@@ -389,6 +467,8 @@ const cardAngles = [
 	}
 
 	.friend-sticker__arrow {
+		position: relative;
+		z-index: 1;
 		width: 0.95rem;
 		color: var(--signal-line);
 		transition: color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal);
@@ -416,7 +496,8 @@ const cardAngles = [
 
 	@media (max-width: 720px) {
 		.friend-wall__header { align-items: flex-start; flex-direction: column; }
-		.friend-wall__header :global(.friend-wall__like) { margin-left: 0; }
+		.friend-wall__affection { width: 100%; height: 6.5rem; min-height: 6.5rem; }
+		.friend-wall__affection :global(.friend-wall__like) { right: auto; left: 0; }
 
 		.friend-wall__counter {
 			min-width: 0;
@@ -440,6 +521,7 @@ const cardAngles = [
 
 	@media (prefers-reduced-motion: reduce) {
 		.friend-sticker__paper,
-		.friend-sticker__arrow { transition: none; }
+		.friend-sticker__arrow,
+		.friend-sticker__favorite-mark { transition: none; }
 	}
 </style>
