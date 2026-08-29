@@ -21,7 +21,7 @@
 		"avatar": "https://leehenry.top/friends/my-avatar-portrait.jpg",
 		"url": "https://www.leehenry.top",
 		"category": "Blog",
-		"fastener": "tape"
+		"fastener": "pin"
 	},
 	{
 		"name": "D-blog",
@@ -29,6 +29,14 @@
 		"avatar": "https://blog.pldduck.com/logo-96.png",
 		"url": "https://blog.pldduck.com/",
 		"category": "Blog",
+		"fastener": "tape"
+	},
+	{
+		"name": "fqzlr",
+		"description": "躬身入局，心为主理，行有尺度，自持本心.",
+		"avatar": "https://q1.qlogo.cn/g?b=qq&nk=20447289&s=640",
+		"url": "https://blog.fqzlr.top/",
+		"category": "Star",
 		"fastener": "pin"
 	},
 	{

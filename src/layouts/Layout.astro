@@ -3,8 +3,8 @@
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/700.css";
 
-import ConfigCarrier from "@components/ConfigCarrier.astro";
 import AmbientBackground from "@components/AmbientBackground.astro";
+import ConfigCarrier from "@components/ConfigCarrier.astro";
 import LoadingScreen from "@components/LoadingScreen.astro";
 import MusicPlayer from "@components/widget/MusicPlayer.svelte";
 import Pio from "@components/widget/Pio.svelte"; // 使用 Svelte 版本的 Pio 组件
@@ -769,6 +769,7 @@ const bannerOffset =
 
 <script>
 import { animationManager } from '../utils/animation-utils';
+import { installVisibilityTitle } from '../utils/visibility-title';
 import 'overlayscrollbars/overlayscrollbars.css';
 import {
 	OverlayScrollbars,
@@ -785,6 +786,8 @@ import {
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT
 } from "../constants/constants";
 import { siteConfig } from '../config';
+
+installVisibilityTitle();
 
 /* Preload fonts */
 // (async function() {
