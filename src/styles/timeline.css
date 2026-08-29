@@ -331,15 +331,21 @@
 }
 
 .timeline-gallery {
+  --timeline-gallery-max-height: 160;
+  --timeline-gallery-height: calc(var(--timeline-gallery-max-height) * 1px);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: flex-start;
   gap: 0.5rem;
+  width: 100%;
   margin-bottom: 1rem;
+  overflow: hidden;
 }
 
 .timeline-gallery__frame {
-  width: min(13.5rem, 100%);
-  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+  width: auto;
+  height: var(--timeline-gallery-height);
   overflow: hidden;
   border-radius: 0.65rem;
   background: color-mix(in srgb, var(--signal-soft) 45%, var(--card-bg));

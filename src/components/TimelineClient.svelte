@@ -127,6 +127,52 @@
     }
   }
 
+  function fitGalleryOnOneLine(node: HTMLElement) {
+    const images = Array.from(node.querySelectorAll<HTMLImageElement>('img'));
+    let animationFrame = 0;
+
+    const fit = () => {
+      animationFrame = 0;
+      if (images.length === 0 || images.some((image) => !image.naturalWidth || !image.naturalHeight)) return;
+
+      const galleryStyle = getComputedStyle(node);
+      const gap = Number.parseFloat(galleryStyle.columnGap || galleryStyle.gap) || 0;
+      const maximumHeight = Number.parseFloat(
+        galleryStyle.getPropertyValue('--timeline-gallery-max-height')
+      ) || 160;
+      const totalRatio = images.reduce(
+        (sum, image) => sum + image.naturalWidth / image.naturalHeight,
+        0
+      );
+      const availableWidth = Math.max(1, node.clientWidth - gap * Math.max(0, images.length - 1));
+      const fittedHeight = Math.min(maximumHeight, availableWidth / totalRatio);
+
+      node.style.setProperty('--timeline-gallery-height', `${fittedHeight}px`);
+      images.forEach((image) => {
+        const frame = image.closest<HTMLElement>('.timeline-gallery__frame');
+        if (frame) frame.style.width = `${fittedHeight * (image.naturalWidth / image.naturalHeight)}px`;
+      });
+    };
+
+    const scheduleFit = () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(fit);
+    };
+
+    images.forEach((image) => image.addEventListener('load', scheduleFit));
+    const resizeObserver = new ResizeObserver(scheduleFit);
+    resizeObserver.observe(node);
+    scheduleFit();
+
+    return {
+      destroy() {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        resizeObserver.disconnect();
+        images.forEach((image) => image.removeEventListener('load', scheduleFit));
+      }
+    };
+  }
+
   function getYear(dateString: string) {
     const year = new Date(dateString).getFullYear();
     return Number.isFinite(year) ? String(year) : dateString.slice(0, 4);
@@ -305,7 +351,7 @@
                   <p class="timeline-card__description">{item.description}</p>
 
                   {#if item.image && item.image.length > 0}
-                    <div class="timeline-gallery">
+                    <div class="timeline-gallery" use:fitGalleryOnOneLine>
                       {#each item.image as imageSource}
                         <div class="timeline-gallery__frame">
                           <img src={imageSource} alt={item.title} loading="lazy" decoding="async" />
@@ -617,11 +663,22 @@
 
   .timeline-card__dot { color: var(--signal-line); }
   .timeline-card__description { margin: 0 0 1rem; line-height: 1.7; }
-  .timeline-gallery { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .timeline-gallery {
+    --timeline-gallery-max-height: 160;
+    --timeline-gallery-height: calc(var(--timeline-gallery-max-height) * 1px);
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
 
   .timeline-gallery__frame {
-    width: min(13.5rem, 100%);
-    aspect-ratio: 4 / 3;
+    flex: 0 0 auto;
+    width: auto;
+    height: var(--timeline-gallery-height);
     overflow: hidden;
     border-radius: 0.65rem;
     background: color-mix(in srgb, var(--signal-soft) 45%, var(--card-bg));
