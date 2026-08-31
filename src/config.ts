@@ -289,6 +289,16 @@ export const profileConfig: ProfileConfig = {
 			icon: "fa6-brands:github",
 			url: "https://github.com/DrTonks/",
 		},
+		{
+			name: "邮箱",
+			icon: "material-symbols:mail-outline",
+			url: "mailto:3064517736@qq.com",
+		},
+		{
+			name: "RSS 订阅",
+			icon: "material-symbols:rss-feed",
+			url: "/rss/",
+		},
 	],
 };
 
