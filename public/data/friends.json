@@ -12,7 +12,7 @@
 		"description": "记录我的近况，分享我的喜悦",
 		"avatar": "https://tonks.top/assets/avatar.jpg",
 		"url": "https://tonks.top/",
-		"category": "Friend",
+		"category": "Star",
 		"fastener": "tape"
 	},
 	{
@@ -22,14 +22,6 @@
 		"url": "https://www.leehenry.top",
 		"category": "Blog",
 		"fastener": "pin"
-	},
-	{
-		"name": "D-blog",
-		"description": "跑路的duck的技术分享和生活随笔",
-		"avatar": "https://blog.pldduck.com/logo-96.png",
-		"url": "https://blog.pldduck.com/",
-		"category": "Blog",
-		"fastener": "tape"
 	},
 	{
 		"name": "fqzlr",

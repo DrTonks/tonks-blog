@@ -6,6 +6,8 @@ const API_BASE = (import.meta.env.PUBLIC_SLEEPY_API_BASE || "/api").replace(
 );
 const PROFILE_KEY = "sleepy-blog-comment-profile";
 const ADMIN_KEY = "admin_secret";
+const FRIEND_APPLICATION_STORAGE_KEY = "tonks_friend_application_tokens";
+const FRIEND_APPLICATION_TOKEN_LIMIT = 20;
 const COMMUNITY_EMOJIS = [
 	"😀",
 	"😄",
@@ -131,9 +133,102 @@ type CommentPayload = {
 type FriendApplicationResponse = {
 	success: boolean;
 	status?: string;
+	application?: TrackedFriendApplication;
+	tracking_token?: string;
 	message?: string;
 	code?: string;
 };
+
+type TrackedFriendApplication = {
+	id: number;
+	name: string;
+	website: string;
+	avatar: string;
+	description: string;
+	status: "pending" | "approved" | "rejected";
+	moderation_note: string;
+	created_at: string;
+	updated_at: string;
+};
+
+type FriendApplicationStatusResponse = {
+	success: boolean;
+	applications: TrackedFriendApplication[];
+	message?: string;
+	code?: string;
+};
+
+function normalizeFriendApplicationTokens(value: unknown): string[] {
+	if (!Array.isArray(value)) return [];
+	return Array.from(
+		new Set(
+			value
+				.map((item) => String(item || "").trim())
+				.filter((item) => /^[A-Za-z0-9_-]{32,128}$/.test(item)),
+		),
+	).slice(-FRIEND_APPLICATION_TOKEN_LIMIT);
+}
+
+function readFriendApplicationCookie(): string[] {
+	const prefix = `${FRIEND_APPLICATION_STORAGE_KEY}=`;
+	const entry = document.cookie
+		.split("; ")
+		.find((item) => item.startsWith(prefix));
+	if (!entry) return [];
+	try {
+		return normalizeFriendApplicationTokens(
+			JSON.parse(decodeURIComponent(entry.slice(prefix.length))),
+		);
+	} catch {
+		return [];
+	}
+}
+
+function writeFriendApplicationCookie(tokens: string[]): void {
+	const hostname = window.location.hostname.toLowerCase();
+	const sharedDomain =
+		hostname === "tonks.top" || hostname.endsWith(".tonks.top");
+	const attributes = [
+		"Path=/",
+		"Max-Age=31536000",
+		"SameSite=Lax",
+		...(sharedDomain ? ["Domain=.tonks.top", "Secure"] : []),
+	];
+	// biome-ignore lint/suspicious/noDocumentCookie: cross-subdomain tracking needs the broadly supported cookie API.
+	document.cookie = `${FRIEND_APPLICATION_STORAGE_KEY}=${encodeURIComponent(JSON.stringify(tokens))}; ${attributes.join("; ")}`;
+}
+
+function readFriendApplicationTokens(): string[] {
+	let localTokens: string[] = [];
+	try {
+		localTokens = normalizeFriendApplicationTokens(
+			JSON.parse(localStorage.getItem(FRIEND_APPLICATION_STORAGE_KEY) || "[]"),
+		);
+	} catch {
+		localStorage.removeItem(FRIEND_APPLICATION_STORAGE_KEY);
+	}
+	return normalizeFriendApplicationTokens([
+		...readFriendApplicationCookie(),
+		...localTokens,
+	]);
+}
+
+function rememberFriendApplicationToken(token: string): string[] {
+	const tokens = normalizeFriendApplicationTokens([
+		...readFriendApplicationTokens(),
+		token,
+	]);
+	try {
+		localStorage.setItem(
+			FRIEND_APPLICATION_STORAGE_KEY,
+			JSON.stringify(tokens),
+		);
+	} catch {
+		/* Cookie remains available when local storage is restricted. */
+	}
+	writeFriendApplicationCookie(tokens);
+	return tokens;
+}
 
 class CommunityApiError extends Error {
 	code: string;
@@ -1455,6 +1550,7 @@ function initializeFriendApplications(): void {
 				if (dialog.open) dialog.classList.add("is-visible");
 			});
 		});
+		void loadTrackedApplications();
 	};
 	for (const opener of document.querySelectorAll<HTMLButtonElement>(
 		"[data-open-friend-apply]",
@@ -1509,6 +1605,97 @@ function initializeFriendApplications(): void {
 	);
 	if (!form) return;
 	const status = form.querySelector<HTMLElement>("[data-friend-apply-status]");
+	const tracking = form.querySelector<HTMLElement>(
+		"[data-friend-apply-tracking]",
+	);
+	const trackingCode = form.querySelector<HTMLElement>(
+		"[data-friend-apply-token]",
+	);
+	const trackingCopy = form.querySelector<HTMLButtonElement>(
+		"[data-copy-tracking]",
+	);
+	const history = form.querySelector<HTMLDetailsElement>(
+		"[data-friend-apply-history]",
+	);
+	const historyList = form.querySelector<HTMLElement>(
+		"[data-friend-apply-history-list]",
+	);
+
+	const renderTrackedApplications = (
+		applications: TrackedFriendApplication[],
+	): void => {
+		if (!historyList) return;
+		historyList.replaceChildren();
+		if (applications.length === 0) {
+			const empty = document.createElement("p");
+			empty.className = "friend-apply__history-empty";
+			empty.textContent = "这台设备还没有保存过友链申请。";
+			historyList.append(empty);
+			return;
+		}
+		const labels = {
+			pending: "审核中",
+			approved: "已通过",
+			rejected: "未通过",
+		};
+		for (const application of applications) {
+			const card = document.createElement("article");
+			card.className = "friend-apply__history-card";
+			const title = document.createElement("h4");
+			const link = document.createElement("a");
+			link.href = application.website;
+			link.target = "_blank";
+			link.rel = "noopener noreferrer nofollow";
+			link.textContent = application.name;
+			title.append(link);
+			const badge = document.createElement("span");
+			badge.className = "friend-apply__history-status";
+			badge.dataset.status = application.status;
+			badge.textContent = labels[application.status];
+			const description = document.createElement("p");
+			description.textContent = application.description;
+			const time = document.createElement("time");
+			time.dateTime = application.updated_at;
+			time.textContent = `更新于 ${formatCommentTime(application.updated_at)}`;
+			card.append(title, badge, description, time);
+			if (application.moderation_note) {
+				const note = document.createElement("p");
+				note.textContent = `审核备注：${application.moderation_note}`;
+				card.append(note);
+			}
+			historyList.append(card);
+		}
+	};
+
+	async function loadTrackedApplications(): Promise<void> {
+		if (!historyList) return;
+		const tokens = readFriendApplicationTokens();
+		if (tokens.length === 0) {
+			renderTrackedApplications([]);
+			return;
+		}
+		historyList.textContent = "正在同步申请状态…";
+		try {
+			const result = await readJson<FriendApplicationStatusResponse>(
+				await fetch(`${API_BASE}/blog/community/friend-applications/status`, {
+					method: "POST",
+					headers: clientHeaders(true),
+					body: JSON.stringify({ tokens }),
+				}),
+			);
+			renderTrackedApplications(result.applications || []);
+		} catch (error) {
+			historyList.textContent =
+				error instanceof Error ? error.message : "申请状态读取失败";
+		}
+	}
+
+	form
+		.querySelector<HTMLButtonElement>("[data-refresh-friend-applications]")
+		?.addEventListener("click", () => void loadTrackedApplications());
+	history?.addEventListener("toggle", () => {
+		if (history.open) void loadTrackedApplications();
+	});
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
 		if (!form.reportValidity()) return;
@@ -1537,10 +1724,19 @@ function initializeFriendApplications(): void {
 				}),
 			);
 			form.reset();
+			if (result.tracking_token) {
+				rememberFriendApplicationToken(result.tracking_token);
+				if (tracking) tracking.hidden = false;
+				if (trackingCode) trackingCode.textContent = result.tracking_token;
+				if (trackingCopy)
+					trackingCopy.dataset.copyValue = result.tracking_token;
+			}
 			if (status) {
 				status.dataset.state = "success";
 				status.textContent = result.message || "申请已提交，等待审核";
 			}
+			if (history) history.open = true;
+			void loadTrackedApplications();
 		} catch (error) {
 			if (status) {
 				status.dataset.state = "error";

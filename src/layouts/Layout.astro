@@ -142,8 +142,28 @@ const bannerOffset =
 	  style={`--page-width-max: ${PAGE_WIDTH}rem`}
 >
 	<head>
-		<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KRX3XGVH');</script>
-		<script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "tjr3vkhj8i");</script>
+		<script>
+			const dataLayer = (window.dataLayer ??= []);
+			dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+			const firstScript = document.getElementsByTagName('script')[0];
+			const gtmScript = document.createElement('script');
+			gtmScript.async = true;
+			gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-KRX3XGVH';
+			firstScript?.parentNode?.insertBefore(gtmScript, firstScript);
+		</script>
+		<script type="text/javascript">
+			type ClarityApi = ((...args: unknown[]) => void) & { q?: unknown[][] };
+			const clarityWindow = window as Window & { clarity?: ClarityApi };
+			const clarity: ClarityApi = (...args) => {
+				(clarity.q ??= []).push(args);
+			};
+			clarityWindow.clarity ??= clarity;
+			const clarityScript = document.createElement('script');
+			clarityScript.async = true;
+			clarityScript.src = 'https://www.clarity.ms/tag/tjr3vkhj8i';
+			const firstClarityScript = document.getElementsByTagName('script')[0];
+			firstClarityScript?.parentNode?.insertBefore(clarityScript, firstClarityScript);
+		</script>
 
 		<title>{pageTitle}</title>
 
@@ -837,6 +857,41 @@ function disableAnimation() {
 
 const bannerEnabled = !!document.getElementById('banner-wrapper')
 
+const BANNER_TEXT_EXIT_DURATION = 700
+
+function setBannerTextVisibility(overlay: Element | null, visible: boolean) {
+	if (!overlay) return
+
+	if (window.__tonksBannerTextExitTimer !== undefined) {
+		window.clearTimeout(window.__tonksBannerTextExitTimer)
+		delete window.__tonksBannerTextExitTimer
+	}
+
+	if (visible) {
+		overlay.classList.remove('is-leaving')
+		// Re-entering before the old exit completes must replay the entrance
+		// animation instead of inheriting the exit frame.
+		requestAnimationFrame(() => {
+			if (!overlay.classList.contains('is-leaving')) {
+				overlay.classList.add('is-visible')
+			}
+		})
+		return
+	}
+
+	overlay.classList.remove('is-visible')
+	overlay.classList.add('is-leaving')
+	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		overlay.classList.remove('is-leaving')
+		return
+	}
+
+	window.__tonksBannerTextExitTimer = window.setTimeout(() => {
+		overlay.classList.remove('is-leaving')
+		delete window.__tonksBannerTextExitTimer
+	}, BANNER_TEXT_EXIT_DURATION)
+}
+
 function setClickOutsideToClose(panel: string, ignores: string[]) {
 	document.addEventListener("click", event => {
 		let panelDom = document.getElementById(panel);
@@ -848,7 +903,7 @@ function setClickOutsideToClose(panel: string, ignores: string[]) {
 				return;
 			}
 		}
-		panelDom!.classList.add("float-panel-closed");
+		panelDom?.classList.add("float-panel-closed");
 	});
 }
 setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
@@ -861,11 +916,12 @@ function initCustomScrollbar() {
 	// 只处理katex元素的滚动条
 	const katexElements = document.querySelectorAll('.katex-display:not([data-scrollbar-initialized])') as NodeListOf<HTMLElement>;
 	katexElements.forEach(element => {
-		if (!element.parentNode) return;
+		const parent = element.parentNode;
+		if (!parent) return;
 
 		const container = document.createElement('div');
 		container.className = 'katex-display-container';
-		element.parentNode.insertBefore(container, element);
+		parent.insertBefore(container, element);
 		container.appendChild(element);
 
 		// 使用简单的CSS滚动条而不是OverlayScrollbars
@@ -975,24 +1031,37 @@ function showBanner() {
 function initCarousel() {
 	const bannerRuntime = window as typeof window & {
 		__tonksBannerCarouselCleanup?: () => void;
+		__tonksBannerCarouselRuntime?: {
+			root: HTMLElement;
+			setPageTransitionPaused: (paused: boolean) => void;
+		};
 	};
-	bannerRuntime.__tonksBannerCarouselCleanup?.();
 
 	const carouselItems = Array.from(document.querySelectorAll(".carousel-item"));
 	const carousel = document.getElementById("banner-carousel");
 	if (!carouselItems.length || !carousel) return;
+	if (bannerRuntime.__tonksBannerCarouselRuntime?.root === carousel) {
+		return;
+	}
+	bannerRuntime.__tonksBannerCarouselCleanup?.();
 
 	const bannerWrapper = document.getElementById("banner-wrapper");
 	const deviceQuery = window.matchMedia("(max-width: 1023px)");
 	const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 	const carouselEnabled = Boolean(siteConfig.banner.carousel?.enable);
 	const interval = siteConfig.banner.carousel?.interval || 6;
+	const intervalMs = Math.max(1, interval * 1000);
 	let validItems: Element[] = [];
 	let currentIndex = 0;
-	let carouselInterval: ReturnType<typeof setInterval> | undefined;
+	let carouselTimeout: ReturnType<typeof setTimeout> | undefined;
+	let timerDeadline = 0;
+	let remainingMs = intervalMs;
+	let timerGeneration = 0;
 	let isPaused = false;
+	let isPageTransitionPaused = window.__tonksBannerPageTransitionPaused ?? false;
 	let disposed = false;
 	let switchGeneration = 0;
+	let rebuildGeneration = 0;
 	let startX = 0;
 	let startY = 0;
 	let isSwiping = false;
@@ -1011,18 +1080,46 @@ function initCarousel() {
 	}
 
 	function stopCarousel() {
-		if (carouselInterval) clearInterval(carouselInterval);
-		carouselInterval = undefined;
+		timerGeneration++;
+		if (carouselTimeout !== undefined) {
+			remainingMs = Math.max(0, timerDeadline - performance.now());
+			clearTimeout(carouselTimeout);
+		}
+		carouselTimeout = undefined;
+		timerDeadline = 0;
 	}
 
-	function startCarousel() {
+	function startCarousel(resetRemaining = false) {
 		stopCarousel();
-		if (!carouselEnabled || validItems.length < 2 || disposed || motionQuery.matches || document.hidden) return;
-		carouselInterval = setInterval(() => {
-			if (!isPaused) {
-				void switchToSlide((currentIndex + 1) % validItems.length);
-			}
-		}, interval * 1000);
+		if (isPageTransitionPaused) return;
+		if (resetRemaining) remainingMs = intervalMs;
+		if (
+			!carouselEnabled ||
+			validItems.length < 2 ||
+			disposed ||
+			motionQuery.matches ||
+			document.hidden ||
+			(deviceQuery.matches && bannerWrapper?.classList.contains("mobile-hide-banner"))
+		) return;
+		const delay = Math.min(remainingMs, intervalMs);
+		const generation = timerGeneration;
+		timerDeadline = performance.now() + delay;
+		carouselTimeout = setTimeout(async () => {
+			if (generation !== timerGeneration) return;
+			carouselTimeout = undefined;
+			timerDeadline = 0;
+			if (isPaused || disposed || document.hidden || motionQuery.matches) return;
+			await switchToSlide((currentIndex + 1) % validItems.length);
+			if (
+				generation !== timerGeneration ||
+				isPageTransitionPaused ||
+				disposed ||
+				document.hidden ||
+				motionQuery.matches
+			) return;
+			remainingMs = intervalMs;
+			startCarousel();
+		}, delay);
 	}
 
 	function hideAllItems() {
@@ -1033,14 +1130,19 @@ function initCarousel() {
 	}
 
 	async function switchToSlide(index: number, initial = false) {
-		if (!validItems.length) return;
+		if (!validItems.length || isPageTransitionPaused) return;
 		const generation = ++switchGeneration;
 		if (deviceQuery.matches && bannerWrapper?.classList.contains("mobile-hide-banner")) return;
 		const device = getDevice();
 		const nextIndex = ((index % validItems.length) + validItems.length) % validItems.length;
 		const nextItem = validItems[nextIndex];
 		await activateItemImage(nextItem, "high", device);
-		if (disposed || generation !== switchGeneration || device !== getDevice()) return;
+		if (
+			disposed ||
+			isPageTransitionPaused ||
+			generation !== switchGeneration ||
+			device !== getDevice()
+		) return;
 
 		// 服务端已经为首张图设置了正确的可见状态。首次初始化时若再次
 		// hideAllItems，会触发 scale(1) → scale(1.15) → scale(1) 的抖动。
@@ -1054,9 +1156,11 @@ function initCarousel() {
 	}
 
 	function rebuildForDevice() {
+		const generation = ++rebuildGeneration;
 		const previousItem = validItems[currentIndex];
 		stopCarousel();
 		validItems = getValidItems();
+		if (isPageTransitionPaused) return;
 
 		let nextIndex = previousItem ? validItems.indexOf(previousItem) : -1;
 		if (deviceQuery.matches && bannerWrapper?.classList.contains("mobile-hide-banner")) {
@@ -1071,6 +1175,7 @@ function initCarousel() {
 		}
 		currentIndex = nextIndex;
 		void switchToSlide(currentIndex, !hasInitialized).then(() => {
+			if (disposed || generation !== rebuildGeneration) return;
 			hasInitialized = true;
 			startCarousel();
 		});
@@ -1094,6 +1199,7 @@ function initCarousel() {
 		}
 	};
 	const handleTouchEnd = (event: TouchEvent) => {
+		const didSwipe = isSwiping;
 		if (startX && startY && isSwiping && validItems.length > 1) {
 			const diffX = startX - event.changedTouches[0].clientX;
 			if (Math.abs(diffX) > 50) {
@@ -1105,10 +1211,27 @@ function initCarousel() {
 		startY = 0;
 		isSwiping = false;
 		isPaused = false;
-		startCarousel();
+		startCarousel(didSwipe);
+	};
+	const handleTouchCancel = () => {
+		startX = 0;
+		startY = 0;
+		isSwiping = false;
+		isPaused = false;
+		startCarousel(true);
 	};
 	const handleVisibilityChange = () => document.hidden ? stopCarousel() : startCarousel();
 	const handleMotionChange = () => motionQuery.matches ? stopCarousel() : startCarousel();
+	const setPageTransitionPaused = (paused: boolean) => {
+		if (isPageTransitionPaused === paused) return;
+		isPageTransitionPaused = paused;
+		if (paused) {
+			switchGeneration++;
+			stopCarousel();
+		} else {
+			startCarousel();
+		}
+	};
 
 	deviceQuery.addEventListener("change", handleDeviceChange);
 	motionQuery.addEventListener("change", handleMotionChange);
@@ -1121,9 +1244,10 @@ function initCarousel() {
 		carousel.addEventListener("touchstart", handleTouchStart, { passive: true });
 		carousel.addEventListener("touchmove", handleTouchMove, { passive: false });
 		carousel.addEventListener("touchend", handleTouchEnd, { passive: true });
+		carousel.addEventListener("touchcancel", handleTouchCancel, { passive: true });
 	}
 
-	bannerRuntime.__tonksBannerCarouselCleanup = () => {
+	const cleanup = () => {
 		disposed = true;
 		switchGeneration++;
 		stopCarousel();
@@ -1134,6 +1258,15 @@ function initCarousel() {
 		carousel.removeEventListener("touchmove", handleTouchMove);
 		wrapperObserver?.disconnect();
 		carousel.removeEventListener("touchend", handleTouchEnd);
+		carousel.removeEventListener("touchcancel", handleTouchCancel);
+		if (bannerRuntime.__tonksBannerCarouselRuntime?.root === carousel) {
+			delete bannerRuntime.__tonksBannerCarouselRuntime;
+		}
+	};
+	bannerRuntime.__tonksBannerCarouselCleanup = cleanup;
+	bannerRuntime.__tonksBannerCarouselRuntime = {
+		root: carousel,
+		setPageTransitionPaused,
 	};
 
 	rebuildForDevice();
@@ -1229,6 +1362,9 @@ const setup = () => {
 		to: {url: string};
 		scroll: {reset: boolean};
 	}) => {
+		// 页面过渡期间冻结轮播，避免切页时同时触发图片切换和过渡布局。
+		window.__tonksBannerPageTransitionPaused = true;
+		window.__tonksBannerCarouselRuntime?.setPageTransitionPaused(true);
 		window.scrollProtectionManager?.setPageTransitioning(true);
 		stopWatchingScrollRestore();
 		scrollRestoreInputController = new AbortController();
@@ -1261,7 +1397,7 @@ const setup = () => {
 
 		if (isEnteringHome) {
 			bodyElement?.classList.add('is-home', 'lg:is-home')
-			bannerTextOverlay?.classList.remove('hidden')
+			setBannerTextVisibility(bannerTextOverlay, true)
 			bannerWrapper?.classList.remove('mobile-hide-banner')
 			mainContentWrapper?.classList.remove('mobile-main-no-banner')
 			// 与 banner 展开同时开始遮罩淡入和贴纸贴入，避免等待展开完成后的滞后感。
@@ -1274,13 +1410,18 @@ const setup = () => {
 				detail: { active: false },
 			}))
 			bodyElement?.classList.remove('is-home', 'lg:is-home')
-			bannerTextOverlay?.classList.add('hidden')
+			setBannerTextVisibility(bannerTextOverlay, false)
 			bannerWrapper?.classList.add('mobile-hide-banner')
 			mainContentWrapper?.classList.add('mobile-main-no-banner')
 		} else {
 			bodyElement?.classList.toggle('is-home', isHomePage)
 			bodyElement?.classList.toggle('lg:is-home', isHomePage)
-			bannerTextOverlay?.classList.toggle('hidden', !isHomePage)
+			if (isHomePage) {
+				setBannerTextVisibility(bannerTextOverlay, true)
+			} else {
+				// 非主页之间切换时，文字本来就不可见，不触发退场动画。
+				bannerTextOverlay?.classList.remove('is-visible', 'is-leaving')
+			}
 			if (!isHomePage) {
 				bannerWrapper?.classList.add('mobile-hide-banner')
 				mainContentWrapper?.classList.add('mobile-main-no-banner')
@@ -1308,10 +1449,8 @@ const setup = () => {
 		// remove the surrounding `if (false)` guard.
 		if (false) {
 			// increase the page height during page transition to prevent the scrolling animation from jumping
-			const heightExtend = document.getElementById('page-height-extend')
-			if (heightExtend) {
-				heightExtend.classList.remove('hidden')
-			}
+const heightExtend = document.getElementById('page-height-extend')
+			heightExtend?.classList.remove('hidden')
 		}
 
 		// Hide the TOC while scrolling back to top
@@ -1325,9 +1464,7 @@ const setup = () => {
 		if (false) {
 			// hide the temp high element when the transition is done
 			const heightExtend = document.getElementById('page-height-extend')
-			if (heightExtend) {
-				heightExtend.classList.remove('hidden')
-			}
+			heightExtend?.classList.remove('hidden')
 		}
 		
 		// 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
@@ -1361,6 +1498,12 @@ const setup = () => {
 		}, 300);
 	});
 	window.swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
+		window.__tonksBannerPageTransitionPaused = false;
+		const currentCarousel = document.getElementById('banner-carousel');
+		const carouselRuntime = window.__tonksBannerCarouselRuntime;
+		if (carouselRuntime?.root === currentCarousel) {
+			carouselRuntime.setPageTransitionPaused(false);
+		}
 		stopWatchingScrollRestore();
 		window.scrollProtectionManager?.disable();
 		requestAnimationFrame(() => {
@@ -1460,14 +1603,44 @@ if (document.readyState === 'loading') {
 
 <script>
 import { Fancybox } from "@fancyapps/ui";
+import type { FancyboxOptions } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
+
+type TonksFancyboxOptions = Partial<FancyboxOptions> & {
+  animated?: boolean;
+  caption?: boolean;
+  fitToView?: boolean;
+  preload?: number;
+  Panzoom?: {
+    maxScale?: number;
+    minScale?: number;
+  };
+  Thumbs?: {
+    autoStart?: boolean;
+    showOnStart?: string;
+  };
+  Toolbar?: {
+    display?: {
+      left?: string[];
+      middle?: string[];
+      right?: string[];
+    };
+  };
+  source?: (element: HTMLElement) => string | null;
+};
+
+function bindFancybox(selector: string, options: TonksFancyboxOptions) {
+  // Fancybox v6 still accepts these plugin options at runtime, but its
+  // published type omits several plugin-specific fields.
+  Fancybox.bind(selector, options as Partial<FancyboxOptions>);
+}
 
 function initFancybox() {
   // 销毁现有的 Fancybox 实例（如果存在）
   Fancybox.close();
   
   // 为相册图片添加 Fancybox 支持
-  Fancybox.bind(".custom-md img, #post-cover img, .moment-images img", {
+  bindFancybox(".custom-md img, #post-cover img, .moment-images img", {
     groupAll: true,
     Thumbs: {
       autoStart: true,
@@ -1526,7 +1699,7 @@ function initFancybox() {
   });
   
   // 为相册中的链接添加 Fancybox 支持
-  Fancybox.bind(".moment-images a[data-fancybox]", {
+  bindFancybox(".moment-images a[data-fancybox]", {
     Thumbs: {
       autoStart: true,
       showOnStart: "yes",
@@ -1583,7 +1756,7 @@ function initFancybox() {
   });
   
   // 为单独的 fancybox 图片添加支持
-  Fancybox.bind("[data-fancybox]:not(.moment-images a)", {
+  bindFancybox("[data-fancybox]:not(.moment-images a)", {
     // 自定义选项
     Thumbs: {
       autoStart: true,

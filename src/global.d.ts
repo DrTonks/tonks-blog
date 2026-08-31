@@ -1,8 +1,5 @@
 interface SwupHookRegistry {
-	on<TVisit = unknown>(
-		event: string,
-		handler: (visit: TVisit) => void,
-	): void;
+	on<TVisit = unknown>(event: string, handler: (visit: TVisit) => void): void;
 }
 
 interface SwupRuntime {
@@ -21,6 +18,7 @@ declare global {
 
 	interface Window {
 		swup: SwupRuntime;
+		dataLayer?: Array<Record<string, unknown>>;
 		pagefind: {
 			search: (query: string) => Promise<{
 				results: Array<{
@@ -34,6 +32,15 @@ declare global {
 		closeAnnouncement?: () => void;
 		iconifyLoaded?: boolean;
 		__tonksLayoutSwupHooksReady?: boolean;
+		__tonksBannerTextExitTimer?: number;
+		__tonksBannerPageTransitionPaused?: boolean;
+		__tonksBannerCarouselCleanup?: () => void;
+		__tonksBannerCarouselRuntime?: {
+			root: HTMLElement;
+			setPageTransitionPaused: (paused: boolean) => void;
+		};
+		__hanaleiFontLoadScheduled?: boolean;
+		sakuraInitialized?: boolean;
 		__tonksScrollProtectionInitialized?: boolean;
 		__tonksTwikooInit?: () => void;
 		__tonksTwikooHooksReady?: boolean;

@@ -96,6 +96,28 @@ import { Icon } from "astro-icon/components";
 						<span data-friend-apply-status aria-live="polite"></span>
 						<button type="submit" class="signal-marker">提交申请 <span aria-hidden="true">↗</span></button>
 					</div>
+					<div class="friend-apply__tracking" data-friend-apply-tracking hidden>
+						<div>
+							<strong>请保存本次查询码</strong>
+							<small>浏览器会自动保存；清理站点数据后可凭此码找回申请。请勿公开分享。</small>
+						</div>
+						<code data-friend-apply-token></code>
+						<button type="button" data-copy-value="" data-copy-tracking aria-label="复制申请查询码"><Icon name="material-symbols:content-copy-outline-rounded" /></button>
+					</div>
+				</div>
+			</details>
+
+			<details class="friend-apply__application friend-apply__history" data-friend-apply-history>
+				<summary>
+					<span><strong>我的申请</strong><small>查看这台设备提交过的友链申请与审核结果</small></span>
+					<Icon name="material-symbols:keyboard-arrow-down-rounded" />
+				</summary>
+				<div class="friend-apply__history-body">
+					<div class="friend-apply__history-heading">
+						<p>审核通过后仍需由站长更新静态友链数据，不代表会立刻出现在友链墙。</p>
+						<button type="button" data-refresh-friend-applications><Icon name="material-symbols:refresh-rounded" /> 刷新状态</button>
+					</div>
+					<div class="friend-apply__history-list" data-friend-apply-history-list aria-live="polite"></div>
 				</div>
 			</details>
 		</form>
@@ -182,6 +204,33 @@ import { Icon } from "astro-icon/components";
 	.friend-apply__footer > span[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
 	.friend-apply__footer button { padding: 0.6rem 0.8rem; color: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal-line); cursor: pointer; font-size: 0.7rem; font-weight: 800; }
 	.friend-apply__footer button:disabled { cursor: wait; opacity: 0.58; }
+	.friend-apply__tracking { display: grid; grid-template-columns: minmax(0, 1fr) minmax(7rem, auto) auto; align-items: center; gap: 0.65rem; padding: 0.7rem; border: 1px solid color-mix(in srgb, var(--signal-line) 45%, transparent); border-radius: 0.3rem; background: color-mix(in srgb, var(--signal-soft) 38%, var(--industrial-surface)); }
+	.friend-apply__tracking[hidden] { display: none; }
+	.friend-apply__tracking strong,
+	.friend-apply__tracking small { display: block; }
+	.friend-apply__tracking strong { font-size: 0.72rem; }
+	.friend-apply__tracking small { margin-top: 0.15rem; color: color-mix(in srgb, currentColor 52%, transparent); font-size: 0.58rem; line-height: 1.45; }
+	.friend-apply__tracking code { min-width: 0; overflow: hidden; padding: 0.45rem 0.55rem; border-radius: 0.22rem; background: color-mix(in srgb, var(--card-bg) 82%, transparent); font-size: 0.58rem; text-overflow: ellipsis; white-space: nowrap; }
+	.friend-apply__tracking button,
+	.friend-apply__history-heading button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.22rem; background: var(--signal); cursor: pointer; }
+	.friend-apply__tracking button { width: 2rem; height: 2rem; padding: 0; }
+	.friend-apply__tracking button :global(svg),
+	.friend-apply__history-heading button :global(svg) { width: 0.9rem; height: 0.9rem; }
+	.friend-apply__history-body { display: grid; gap: 0.75rem; padding: 0.9rem 1rem 1rem; border-top: 1px dashed var(--signal-line); }
+	.friend-apply__history-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
+	.friend-apply__history-heading p { margin: 0; color: color-mix(in srgb, currentColor 52%, transparent); font-size: 0.62rem; line-height: 1.5; }
+	.friend-apply__history-heading button { flex: 0 0 auto; padding: 0.45rem 0.6rem; font-size: 0.62rem; font-weight: 800; }
+	.friend-apply__history-list { display: grid; gap: 0.55rem; }
+	.friend-apply__history-empty { margin: 0; padding: 1.2rem; color: color-mix(in srgb, currentColor 52%, transparent); border: 1px dashed color-mix(in srgb, currentColor 16%, transparent); border-radius: 0.3rem; text-align: center; font-size: 0.68rem; }
+	.friend-apply__history-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.45rem 0.8rem; padding: 0.75rem; border: 1px solid color-mix(in srgb, currentColor 11%, transparent); border-radius: 0.3rem; background: color-mix(in srgb, var(--card-bg) 85%, transparent); }
+	.friend-apply__history-card h4 { margin: 0; font-size: 0.76rem; }
+	.friend-apply__history-card h4 a { color: inherit; text-decoration: none; }
+	.friend-apply__history-card h4 a:hover { color: var(--signal-line); }
+	.friend-apply__history-card p { grid-column: 1 / -1; margin: 0; color: color-mix(in srgb, currentColor 57%, transparent); font-size: 0.64rem; line-height: 1.55; }
+	.friend-apply__history-card time { color: color-mix(in srgb, currentColor 42%, transparent); font-size: 0.56rem; }
+	.friend-apply__history-status { align-self: start; padding: 0.22rem 0.48rem; border-radius: 999px; background: color-mix(in srgb, var(--signal-soft) 55%, transparent); color: var(--signal-line); font: 800 0.55rem/1 "JetBrains Mono Variable", monospace; }
+	.friend-apply__history-status[data-status="approved"] { color: color-mix(in srgb, #16824a 80%, currentColor); background: color-mix(in srgb, #44c77d 14%, transparent); }
+	.friend-apply__history-status[data-status="rejected"] { color: color-mix(in srgb, #c33 78%, currentColor); background: color-mix(in srgb, #c33 10%, transparent); }
 	@media (max-width: 760px) {
 		.friend-apply__guide,
 		.friend-apply__notice ul { grid-template-columns: 1fr; }
@@ -197,6 +246,9 @@ import { Icon } from "astro-icon/components";
 		.friend-apply__description { grid-column: auto; }
 		.friend-apply__footer { align-items: stretch; flex-direction: column; }
 		.friend-apply__footer button { width: 100%; }
+		.friend-apply__tracking { grid-template-columns: minmax(0, 1fr) auto; }
+		.friend-apply__tracking > div { grid-column: 1 / -1; }
+		.friend-apply__history-heading { align-items: stretch; flex-direction: column; }
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.friend-apply__dialog { filter: none; transform: none; transition: none; }

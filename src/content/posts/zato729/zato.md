@@ -6,7 +6,7 @@ tags:
   - 视觉小说
   - 鉴赏
   - 随笔
-category: 读后感
+category: 鉴赏
 draft: false
 pinned: false
 image: ./1.png

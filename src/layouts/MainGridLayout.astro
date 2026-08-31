@@ -280,12 +280,20 @@ const transparentClass = shouldEnableTransparency
     
     <!-- Home page text overlay -->
     {siteConfig.banner.homeText?.enable && (
-        <div class={`banner-text-overlay pointer-events-none absolute inset-0 z-20 flex items-center justify-center ${!showHomeText ? 'hidden' : ''}`}>
+        <div class={`banner-text-overlay pointer-events-none absolute inset-0 z-20 flex items-center justify-center ${showHomeText ? 'is-visible' : ''}`}>
             <div class="w-4/5 lg:w-3/4 text-center mb-0">
                 <div class="flex flex-col">
                     {siteConfig.banner.homeText?.title && (
                         <h1 class={`banner-title text-6xl lg:text-8xl text-white drop-shadow-lg mb-2 lg:mb-4 ${siteConfig.font?.hanalei?.enable ? 'font-hanalei' : ''}`}>
-                            {siteConfig.banner.homeText.title}
+                            <img
+                                class="banner-title-signature mx-auto"
+                                src="/assets/home/drtonks.svg"
+                                alt={siteConfig.banner.homeText.title}
+                                width="703"
+                                height="160"
+                                decoding="async"
+                                draggable="false"
+                            />
                         </h1>
                     )}
                     {siteConfig.banner.homeText?.subtitle && (
@@ -459,13 +467,45 @@ const transparentClass = shouldEnableTransparency
 /* Banner text styles */
 .banner-title {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    animation: fadeInUp 1s ease-out;
     font-weight: bold;
+}
+
+.banner-title-signature {
+    display: block;
+    width: clamp(14rem, 68vw, 25rem);
+    height: auto;
+    filter: brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.7));
+}
+
+.banner-text-overlay {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(30px);
+    transition:
+        opacity 700ms ease,
+        transform 700ms ease,
+        visibility 0s linear 700ms;
+}
+
+.banner-text-overlay.is-visible {
+	opacity: 1;
+	visibility: visible;
+    transform: translateY(0);
+    animation: fadeInUp 1s ease-out both;
+	transition-delay: 0s;
+}
+
+.banner-text-overlay.is-leaving {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: none;
+	animation: bannerTextExit 700ms ease-in forwards;
+	transition: none;
 }
 
 .banner-subtitle {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-    animation: fadeInUp 1s ease-out 0.3s both;
+    animation: fadeInOnly 1s ease-out 0.3s both;
     min-height: 1.5em; /* 确保副标题容器有最小高度 */
     line-height: 1.2; /* 确保一致的行高 */
 }
@@ -478,6 +518,40 @@ const transparentClass = shouldEnableTransparency
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes fadeInOnly {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bannerTextExit {
+	from {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.banner-text-overlay,
+	.banner-text-overlay.is-visible,
+	.banner-text-overlay.is-leaving {
+		animation: none;
+		transition: none;
+		transform: none;
+    }
+
+    .banner-subtitle {
+        animation: none;
     }
 }
 /* 移动端无侧边栏布局优化 */
