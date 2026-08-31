@@ -131,6 +131,17 @@ const { page } = Astro.props;
 	.community-comment-form textarea:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 17%, transparent); }
 	.community-comment-form__content { position: relative; grid-column: 1 / -1; }
 	.community-comment-form__content small { position: absolute; right: 0.65rem; bottom: 0.45rem; color: color-mix(in srgb, currentColor 38%, transparent); font: 600 0.55rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments :global(.community-emoji-toggle) { position: absolute; left: 0.55rem; bottom: 0.35rem; z-index: 2; display: grid; width: 1.75rem; height: 1.75rem; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 58%, transparent); border: 1px solid transparent; border-radius: 0.3rem; background: transparent; cursor: pointer; font: 700 1rem/1 system-ui, sans-serif; }
+	.community-comments :global(.community-emoji-toggle:hover),
+	.community-comments :global(.community-emoji-toggle:focus-visible),
+	.community-comments :global(.community-emoji-toggle[aria-expanded="true"]) { color: var(--signal-line); border-color: color-mix(in srgb, var(--signal-line) 42%, transparent); background: color-mix(in srgb, var(--signal-soft) 78%, transparent); }
+	.community-comments :global(.community-emoji-picker) { position: absolute; left: 0.55rem; bottom: 2.35rem; z-index: 8; display: grid; width: min(17rem, calc(100% - 1.1rem)); grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.18rem; padding: 0.45rem; border: 1px solid color-mix(in srgb, var(--signal-line) 40%, currentColor 12%); border-radius: 0.35rem; background: var(--card-bg); box-shadow: 0 0.75rem 1.8rem color-mix(in srgb, #000 18%, transparent); }
+	.community-comments :global(.community-emoji-picker[hidden]) { display: none; }
+	.community-comments :global(.community-emoji-picker button) { display: grid; aspect-ratio: 1; place-items: center; padding: 0; border: 0; border-radius: 0.25rem; background: transparent; cursor: pointer; font-size: 1rem; transition: background-color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) ease; }
+	.community-comments :global(.community-emoji-picker button:hover),
+	.community-comments :global(.community-emoji-picker button:focus-visible) { background: color-mix(in srgb, var(--signal-soft) 80%, transparent); transform: scale(1.08); }
+	.community-comment-form__content textarea,
+	.community-comments__list :global(.community-inline-reply textarea) { padding-bottom: 2.25rem; }
 	.community-comment-form__footer { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 1rem; }
 	.community-comment-form__footer p { min-height: 1.2rem; margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.72rem; }
 	.community-comment-form__footer p[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }

@@ -6,6 +6,73 @@ const API_BASE = (import.meta.env.PUBLIC_SLEEPY_API_BASE || "/api").replace(
 );
 const PROFILE_KEY = "sleepy-blog-comment-profile";
 const ADMIN_KEY = "admin_secret";
+const COMMUNITY_EMOJIS = [
+	"😀",
+	"😄",
+	"😊",
+	"🥰",
+	"🤔",
+	"😭",
+	"😳",
+	"👍",
+	"👏",
+	"🎉",
+	"❤️",
+	"✨",
+	"🌙",
+	"🍀",
+	"🐾",
+	"☕",
+	"📚",
+	"💻",
+	"🚀",
+	"👀",
+] as const;
+
+function attachCommunityEmojiPicker(
+	textarea: HTMLTextAreaElement,
+	host: HTMLElement,
+): void {
+	if (host.querySelector("[data-community-emoji-toggle]")) return;
+	const toggle = document.createElement("button");
+	toggle.type = "button";
+	toggle.className = "community-emoji-toggle";
+	toggle.dataset.communityEmojiToggle = "true";
+	toggle.setAttribute("aria-label", "选择表情");
+	toggle.setAttribute("aria-expanded", "false");
+	toggle.textContent = "☺";
+
+	const picker = document.createElement("div");
+	picker.className = "community-emoji-picker";
+	picker.hidden = true;
+	picker.setAttribute("role", "listbox");
+	picker.setAttribute("aria-label", "表情");
+	for (const emoji of COMMUNITY_EMOJIS) {
+		const button = document.createElement("button");
+		button.type = "button";
+		button.setAttribute("role", "option");
+		button.textContent = emoji;
+		button.addEventListener("click", () => {
+			const start = textarea.selectionStart ?? textarea.value.length;
+			const end = textarea.selectionEnd ?? start;
+			const next = `${textarea.value.slice(0, start)}${emoji}${textarea.value.slice(end)}`;
+			if (next.length > textarea.maxLength) return;
+			textarea.value = next;
+			textarea.dispatchEvent(new Event("input", { bubbles: true }));
+			picker.hidden = true;
+			toggle.setAttribute("aria-expanded", "false");
+			textarea.focus();
+			const caret = start + emoji.length;
+			textarea.setSelectionRange(caret, caret);
+		});
+		picker.append(button);
+	}
+	toggle.addEventListener("click", () => {
+		picker.hidden = !picker.hidden;
+		toggle.setAttribute("aria-expanded", String(!picker.hidden));
+	});
+	host.append(toggle, picker);
+}
 
 type LikeState = { count: number; liked: boolean };
 type LikesResponse = { success: boolean; likes: Record<string, LikeState> };
@@ -987,6 +1054,10 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 		};
 		content.addEventListener("input", updateCount);
 		updateCount();
+		const contentHost = content.closest<HTMLElement>(
+			".community-comment-form__content",
+		);
+		if (contentHost) attachCommunityEmojiPicker(content, contentHost);
 	}
 
 	const submitComment = async (
@@ -1127,6 +1198,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 			counter.textContent = `${replyContent.value.length} / 800`;
 		});
 		contentLabel.append(contentCaption, replyContent, counter);
+		attachCommunityEmojiPicker(replyContent, contentLabel);
 		replyForm.append(contentLabel);
 
 		const footer = document.createElement("div");

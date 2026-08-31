@@ -5,6 +5,7 @@ description: 爱这个世界和其中的一切   // 剧透警告！
 tags:
   - 视觉小说
   - 鉴赏
+  - 随笔
 category: 读后感
 draft: false
 pinned: false

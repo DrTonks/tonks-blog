@@ -94,4 +94,15 @@ export const homeStickerDefinitions: HomeStickerDefinition[] = [
 		href: "/friends/",
 		tilt: 1.1,
 	},
+	{
+		id: "community-chat",
+		kind: "photo",
+		eyebrow: "MESSAGE / CHAT",
+		title: "来聊聊天",
+		note: "去 Tonks' Chat 留句话",
+		image: "/assets/home/home.png",
+		href: "https://tonks.top/?open=community",
+		external: true,
+		tilt: -1.6,
+	},
 ];

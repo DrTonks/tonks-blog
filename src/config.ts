@@ -230,7 +230,16 @@ export const navBarConfig: NavBarConfig = {
 			name: "关于",
 			url: "/about/",
 			icon: "material-symbols:person",
-			children: [LinkPreset.About, LinkPreset.Friends],
+			children: [
+				LinkPreset.About,
+				LinkPreset.Friends,
+				{
+					name: "留言",
+					url: "https://tonks.top/?open=community",
+					external: true,
+					icon: "material-symbols:forum-outline-rounded",
+				},
+			],
 		},
 		{
 			name: "链接",
