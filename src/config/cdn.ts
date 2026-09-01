@@ -15,6 +15,7 @@ const LOCAL_TO_CDN: Record<string, string> = {
   // home 装饰图
   '/assets/home/left.png': `${CDN_BASE}/left.png`,
   '/assets/home/right.png': `${CDN_BASE}/right.png`,
+  '/images/projects/personalWebsite2.png': `${CDN_BASE}/personalWebsite2.png`,
   // 桌面 banner
   '/assets/desktop-banner/d1.png': `${CDN_BASE}/banner/d1.png`,
   '/assets/desktop-banner/d2.png': `${CDN_BASE}/banner/d2.png`,

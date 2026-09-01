@@ -4,6 +4,7 @@ import { getCollection, render } from "astro:content";
 import BlogLike from "@components/community/BlogLike.astro";
 import CommunityComments from "@components/community/CommunityComments.astro";
 import GitHubRepoCard from "@components/misc/GitHubRepoCard.astro";
+import { getCdnUrl } from "../config/cdn";
 import { Icon } from "astro-icon/components";
 import asyaImage from "../content/spec/asya.jpg";
 import modelImage from "../content/spec/model.jpg";
@@ -31,6 +32,8 @@ const siteRunningDays = Math.max(
 	1,
 	Math.floor((Date.now() - siteStartTime) / 86_400_000) + 1,
 );
+const homePreviewLocal = "/images/projects/personalWebsite2.png";
+const homePreviewSrc = getCdnUrl(homePreviewLocal) ?? homePreviewLocal;
 
 const aboutRoutes = [
 	{
@@ -160,13 +163,12 @@ const aboutRoutes = [
 					<div class="about-profile__intro">
 						<span class="about-profile__stamp">HUMAN / MAYBE</span>
 						<p class="about-lead"><strong>半吊子前端，正在学习Agent...</strong></p>
-						<p class="about-lead"><strong>随时可能陨落（<del>被5小时限额</del>）的天才程序员。</strong></p>
+						<p class="about-lead"><strong>随时可能陨落<del>(被限额)</del>的天才程序员</strong></p>
 						<p>电科大自研哈吉米 3.5 Flash</p>
-						<p>打字速度很慢</p>
-						<p>(真的很慢！)</p>
+						<p>打字速度很慢  (真的很慢!)</p>
 						<ul aria-label="个人关键词">
 							<li>FRONTEND?</li>
-							<li>IDEA FIRST</li>
+							<li>AGENT</li>
 							<li>SLOW TYPING</li>
 						</ul>
 					</div>
@@ -174,7 +176,7 @@ const aboutRoutes = [
 					<figure class="about-model-card">
 						<figcaption>
 							<span><b>MODEL TWIN / 性格映射</b><small>一张并不严肃的模型人格切片</small></span>
-							<a href="https://api.reizeiin.xyz" target="_blank" rel="noopener noreferrer">来源：测试网站 <Icon name="material-symbols:arrow-outward-rounded" /></a>
+							<a href="https://api.reizeiin.xyz" target="_blank" rel="noopener noreferrer">来源：HUMANBENCH<Icon name="material-symbols:arrow-outward-rounded" /></a>
 						</figcaption>
 						<Image src={modelImage} alt="Gemini 3.5 Flash 模型能力雷达图" widths={[720, 1200, 1800]} sizes="(max-width: 720px) 100vw, 56vw" />
 					</figure>
@@ -199,14 +201,22 @@ const aboutRoutes = [
 				<a href="https://tonks.top/" target="_blank" rel="noopener noreferrer" class="about-home-card">
 					<div class="about-home-card__copy">
 						<span>ANOTHER WINDOW / 个人主页</span>
-						<h2 id="home-link-title">不只存在于博客里</h2>
+						<h2 id="home-link-title">不只是博客</h2>
 						<p>博客收藏过去，主页记录现在。</p>
-						<p>一些正在发生的事~</p>
+						<p>来看看一些正在发生的事~</p>
 						<strong>进入 tonks.top <Icon name="material-symbols:arrow-outward-rounded" /></strong>
 					</div>
 					<div class="about-home-card__preview" aria-hidden="true">
 						<div class="about-browser-bar"><i></i><i></i><i></i><span>tonks.top</span></div>
-						<img src="/images/projects/personalWebsite.png" alt="" loading="lazy" draggable="false" />
+						<img
+							src={homePreviewSrc}
+							data-local-fallback={homePreviewSrc !== homePreviewLocal ? homePreviewLocal : undefined}
+							alt=""
+							loading="lazy"
+							decoding="async"
+							draggable="false"
+							onerror="this.onerror=null;const fallback=this.dataset.localFallback;if(fallback)this.src=fallback"
+						/>
 					</div>
 				</a>
 			</section>
