@@ -1,10 +1,14 @@
+import {
+	getCommunityIdentityToken,
+	getCommunityProfile,
+	saveCommunityProfile,
+} from "./community-identity";
 import { getBlogClientId } from "./visitor-id";
 
 const API_BASE = (import.meta.env.PUBLIC_SLEEPY_API_BASE || "/api").replace(
 	/\/$/,
 	"",
 );
-const PROFILE_KEY = "sleepy-blog-comment-profile";
 const ADMIN_KEY = "admin_secret";
 const FRIEND_APPLICATION_STORAGE_KEY = "tonks_friend_application_tokens";
 const FRIEND_APPLICATION_TOKEN_LIMIT = 20;
@@ -99,6 +103,8 @@ type PublicComment = {
 	status?: "published" | "pending" | "rejected";
 	is_admin?: boolean;
 	moderation_reason?: string;
+	author_key: string;
+	owned: boolean;
 };
 
 type CommentsResponse = {
@@ -242,6 +248,7 @@ function clientHeaders(json = false): HeadersInit {
 	return {
 		Accept: "application/json",
 		"X-Client-ID": getBlogClientId(),
+		"X-Community-Identity": getCommunityIdentityToken(),
 		...(json ? { "Content-Type": "application/json" } : {}),
 	};
 }
@@ -932,22 +939,15 @@ function renderComments(
 }
 
 function readProfile(): CommentProfile {
-	try {
-		return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}") as Record<
-			string,
-			string
-		>;
-	} catch {
-		return {};
-	}
+	return getCommunityProfile();
 }
 
 function saveProfile(profile: CommentProfile): void {
-	try {
-		localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-	} catch {
-		/* Local storage can be unavailable in private or restricted contexts. */
-	}
+	saveCommunityProfile({
+		nickname: profile.nickname || "",
+		email: profile.email || "",
+		website: profile.website || "",
+	});
 }
 
 function readAdminSecret(): string {

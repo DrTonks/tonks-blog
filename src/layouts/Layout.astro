@@ -204,11 +204,25 @@ const bannerOffset =
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
 		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, SYSTEM_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, defaultLightAccent, defaultDarkAccent, defaultWavesEnabled}}>
-			// Load the theme from local storage
-			const storedTheme = localStorage.getItem('theme');
+			// Prefer the shared .tonks.top cookie, then fall back to this origin's storage.
+			const sharedThemeEntry = document.cookie
+				.split('; ')
+				.find((item) => item.startsWith('tonks_theme='));
+			let sharedTheme = null;
+			try {
+				sharedTheme = sharedThemeEntry
+					? decodeURIComponent(sharedThemeEntry.slice('tonks_theme='.length))
+					: null;
+			} catch {}
+			const storedTheme = [LIGHT_MODE, DARK_MODE, SYSTEM_MODE].includes(sharedTheme)
+				? sharedTheme
+				: localStorage.getItem('theme');
 			const theme = [LIGHT_MODE, DARK_MODE, SYSTEM_MODE].includes(storedTheme)
 				? storedTheme
 				: DEFAULT_THEME;
+			localStorage.setItem('theme', theme);
+			const sharedThemeDomain = location.hostname === 'tonks.top' || location.hostname.endsWith('.tonks.top');
+			document.cookie = `tonks_theme=${theme}; Path=/; Max-Age=31536000; SameSite=Lax${sharedThemeDomain ? '; Domain=.tonks.top; Secure' : ''}`;
 			let isDark = theme === DARK_MODE ||
 				(theme === SYSTEM_MODE && window.matchMedia('(prefers-color-scheme: dark)').matches);
 			switch (theme) {

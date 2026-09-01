@@ -1,0 +1,91 @@
+---
+interface Props {
+	repo: `${string}/${string}`;
+}
+
+const { repo } = Astro.props;
+const [owner, repository] = repo.split("/");
+
+if (!owner || !repository) {
+	throw new Error(`Invalid GitHub repository: ${repo}`);
+}
+
+const cardId = `about-github-${owner}-${repository}`.replace(
+	/[^a-zA-Z0-9_-]/g,
+	"-",
+);
+---
+
+<a
+	id={cardId}
+	class="card-github fetch-waiting no-styling"
+	href={`https://github.com/${repo}`}
+	target="_blank"
+	rel="noopener noreferrer"
+	repo={repo}
+	data-repo-state="idle"
+>
+	<div class="gc-titlebar">
+		<div class="gc-titlebar-left">
+			<div class="gc-owner">
+				<div class="gc-avatar" data-repo-avatar></div>
+				<div class="gc-user">{owner}</div>
+			</div>
+			<div class="gc-divider">/</div>
+			<div class="gc-repo">{repository}</div>
+		</div>
+		<div class="github-logo"></div>
+	</div>
+	<div class="gc-description" data-repo-description>Waiting for api.github.com...</div>
+	<div class="gc-infobar">
+		<div class="gc-stars" data-repo-stars>00K</div>
+		<div class="gc-forks" data-repo-forks>0K</div>
+		<div class="gc-license" data-repo-license>0K</div>
+		<div class="gc-language" data-repo-language>Waiting...</div>
+	</div>
+</a>
+
+<script is:inline define:vars={{ cardId, repo }}>
+	(() => {
+		const card = document.getElementById(cardId);
+		if (!card || card.dataset.repoState === "loading" || card.dataset.repoState === "loaded") return;
+		card.dataset.repoState = "loading";
+
+		const compactNumber = (value) =>
+			Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 })
+				.format(Number(value || 0))
+				.replaceAll("\u202f", "");
+
+		fetch(`https://api.github.com/repos/${repo}`, { referrerPolicy: "no-referrer" })
+			.then((response) => {
+				if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
+				return response.json();
+			})
+			.then((data) => {
+				const description = card.querySelector("[data-repo-description]");
+				const language = card.querySelector("[data-repo-language]");
+				const stars = card.querySelector("[data-repo-stars]");
+				const forks = card.querySelector("[data-repo-forks]");
+				const license = card.querySelector("[data-repo-license]");
+				const avatar = card.querySelector("[data-repo-avatar]");
+
+				if (description) description.textContent = data.description?.replace(/:[a-zA-Z0-9_]+:/g, "") || "Description not set";
+				if (language) language.textContent = data.language || "Unknown";
+				if (stars) stars.textContent = compactNumber(data.stargazers_count);
+				if (forks) forks.textContent = compactNumber(data.forks);
+				if (license) license.textContent = data.license?.spdx_id || "no-license";
+				if (avatar && data.owner?.avatar_url) {
+					avatar.style.backgroundImage = `url(${data.owner.avatar_url})`;
+					avatar.style.backgroundColor = "transparent";
+				}
+
+				card.dataset.repoState = "loaded";
+				card.classList.remove("fetch-waiting", "fetch-error");
+			})
+			.catch(() => {
+				card.dataset.repoState = "error";
+				card.classList.remove("fetch-waiting");
+				card.classList.add("fetch-error");
+			});
+	})();
+</script>

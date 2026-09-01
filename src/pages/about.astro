@@ -1,20 +1,16 @@
 ---
-import { getCollection, getEntry, render } from "astro:content";
-import Markdown from "@components/misc/Markdown.astro";
+import { Image } from "astro:assets";
+import { getCollection, render } from "astro:content";
+import BlogLike from "@components/community/BlogLike.astro";
+import CommunityComments from "@components/community/CommunityComments.astro";
+import GitHubRepoCard from "@components/misc/GitHubRepoCard.astro";
 import { Icon } from "astro-icon/components";
-import BlogLike from "../components/community/BlogLike.astro";
-import CommunityComments from "../components/community/CommunityComments.astro";
+import asyaImage from "../content/spec/asya.jpg";
+import modelImage from "../content/spec/model.jpg";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-const aboutPost = await getEntry("spec", "about");
-
-if (!aboutPost) {
-	throw new Error("About page content not found");
-}
-
-const { Content } = await render(aboutPost);
 const title = i18n(I18nKey.about);
 const publishedPosts = await getCollection(
 	"posts",
@@ -59,19 +55,25 @@ const aboutRoutes = [
 ---
 
 <MainGridLayout title={title}>
-	<article class="about-shell card-base">
-		<section class="about-dossier" aria-labelledby="about-title">
-			<span class="about-dossier__register" aria-hidden="true">FILE / ABOUT / 01</span>
-			<div class="about-dossier__copy">
+	<article class="about-shell card-base" data-pagefind-body>
+		<section class="about-hero" aria-labelledby="about-title">
+			<span class="about-hero__register" aria-hidden="true">FILE / ABOUT / 01</span>
+			<div class="about-hero__copy">
 				<span class="signal-kicker">PERSONAL SITE / FIELD NOTES</span>
-				<div class="about-dossier__title-row">
-					<h1 id="about-title" class="font-hanalei">{title}</h1>
+				<div class="about-hero__title-row">
+					<div>
+						<h1 id="about-title" class="font-hanalei">{title}</h1>
+						<p>记录我的近况，分享我的喜悦</p>
+					</div>
 					<BlogLike target="page:about" variant="about" />
 				</div>
-				<p>记录我的近况，分享我的喜悦</p>
+				<div class="about-hero__coordinate" aria-hidden="true">
+					<span>25.10 — NOW</span>
+					<span>ON THE INTERNET</span>
+				</div>
 			</div>
 
-			<dl class="about-dossier__record" aria-label="站点档案">
+			<dl class="about-record" aria-label="站点档案">
 				<div><dt>UPTIME</dt><dd><span aria-hidden="true"></span>{siteRunningDays} 天</dd></div>
 				<div><dt>VISITS</dt><dd data-site-visit-count>— 次</dd></div>
 				<div><dt>POSTS</dt><dd>{publishedPosts.length} 篇</dd></div>
@@ -90,14 +92,158 @@ const aboutRoutes = [
 			</nav>
 		</section>
 
-		<div class="about-story__divider" aria-hidden="true">
-			<span>LONG FORM / 自述与建站笔记</span>
-		</div>
+		<div class="about-content">
+			<section id="welcome" class="about-section about-origin" aria-labelledby="welcome-title">
+				<header class="about-section__header">
+					<span class="about-section__number">01</span>
+					<div>
+						<span class="about-section__eyebrow">ORIGIN / 一切从哪里开始</span>
+						<h2 id="welcome-title">欢迎你的到来！</h2>
+					</div>
+				</header>
 
-		<div class="about-story">
-			<Markdown class="about-story__markdown">
-				<Content />
-			</Markdown>
+				<div class="about-origin__grid">
+					<figure class="about-postcard">
+						<span class="about-postcard__tape" aria-hidden="true"></span>
+						<Image src={asyaImage} alt="ASYA 向你说 Thank you" widths={[256, 384]} sizes="(max-width: 720px) 42vw, 15rem" />
+						<figcaption>THANK YOU / FOR STOPPING BY</figcaption>
+					</figure>
+
+					<div class="about-prose about-prose--lead">
+						<p class="about-lead"><strong>此网站用于记录生活、学习，更新时间不定（<del>我可能也懒得维护</del>）。</strong></p>
+						<p>这个项目被搁置了太久太久了。最初想要做个博客是因为微光工作室的某一道招新题，我先用三件套构筑了一个还看得过去的博客（黑历史），后来尝试迁移到 Vue，后来在网上发现了好多新奇的框架，再后来尝试把一些自己写的组件重构到某些好用且优雅的博客框架里……</p>
+						<blockquote class="about-quote">
+							<span aria-hidden="true">“</span>
+							<p>感觉实用性不大，只是为了好看而已。你对博客的热情也就仅限于你搭建博客的那几天，搭好了没两天就停更了，到最后就忘记有这么一回事了。</p>
+							<cite>—— 偶然间在B站的教学视频下看到的评论</cite>
+						</blockquote>
+						<p>我想起刚入学那会儿，我搭好了人生的第一个博客，积极地配置了域名、购买了服务器，再在认识的圈子里宣传了一番，然后就没有下文了。阿里云后台的浏览量在短短几天之内归零，我也没再回去维护过我的网站。个人的小博客哪有流量，都是做给自己看的。</p>
+						<p><strong>于是我开始反思</strong>：我的热情到底源于什么？是刚接触前端的新鲜感，是第一次看到别人的、漂亮的博客主题的惊叹与羡慕，还是单纯想要展示自己那半桶水的技术？</p>
+					</div>
+				</div>
+
+				<div class="about-memory" aria-label="让我决定继续记录的片段">
+					<article>
+						<span>让我决定继续记录的片段 / 01</span>
+						<h3>25工作室招新</h3>
+						<p>我看着新生们交上来的招新题，想起去年为了做一个博客东奔西走讨教经验的自己，也想起刚加入工作室时满怀期待地找了几个队友、打了几场不那么优雅的比赛。虽然没什么拿得出手的成绩，但我觉得还是有所收获的。</p>
+					</article>
+					<article>
+						<span>让我决定继续记录的片段 / 02</span>
+						<h3>24年11月</h3>
+						<p>我密谋许久，录下一段蹩脚的生日祝福。<br>点击发送之前，那段没来得及说再见的友谊和自以为结束了的青春，又在我的脑海里闪回。</p>
+					</article>
+					<article>
+						<span>让我决定继续记录的片段 / 03</span>
+						<h3>25年初</h3>
+						<p>我遇见了我的小太阳，总是能找到我的优点，总是对我说：“你超级棒。” <br>也许生活没有我想象中的那么糟糕。</p>
+					</article>
+				</div>
+
+				<div class="about-declaration">
+					<span aria-hidden="true">→</span>
+					<p>我想，趁着我还有这份热情与憧憬，我要开始做点什么了。</p>
+					<time datetime="2025-10-12">2025.10.12</time>
+				</div>
+			</section>
+
+			<section id="about-me" class="about-section" aria-labelledby="about-me-title">
+				<header class="about-section__header">
+					<span class="about-section__number">02</span>
+					<div>
+						<span class="about-section__eyebrow">PROFILE / 关于站长</span>
+						<h2 id="about-me-title">关于我</h2>
+					</div>
+				</header>
+
+				<div class="about-profile">
+					<div class="about-profile__intro">
+						<span class="about-profile__stamp">HUMAN / MAYBE</span>
+						<p class="about-lead"><strong>半吊子前端，正在学习Agent...</strong></p>
+						<p class="about-lead"><strong>随时可能陨落（<del>被5小时限额</del>）的天才程序员。</strong></p>
+						<p>电科大自研哈吉米 3.5 Flash</p>
+						<p>打字速度很慢</p>
+						<p>(真的很慢！)</p>
+						<ul aria-label="个人关键词">
+							<li>FRONTEND?</li>
+							<li>IDEA FIRST</li>
+							<li>SLOW TYPING</li>
+						</ul>
+					</div>
+
+					<figure class="about-model-card">
+						<figcaption>
+							<span><b>MODEL TWIN / 性格映射</b><small>一张并不严肃的模型人格切片</small></span>
+							<a href="https://api.reizeiin.xyz" target="_blank" rel="noopener noreferrer">来源：测试网站 <Icon name="material-symbols:arrow-outward-rounded" /></a>
+						</figcaption>
+						<Image src={modelImage} alt="Gemini 3.5 Flash 模型能力雷达图" widths={[720, 1200, 1800]} sizes="(max-width: 720px) 100vw, 56vw" />
+					</figure>
+				</div>
+
+				<div class="about-name-story">
+					<div class="about-name-story__label">
+						<span>CODENAME</span>
+						<strong>Dr.Tonks?</strong>
+						<small>既不是 Doctor，也不是 Tonks。</small>
+					</div>
+					<div class="about-prose">
+						<p><strong>小时候特喜欢《哈利波特》，“Tonks” 的来源就是其中的唐克斯家（凤凰社安全屋）；</strong>Tonks 本身不是古老的纯血大家族，是反抗纯血主义的家庭，一边是麻瓜出身，一边是逃离布莱克家族的纯血女巫；整个家族是比较悲壮的，在第二次巫师战争承受巨大牺牲：父亲被搜捕队杀害；女儿唐克斯、女婿卢平死于霍格沃茨决战；只留下小儿子泰迪。</p>
+						<p>后续染上了神秘博士，觉得 Dalek 和 Dr.WHO 老霸气了（不是剧情表现霸气，而是感觉念起来很霸气 hhh），遂在网名前添了个 Dr.</p>
+						<p>虽然有先射箭后画靶的嫌疑，但是我依然希望自己能承载起这个名字所带来的意义；倒不是说非得有什么某某主义、反抗精神云云，也许只是在我快要放弃的时候，能够提醒我坚持创作、想起上网的初衷，在互联网上留下属于我的痕迹。</p>
+						<p><strong>我正试着在第四次工业革命的浪潮里摸着石头过河。</strong></p>
+					</div>
+				</div>
+			</section>
+
+			<section class="about-home-link" aria-labelledby="home-link-title">
+				<a href="https://tonks.top/" target="_blank" rel="noopener noreferrer" class="about-home-card">
+					<div class="about-home-card__copy">
+						<span>ANOTHER WINDOW / 个人主页</span>
+						<h2 id="home-link-title">不只存在于博客里</h2>
+						<p>博客收藏过去，主页记录现在。</p>
+						<p>一些正在发生的事~</p>
+						<strong>进入 tonks.top <Icon name="material-symbols:arrow-outward-rounded" /></strong>
+					</div>
+					<div class="about-home-card__preview" aria-hidden="true">
+						<div class="about-browser-bar"><i></i><i></i><i></i><span>tonks.top</span></div>
+						<img src="/images/projects/personalWebsite.png" alt="" loading="lazy" draggable="false" />
+					</div>
+				</a>
+			</section>
+
+			<section id="building" class="about-section about-build" aria-labelledby="building-title">
+				<header class="about-section__header">
+					<span class="about-section__number">03</span>
+					<div>
+						<span class="about-section__eyebrow">MAKING OF / 页面背后</span>
+						<h2 id="building-title">关于本站的搭建</h2>
+					</div>
+				</header>
+
+				<div class="about-build__intro">
+					<div class="about-prose">
+						<p>此网站使用 <strong>Astro</strong> 框架构建，基于 <a href="https://github.com/saicaca/fuwari" target="_blank" rel="noopener noreferrer">fuwari</a> 主题，参考其他同类型博客并深度魔改。虽然类似的主题已经烂大街了，它的布局还是能给我一种很清晰、很舒服的感觉，我很喜欢。</p>
+						<p>Fuwari的视觉中心拿捏得很到位，柔和的过渡效果可能比较符合我的审美，因此参考并整合了Mizuki主题的波浪效果。也有尝试过一些科幻工业风格、后现代主义、极简风之类的主题，最后也还是回到了这里。</p>
+					</div>
+					<ul class="about-stack" aria-label="本站技术关键词">
+						<li><span>CORE</span><strong>Astro</strong></li>
+						<li><span>BASE</span><strong>Fuwari</strong></li>
+						<li><span>STYLE</span><strong>4 Presets</strong></li>
+						<li><span>STATE</span><strong>Still Growing</strong></li>
+					</ul>
+				</div>
+
+				<div class="about-repositories prose dark:prose-invert !max-w-none">
+					<article class="about-repository">
+						<header><span>THANKS / 主题基础</span><p>特别感谢原作者及后续社区项目提供的基础设计与实现。</p></header>
+						<GitHubRepoCard repo="saicaca/fuwari" />
+					</article>
+					<article class="about-repository">
+						<header><span>SOURCE / 博客仓库</span><p>本站持续修改中的公开源代码与版本记录。</p></header>
+						<GitHubRepoCard repo="DrTonks/tonks-blog" />
+					</article>
+				</div>
+			</section>
 		</div>
 	</article>
 	<CommunityComments page="about" />
@@ -114,223 +260,188 @@ const aboutRoutes = [
 
 	:global(html.dark) .about-shell { color: rgba(255, 255, 255, 0.9); }
 
-	.about-dossier {
+	.about-hero {
 		position: relative;
 		display: grid;
-		grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr);
-		gap: 1.25rem 2rem;
-		padding: clamp(1.35rem, 3vw, 2.15rem);
+		grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+		gap: 1.35rem 2rem;
+		padding: clamp(1.5rem, 3.2vw, 2.5rem);
 		background:
 			linear-gradient(90deg, color-mix(in srgb, currentColor 3.5%, transparent) 1px, transparent 1px),
 			linear-gradient(color-mix(in srgb, currentColor 3.5%, transparent) 1px, transparent 1px),
+			linear-gradient(135deg, color-mix(in srgb, var(--signal-soft) 30%, transparent), transparent 44%),
 			var(--industrial-surface);
-		background-size: 2rem 2rem, 2rem 2rem, auto;
+		background-size: 2rem 2rem, 2rem 2rem, auto, auto;
 	}
 
-	.about-dossier::before {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		width: 0.38rem;
-		background: repeating-linear-gradient(to bottom, var(--signal-line) 0 0.32rem, transparent 0.32rem 0.62rem);
-		content: "";
-		opacity: 0.78;
-	}
+	.about-hero::before { position: absolute; inset: 0 auto 0 0; width: 0.38rem; background: repeating-linear-gradient(to bottom, var(--signal-line) 0 0.32rem, transparent 0.32rem 0.62rem); content: ""; opacity: 0.78; }
+	.about-hero::after { position: absolute; top: 0; right: 0; width: 3.2rem; height: 3.2rem; border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-left: 1px solid color-mix(in srgb, currentColor 14%, transparent); background: var(--card-bg); clip-path: polygon(100% 0, 0 0, 100% 100%); content: ""; }
+	.about-hero__register { position: absolute; top: 0.7rem; right: 3.75rem; color: color-mix(in srgb, currentColor 38%, transparent); font: 700 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.12em; }
+	.about-hero__copy { align-self: center; }
+	.about-hero__title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: clamp(1rem, 3vw, 2.5rem); }
+	.about-hero h1 { width: fit-content; margin: 0.7rem 0 0; font-size: clamp(2.8rem, 6vw, 4.8rem); line-height: 1; text-shadow: 0.18rem 0.18rem 0 color-mix(in srgb, currentColor 9%, transparent); }
+	.about-hero__title-row p { max-width: 34rem; margin: 0.75rem 0 0; color: color-mix(in srgb, currentColor 66%, transparent); font-size: 0.92rem; line-height: 1.65; }
+	.about-hero__coordinate { display: flex; gap: 1rem; margin-top: 1.25rem; color: color-mix(in srgb, currentColor 34%, transparent); font: 650 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; }
 
-	.about-dossier::after {
-		position: absolute;
-		top: 0;
-		right: 0;
-		width: 2.8rem;
-		height: 2.8rem;
-		border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
-		border-left: 1px solid color-mix(in srgb, currentColor 14%, transparent);
-		background: var(--card-bg);
-		clip-path: polygon(100% 0, 0 0, 100% 100%);
-		content: "";
-	}
+	.about-record { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-self: stretch; margin: 0; border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); border-left: 1px solid var(--signal-line); }
+	.about-record div { min-width: 0; padding: 0.85rem 0.95rem; border-right: 1px solid color-mix(in srgb, currentColor 10%, transparent); border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
+	.about-record dt, .about-section__eyebrow, .about-section__number, .about-memory article > span, .about-profile__stamp, .about-home-card__copy > span, .about-repository header span { color: var(--signal-line); font: 800 0.55rem/1.2 "JetBrains Mono Variable", monospace; letter-spacing: 0.12em; }
+	.about-record dd { margin: 0.45rem 0 0; overflow: hidden; font-size: 0.8rem; font-weight: 750; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+	.about-record dd span { display: inline-block; width: 0.48rem; height: 0.48rem; margin-right: 0.4rem; border-radius: 999px; background: var(--primary); }
 
-	.about-dossier__register {
-		position: absolute;
-		top: 0.65rem;
-		right: 3.35rem;
-		color: color-mix(in srgb, currentColor 38%, transparent);
-		font: 700 0.52rem/1 "JetBrains Mono Variable", monospace;
-		letter-spacing: 0.12em;
-	}
-
-	.about-dossier__copy {
-		align-self: center;
-	}
-
-	.about-dossier__title-row {
-		display: flex;
-		align-items: flex-end;
-		gap: clamp(1rem, 3vw, 2.5rem);
-	}
-
-	.about-dossier__copy h1 {
-		width: fit-content;
-		margin: 0.7rem 0 0;
-		font-size: clamp(2.6rem, 6vw, 4.6rem);
-		line-height: 1;
-		text-shadow: 0.18rem 0.18rem 0 color-mix(in srgb, currentColor 9%, transparent);
-	}
-
-	.about-dossier__copy p {
-		max-width: 34rem;
-		margin: 0.8rem 0 0;
-		color: color-mix(in srgb, currentColor 66%, transparent);
-		font-size: 0.92rem;
-		line-height: 1.65;
-	}
-
-	.about-dossier__record {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		align-self: stretch;
-		margin: 0;
-		border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-		border-left: 1px solid var(--signal-line);
-	}
-
-	.about-dossier__record div {
-		min-width: 0;
-		padding: 0.78rem 0.9rem;
-		border-right: 1px solid color-mix(in srgb, currentColor 10%, transparent);
-		border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
-	}
-
-	.about-dossier__record dt {
-		color: var(--signal-line);
-		font: 800 0.52rem/1 "JetBrains Mono Variable", monospace;
-		letter-spacing: 0.12em;
-	}
-
-	.about-dossier__record dd {
-		margin: 0.42rem 0 0;
-		overflow: hidden;
-		font-size: 0.76rem;
-		font-weight: 750;
-		line-height: 1.35;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.about-dossier__record dd span {
-		display: inline-block;
-		width: 0.48rem;
-		height: 0.48rem;
-		margin-right: 0.4rem;
-		border-radius: 999px;
-		background: var(--primary);
-	}
-
-	.about-routes {
-		display: grid;
-		grid-column: 1 / -1;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.65rem;
-	}
-
-	.about-route {
-		position: relative;
-		display: grid;
-		grid-template-columns: auto auto minmax(0, 1fr) auto;
-		align-items: center;
-		gap: 0.65rem;
-		min-width: 0;
-		padding: 0.72rem 0.8rem;
-		color: inherit;
-		border: 1px solid color-mix(in srgb, var(--signal-line) 64%, currentColor 10%);
-		background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-		clip-path: polygon(0 0, calc(100% - 0.65rem) 0, 100% 0.65rem, 100% 100%, 0 100%);
-		transition: border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease;
-	}
-
-	.about-route:hover,
-	.about-route:focus-visible {
-		border-color: var(--signal-line);
-		background: color-mix(in srgb, var(--signal-soft) 42%, var(--card-bg));
-	}
-
-	.about-route:focus-visible {
-		outline: 2px solid var(--primary);
-		outline-offset: 2px;
-	}
-
-	.about-route__index {
-		color: color-mix(in srgb, currentColor 36%, transparent);
-		font: 700 0.52rem/1 "JetBrains Mono Variable", monospace;
-	}
-
-	.about-route__icon {
-		width: 1.05rem;
-		color: var(--primary);
-	}
-
-	.about-route strong,
-	.about-route small {
-		display: block;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
+	.about-routes { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; }
+	.about-route { position: relative; display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 0.65rem; min-width: 0; padding: 0.78rem 0.85rem; color: inherit; border: 1px solid color-mix(in srgb, var(--signal-line) 64%, currentColor 10%); background: color-mix(in srgb, var(--card-bg) 88%, transparent); clip-path: polygon(0 0, calc(100% - 0.65rem) 0, 100% 0.65rem, 100% 100%, 0 100%); transition: border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal); }
+	.about-route:hover, .about-route:focus-visible { border-color: var(--signal-line); background: color-mix(in srgb, var(--signal-soft) 42%, var(--card-bg)); transform: translateY(-0.12rem); }
+	.about-route:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+	.about-route__index { color: color-mix(in srgb, currentColor 36%, transparent); font: 700 0.52rem/1 "JetBrains Mono Variable", monospace; }
+	.about-route__icon { width: 1.05rem; color: var(--primary); }
+	.about-route strong, .about-route small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 	.about-route strong { font-size: 0.82rem; }
 	.about-route small { margin-top: 0.12rem; color: color-mix(in srgb, currentColor 50%, transparent); font-size: 0.65rem; }
+	.about-route__arrow { width: 0.9rem; color: var(--signal-line); transition: transform var(--motion-signal-fast) var(--ease-signal); }
+	.about-route:hover .about-route__arrow, .about-route:focus-visible .about-route__arrow { transform: translate(0.1rem, -0.1rem); }
 
-	.about-route__arrow {
-		width: 0.9rem;
-		color: var(--signal-line);
-		transition: transform var(--motion-signal-fast) var(--ease-signal);
-	}
+	.about-content { padding: 0 clamp(1.35rem, 3vw, 2.4rem) clamp(1.5rem, 3vw, 2.6rem); }
+	.about-section { position: relative; padding: clamp(2.4rem, 5vw, 4rem) 0; border-bottom: 1px dashed color-mix(in srgb, var(--signal-line) 38%, transparent); }
+	.about-section__header { display: flex; align-items: flex-start; gap: 0.9rem; margin-bottom: clamp(1.5rem, 3vw, 2.2rem); }
+	.about-section__number { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border: 1px solid var(--signal-line); background: color-mix(in srgb, var(--signal-soft) 45%, transparent); }
+	.about-section h2 { margin: 0.35rem 0 0; font-size: clamp(1.55rem, 3.5vw, 2.35rem); font-weight: 780; line-height: 1.18; letter-spacing: -0.03em; }
 
-	.about-route:hover .about-route__arrow,
-	.about-route:focus-visible .about-route__arrow { transform: translate(0.1rem, -0.1rem); }
+	.about-origin__grid { display: grid; grid-template-columns: minmax(10rem, 0.34fr) minmax(0, 1fr); gap: clamp(1.6rem, 4vw, 3.2rem); align-items: start; }
+	.about-postcard { position: sticky; top: 6.5rem; margin: 0.6rem 0 0; padding: 0.8rem 0.8rem 1.1rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); background: color-mix(in srgb, var(--card-bg) 96%, white 4%); box-shadow: 0.45rem 0.55rem 0 color-mix(in srgb, currentColor 8%, transparent); transform: rotate(-2.2deg); }
+	.about-postcard__tape { position: absolute; top: -0.75rem; left: 50%; width: 42%; height: 1.25rem; background: repeating-linear-gradient(135deg, color-mix(in srgb, currentColor 10%, transparent) 0 0.4rem, color-mix(in srgb, var(--card-bg) 72%, transparent) 0.4rem 0.8rem); transform: translateX(-50%) rotate(1.2deg); }
+	.about-postcard :global(img) { width: 100%; aspect-ratio: 1; object-fit: cover; filter: saturate(0.88) contrast(1.03); }
+	.about-postcard figcaption { margin-top: 0.85rem; color: color-mix(in srgb, currentColor 48%, transparent); font: 650 0.52rem/1.4 "JetBrains Mono Variable", monospace; letter-spacing: 0.08em; text-align: center; }
 
-	.about-story__divider {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 1.1rem clamp(1.35rem, 3vw, 2.15rem) 0;
-		color: var(--signal-line);
-		font: 800 0.56rem/1 "JetBrains Mono Variable", monospace;
-		letter-spacing: 0.1em;
-	}
+	.about-prose { color: color-mix(in srgb, currentColor 78%, transparent); font-size: 0.95rem; line-height: 1.95; }
+	.about-prose p { margin: 0 0 1.15rem; }
+	.about-prose p:last-child { margin-bottom: 0; }
+	.about-prose strong { color: color-mix(in srgb, currentColor 96%, transparent); }
+	.about-prose a { color: var(--primary); text-decoration: underline dashed; text-underline-offset: 0.25rem; }
+	.about-lead { color: color-mix(in srgb, currentColor 90%, transparent); font-size: 1.04rem; line-height: 1.85; }
+	.about-lead del { color: color-mix(in srgb, currentColor 44%, transparent); }
 
-	.about-story__divider::after {
-		width: 100%;
-		border-top: 1px dashed var(--signal-line);
-		content: "";
-		opacity: 0.55;
-	}
+	.about-quote { position: relative; margin: 1.65rem 0; padding: 1.15rem 1.25rem 1.15rem 2.8rem; border: 1px solid color-mix(in srgb, var(--signal-line) 34%, transparent); border-left: 0.22rem solid var(--signal-line); background: color-mix(in srgb, var(--signal-soft) 28%, transparent); }
+	.about-quote > span { position: absolute; top: 0.45rem; left: 0.8rem; color: var(--signal-line); font: 700 2.4rem/1 Georgia, serif; }
+	.about-quote p { margin: 0; color: color-mix(in srgb, currentColor 86%, transparent); }
+	.about-quote cite { display: block; margin-top: 0.65rem; color: color-mix(in srgb, currentColor 48%, transparent); font-size: 0.7rem; font-style: normal; }
 
-	.about-story__divider span {
-		flex: 0 0 auto;
-		white-space: nowrap;
-	}
+	.about-memory { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; margin-top: 2rem; }
+	.about-memory article { position: relative; min-width: 0; padding: 1.15rem; border: 1px solid color-mix(in srgb, currentColor 11%, transparent); background: color-mix(in srgb, var(--industrial-surface) 74%, transparent); clip-path: polygon(0 0, calc(100% - 0.65rem) 0, 100% 0.65rem, 100% 100%, 0 100%); }
+	.about-memory article::after { position: absolute; right: 0.55rem; bottom: 0.55rem; width: 0.35rem; height: 0.35rem; border-radius: 50%; background: var(--signal-line); content: ""; opacity: 0.52; }
+	.about-memory h3 { margin: 0.75rem 0 0.55rem; font-size: 0.98rem; }
+	.about-memory p { margin: 0; color: color-mix(in srgb, currentColor 64%, transparent); font-size: 0.78rem; line-height: 1.75; }
 
-	.about-story {
-		display: block;
-		padding: 0.65rem clamp(1.35rem, 3vw, 2.15rem) clamp(1.5rem, 3vw, 2.35rem);
+	.about-declaration { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.9rem; margin-top: 1.5rem; padding: 1rem 1.15rem; border-top: 1px solid var(--signal-line); border-bottom: 1px solid color-mix(in srgb, var(--signal-line) 35%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--signal-soft) 36%, transparent), transparent); }
+	.about-declaration > span { color: var(--primary); font-size: 1.35rem; }
+	.about-declaration p { margin: 0; font-size: clamp(0.92rem, 2vw, 1.08rem); font-weight: 760; }
+	.about-declaration time { color: color-mix(in srgb, currentColor 48%, transparent); font: 650 0.62rem/1 "JetBrains Mono Variable", monospace; white-space: nowrap; }
+
+	.about-profile { display: grid; grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.28fr); gap: 1rem; align-items: stretch; }
+	.about-profile__intro { position: relative; padding: 1.35rem; border: 1px solid color-mix(in srgb, var(--signal-line) 38%, transparent); background: linear-gradient(145deg, color-mix(in srgb, var(--signal-soft) 32%, transparent), transparent 54%), var(--industrial-surface); }
+	.about-profile__intro::before { position: absolute; inset: 0.55rem; border: 1px solid color-mix(in srgb, currentColor 6%, transparent); content: ""; pointer-events: none; }
+	.about-profile__intro p { position: relative; margin: 1rem 0 0; color: color-mix(in srgb, currentColor 68%, transparent); line-height: 1.75; }
+	.about-profile__intro ul { position: relative; display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1.2rem 0 0; padding: 0; list-style: none; }
+	.about-profile__intro li { padding: 0.35rem 0.48rem; border: 1px dashed color-mix(in srgb, var(--signal-line) 48%, transparent); color: color-mix(in srgb, currentColor 58%, transparent); font: 650 0.52rem/1 "JetBrains Mono Variable", monospace; }
+
+	.about-model-card { display: flex; flex-direction: column; margin: 0; overflow: hidden; border: 1px solid color-mix(in srgb, currentColor 12%, transparent); background: var(--industrial-surface); }
+	.about-model-card :global(img) { display: block; width: 100%; height: auto; min-height: 0; margin: auto 0; object-fit: contain; background: color-mix(in srgb, var(--card-bg) 92%, white); }
+	.about-model-card figcaption { display: flex; align-items: center; justify-content: space-between; gap: 1rem; order: -1; padding: 0.72rem 0.85rem; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); color: color-mix(in srgb, currentColor 46%, transparent); background: color-mix(in srgb, var(--signal-soft) 22%, var(--industrial-surface)); font-size: 0.65rem; }
+	.about-model-card figcaption span, .about-model-card figcaption small { display: block; }
+	.about-model-card figcaption b { color: var(--signal-line); font: 800 0.55rem/1.2 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; }
+	.about-model-card figcaption small { margin-top: 0.2rem; color: color-mix(in srgb, currentColor 42%, transparent); font-size: 0.58rem; }
+	.about-model-card a { display: inline-flex; align-items: center; gap: 0.15rem; color: var(--primary); }
+	.about-model-card a :global(svg) { width: 0.8rem; }
+
+	.about-name-story { display: grid; grid-template-columns: minmax(11rem, 0.3fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem); margin-top: 2rem; padding-top: 2rem; border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
+	.about-name-story__label { align-self: start; padding-left: 1rem; border-left: 0.2rem solid var(--signal-line); }
+	.about-name-story__label span { display: block; color: var(--signal-line); font: 800 0.55rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.12em; }
+	.about-name-story__label strong { display: block; margin-top: 0.7rem; font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1; }
+	.about-name-story__label small { display: block; margin-top: 0.65rem; color: color-mix(in srgb, currentColor 48%, transparent); line-height: 1.5; }
+
+	.about-home-link { padding: clamp(2rem, 4vw, 3.2rem) 0; border-bottom: 1px dashed color-mix(in srgb, var(--signal-line) 38%, transparent); }
+	.about-home-card { position: relative; display: grid; grid-template-columns: minmax(13rem, 0.7fr) minmax(0, 1.3fr); min-height: 20rem; overflow: hidden; color: inherit; border: 1px solid color-mix(in srgb, var(--signal-line) 52%, currentColor 8%); background: linear-gradient(130deg, color-mix(in srgb, var(--signal-soft) 42%, var(--industrial-surface)), var(--industrial-surface) 48%); transition: border-color 220ms ease, transform 220ms var(--ease-signal), box-shadow 220ms ease; }
+	.about-home-card::after { position: absolute; inset: auto 0 0; height: 0.22rem; background: var(--signal-line); content: ""; transform: scaleX(0.18); transform-origin: left; transition: transform 320ms var(--ease-signal); }
+	.about-home-card:hover, .about-home-card:focus-visible { border-color: var(--signal-line); box-shadow: 0 1rem 2.4rem color-mix(in srgb, currentColor 10%, transparent); transform: translateY(-0.18rem); }
+	.about-home-card:hover::after, .about-home-card:focus-visible::after { transform: scaleX(1); }
+	.about-home-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+	.about-home-card__copy { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; padding: clamp(1.5rem, 3vw, 2.3rem); }
+	.about-home-card__copy h2 { margin: 0.7rem 0 0; font-size: clamp(1.5rem, 3.4vw, 2.45rem); line-height: 1.12; letter-spacing: -0.04em; }
+	.about-home-card__copy p { margin: 1rem 0; color: color-mix(in srgb, currentColor 62%, transparent); font-size: 0.82rem; line-height: 1.75; }
+	.about-home-card__copy strong { display: inline-flex; align-items: center; gap: 0.35rem; width: fit-content; margin-top: auto; color: var(--primary); font-size: 0.78rem; }
+	.about-home-card__copy strong :global(svg) { width: 1rem; }
+	.about-home-card__preview { align-self: center; margin: 2rem -4rem 2rem 0; overflow: hidden; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 0.8rem 0 0 0.8rem; background: #0c1322; box-shadow: -1rem 1.2rem 2rem color-mix(in srgb, currentColor 17%, transparent); transform: perspective(70rem) rotateY(-7deg) rotateZ(0.4deg); transition: transform 420ms var(--ease-signal); }
+	.about-home-card:hover .about-home-card__preview, .about-home-card:focus-visible .about-home-card__preview { transform: perspective(70rem) rotateY(-2deg) translateX(-0.35rem); }
+	.about-home-card__preview img { display: block; width: 100%; aspect-ratio: 8 / 5; object-fit: cover; user-select: none; }
+	.about-browser-bar { display: flex; align-items: center; gap: 0.35rem; height: 1.7rem; padding: 0 0.65rem; color: rgba(255, 255, 255, 0.58); background: #121b2b; font: 600 0.48rem/1 "JetBrains Mono Variable", monospace; }
+	.about-browser-bar i { width: 0.38rem; height: 0.38rem; border-radius: 50%; background: rgba(255, 255, 255, 0.22); }
+	.about-browser-bar span { margin-left: 0.4rem; }
+
+	.about-build { border-bottom: 0; padding-bottom: 0; }
+	.about-build__intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.45fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+	.about-stack { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; padding: 0; border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); border-left: 1px solid color-mix(in srgb, currentColor 12%, transparent); list-style: none; }
+	.about-stack li { padding: 0.9rem; border-right: 1px solid color-mix(in srgb, currentColor 12%, transparent); border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent); background: color-mix(in srgb, var(--industrial-surface) 72%, transparent); }
+	.about-stack span, .about-stack strong { display: block; }
+	.about-stack span { color: var(--signal-line); font: 700 0.5rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; }
+	.about-stack strong { margin-top: 0.45rem; font-size: 0.75rem; }
+
+	.about-repositories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 2rem; }
+	.about-repository { display: flex; min-width: 0; flex-direction: column; margin: 0; padding: 0.8rem; border: 1px solid color-mix(in srgb, currentColor 10%, transparent); background: color-mix(in srgb, var(--industrial-surface) 58%, transparent); }
+	.about-repository header { min-height: 4.2rem; margin: 0; padding: 0.25rem 0.3rem 0.75rem; }
+	.about-repository header p { margin: 0.45rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.7rem; line-height: 1.55; }
+	.about-repository :global(a.card-github) { flex: 1; margin: 0; }
+
+	@media (max-width: 900px) {
+		.about-hero { grid-template-columns: 1fr; padding-top: 2.2rem; }
+		.about-record { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+		.about-record div { padding-inline: 0.65rem; }
+		.about-profile { grid-template-columns: 1fr; }
+		.about-home-card { grid-template-columns: minmax(13rem, 0.8fr) minmax(0, 1.2fr); }
+		.about-home-card__preview { margin-right: -6rem; }
 	}
 
 	@media (max-width: 720px) {
-		.about-dossier { grid-template-columns: 1fr; gap: 1rem; padding-top: 2rem; }
-		.about-dossier__record { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-		.about-routes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; }
+		.about-hero { gap: 1rem; }
+		.about-hero__title-row { align-items: center; gap: 0.65rem; }
+		.about-hero h1 { font-size: clamp(2.55rem, 13vw, 3.6rem); }
+		.about-record { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		.about-routes { gap: 0.4rem; }
 		.about-route { grid-template-columns: auto minmax(0, 1fr); gap: 0.4rem; padding: 0.68rem 0.55rem; }
-		.about-route__index,
-		.about-route__arrow,
-		.about-route small { display: none; }
-		.about-dossier__copy h1 { font-size: clamp(2.55rem, 13vw, 3.6rem); }
-		.about-dossier__title-row { align-items: center; justify-content: space-between; gap: 0.65rem; }
+		.about-route__index, .about-route__arrow, .about-route small { display: none; }
+		.about-content { padding-inline: 1rem; }
+		.about-origin__grid { grid-template-columns: 1fr; }
+		.about-postcard { position: relative; top: auto; width: min(13rem, 58vw); margin: 0 auto 0.5rem; }
+		.about-memory { grid-template-columns: 1fr; }
+		.about-model-card figcaption { align-items: flex-start; flex-direction: column; gap: 0.5rem; }
+		.about-name-story { grid-template-columns: 1fr; gap: 1.2rem; }
+		.about-home-card { grid-template-columns: 1fr; }
+		.about-home-card__copy { min-height: 15rem; }
+		.about-home-card__preview { margin: 0 -3rem 2rem 2rem; transform: rotate(-1deg); }
+		.about-home-card:hover .about-home-card__preview, .about-home-card:focus-visible .about-home-card__preview { transform: rotate(0deg) translateX(-0.2rem); }
+		.about-build__intro, .about-repositories { grid-template-columns: 1fr; }
+	}
+
+	@media (max-width: 430px) {
+		.about-hero { padding-inline: 1rem; }
+		.about-hero__title-row { align-items: flex-start; }
+		.about-hero__coordinate { flex-direction: column; gap: 0.35rem; }
+		.about-routes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+		.about-route { display: flex; flex-direction: column; justify-content: center; text-align: center; }
+		.about-route__icon { width: 1.15rem; }
+		.about-declaration { grid-template-columns: auto minmax(0, 1fr); }
+		.about-declaration time { grid-column: 2; }
+		.about-home-card__preview { margin-left: 1rem; }
+		.about-repository { padding: 0.55rem; }
+		.about-repository :global(a.card-github) { padding: 0.9rem; }
+		.about-repository :global(.gc-titlebar) { font-size: 1rem; }
+		.about-repository :global(.gc-infobar) { gap: 0.8rem; }
 	}
 
 	@media (prefers-reduced-motion: reduce) {
 		.about-route,
-		.about-route__arrow { transition: none; }
+		.about-route__arrow,
+		.about-home-card,
+		.about-home-card::after,
+		.about-home-card__preview { transition: none; }
 	}
 </style>
