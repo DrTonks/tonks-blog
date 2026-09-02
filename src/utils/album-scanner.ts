@@ -1,7 +1,11 @@
 import * as fs from "node:fs";
+import { createRequire } from "node:module";
 import * as path from "node:path";
-import type { AlbumGroup, Photo } from "../types/album";
+import type { AlbumGroup, AlbumLayout, Photo } from "../types/album";
 import { formatDateToYYYYMMDD } from "./date-utils";
+
+const requireModule = createRequire(import.meta.url);
+const sharp = requireModule("sharp") as typeof import("sharp");
 
 export async function scanAlbums(): Promise<AlbumGroup[]> {
 	const albumsDir = path.join(process.cwd(), "public/images/albums");
@@ -29,7 +33,9 @@ export async function scanAlbums(): Promise<AlbumGroup[]> {
 	}
 
 	// 按 info.json 里的 date 降序排序，新相册排在最前
-	albums.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+	albums.sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+	);
 
 	return albums;
 }
@@ -79,7 +85,11 @@ async function processAlbumFolder(
 		}
 
 		cover = `/images/albums/${folderName}/cover.jpg`;
-		photos = scanPhotos(folderPath, folderName);
+		photos = await scanPhotos(
+			folderPath,
+			folderName,
+			info.layout === "surround",
+		);
 	}
 
 	// 检查是否隐藏相册
@@ -100,14 +110,25 @@ async function processAlbumFolder(
 			: formatDateToYYYYMMDD(new Date()),
 		location: info.location || "",
 		tags: info.tags || [],
-		layout: info.layout || "grid",
+		layout: normalizeAlbumLayout(info.layout),
 		columns: info.columns || 3,
 		photos,
 	};
 }
 
-function scanPhotos(folderPath: string, albumId: string): Photo[] {
-	const photos: Photo[] = [];
+function normalizeAlbumLayout(layout: unknown): AlbumLayout {
+	if (layout === "masonry" || layout === "surround") {
+		return layout;
+	}
+
+	return "grid";
+}
+
+async function scanPhotos(
+	folderPath: string,
+	albumId: string,
+	readDimensions: boolean,
+): Promise<Photo[]> {
 	const files = fs.readdirSync(folderPath);
 
 	// 过滤出图片文件
@@ -129,26 +150,39 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 		);
 	});
 
-	// 处理每张照片
-	imageFiles.forEach((file, index) => {
-		const filePath = path.join(folderPath, file);
-		const stats = fs.statSync(filePath);
+	// 处理每张照片，并读取原始宽高供砖石布局选择横砖或竖砖。
+	return Promise.all(
+		imageFiles.map(async (file, index) => {
+			const filePath = path.join(folderPath, file);
+			const stats = fs.statSync(filePath);
+			let width: number | undefined;
+			let height: number | undefined;
+			if (readDimensions) {
+				try {
+					const metadata = await sharp(filePath).metadata();
+					width = metadata.width;
+					height = metadata.height;
+				} catch (error) {
+					console.warn(`无法读取照片 ${filePath} 的尺寸:`, error);
+				}
+			}
 
-		// 解析文件名中的标签
-		const { baseName, tags } = parseFileName(file);
+			// 解析文件名中的标签
+			const { baseName, tags } = parseFileName(file);
 
-		photos.push({
-			id: `${albumId}-photo-${index}`,
-			src: `/images/albums/${albumId}/${file}`,
-			alt: baseName,
-			title: baseName,
-			tags: tags,
-			// 使用 mtime（Date）并格式化为 YYYY-MM-DD
-			date: formatDateToYYYYMMDD(stats.mtime),
-		});
-	});
-
-	return photos;
+			return {
+				id: `${albumId}-photo-${index}`,
+				src: `/images/albums/${albumId}/${file}`,
+				alt: baseName,
+				title: baseName,
+				tags: tags,
+				// 使用 mtime（Date）并格式化为 YYYY-MM-DD
+				date: formatDateToYYYYMMDD(stats.mtime),
+				width,
+				height,
+			};
+		}),
+	);
 }
 
 function processExternalPhotos(

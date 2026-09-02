@@ -1,0 +1,13 @@
+{
+	"title": "广州之旅",
+	"hidden": false,
+	"description": "老照片",
+	"date": "2024-07-03",
+	"location": "广东 广州",
+	"tags": [
+		"留影",
+		"旅游"
+	],
+	"layout": "grid",
+	"columns": 2
+}

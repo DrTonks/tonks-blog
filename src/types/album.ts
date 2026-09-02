@@ -15,6 +15,8 @@ export interface Photo {
 	settings?: string;
 }
 
+export type AlbumLayout = "grid" | "masonry" | "surround";
+
 export interface AlbumGroup {
 	id: string;
 	title: string;
@@ -23,7 +25,7 @@ export interface AlbumGroup {
 	date: string;
 	location: string;
 	tags: string[];
-	layout: string;
+	layout: AlbumLayout;
 	columns: number;
 	photos: Photo[];
 }
