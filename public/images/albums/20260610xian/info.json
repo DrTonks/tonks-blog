@@ -1,0 +1,14 @@
+{
+	"title": "西电之旅",
+	"hidden": false,
+	"description": "严肃前往西安",
+	"date": "2026-6-11",
+	"location": "陕西 西安",
+	"tags": [
+		"西安",
+		"西电",
+		"服创"
+	],
+	"layout": "masonry",
+	"columns": 2
+}

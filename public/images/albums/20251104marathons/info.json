@@ -1,0 +1,14 @@
+{
+	"title": "校园马拉松",
+	"hidden": false,
+	"description": "很可能是金牌",
+	"date": "2025-11-10",
+	"location": "四川 成都",
+	"tags": [
+		"运动",
+		"马拉松",
+		"校园"
+	],
+	"layout": "masonry",
+	"columns": 2
+}
