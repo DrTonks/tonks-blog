@@ -11,6 +11,10 @@
     Header set Cache-Control "no-cache"
   </FilesMatch>
 
+  <Files "version.json">
+    Header set Cache-Control "no-store"
+  </Files>
+
   <FilesMatch "\.(?:woff2?|ttf|otf)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>

@@ -1,0 +1,44 @@
+<aside id="build-update-notice" aria-labelledby="build-update-title" hidden>
+  <div class="update-emblem" aria-hidden="true">↻</div>
+  <div class="update-copy">
+    <span class="update-kicker">A FRESH EDITION</span>
+    <h2 id="build-update-title">这里，刚刚焕新了</h2>
+    <p role="status" aria-live="polite" data-update-description>有新的内容与体验等你。更新后，会回到你正在阅读的位置。</p>
+    <div class="update-actions">
+      <button type="button" data-update-now>立即更新 <span aria-hidden="true">↗</span></button>
+      <button type="button" data-update-later>稍后再说</button>
+    </div>
+  </div>
+</aside>
+<script>
+  import { initializeBuildUpdates } from '../scripts/build-updates';
+  if (import.meta.env.PROD) initializeBuildUpdates(import.meta.env.PUBLIC_BUILD_ID);
+</script>
+<style>
+  #build-update-notice {
+    position: fixed; right: max(1.25rem, env(safe-area-inset-right)); bottom: max(1.25rem, env(safe-area-inset-bottom));
+    z-index: 10010; display: flex; align-items: flex-start; gap: 1rem; width: min(27rem, calc(100vw - 2.5rem));
+    box-sizing: border-box; padding: 1.4rem; color: #273342; background: var(--card-bg);
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--card-bg)); border-radius: 1.15rem;
+    box-shadow: 0 16px 56px #00000024, inset 0 1px 0 #ffffff24;
+    font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+    animation: update-arrive 260ms ease-out both;
+  }
+  #build-update-notice[hidden] { display: none; }
+  .update-emblem { flex: 0 0 2.6rem; height: 2.6rem; display: grid; place-items: center; border-radius: .8rem; color: var(--primary); background: var(--btn-regular-bg); font-size: 1.65rem; }
+  .update-copy { min-width: 0; }
+  .update-kicker { display: block; color: var(--primary); font: 650 .58rem/1.5 monospace; letter-spacing: .18em; margin-bottom: .4rem; }
+  h2 { margin: 0; font-size: 1.12rem; font-weight: 650; letter-spacing: -.03em; }
+  p { margin: .6rem 0 1.1rem; font-size: .85rem; line-height: 1.8; opacity: .7; }
+  .update-actions { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+  button { font-family: inherit; font-size: .82rem; font-weight: 600; line-height: 1.5; padding: .55rem .85rem; border-radius: .55rem; cursor: pointer; }
+  [data-update-now] { color: var(--card-bg); background: var(--primary); }
+  [data-update-now] span { margin-left: .45rem; }
+  [data-update-later] { color: inherit; background: transparent; opacity: .65; }
+  button:hover { filter: brightness(.95); }
+  button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+  :global(html.dark) #build-update-notice { color: #e7e8ea; }
+  @keyframes update-arrive { from { opacity: 0; transform: translateY(.7rem); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { #build-update-notice { animation: none; } }
+  @media (max-width: 480px) { #build-update-notice { padding: 1.1rem; gap: .7rem; } }
+</style>

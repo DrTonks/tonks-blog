@@ -57,8 +57,7 @@ task_plan.md
 findings.md
 progress.md
 
-# private/local deployment helpers
-scripts/deploy.js
+# Private deployment configuration (the reusable script is versioned).
 scripts/deploy.config.json
 scripts/deploy.config.*.json
 

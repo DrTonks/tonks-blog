@@ -4,6 +4,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/700.css";
 
 import AmbientBackground from "@components/AmbientBackground.astro";
+import BuildUpdateNotice from "@components/BuildUpdateNotice.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import LoadingScreen from "@components/LoadingScreen.astro";
 import MusicPlayer from "@components/widget/MusicPlayer.svelte";
@@ -143,6 +144,7 @@ const bannerOffset =
 	  style={`--page-width-max: ${PAGE_WIDTH}rem`}
 >
 	<head>
+		<meta name="tonks-build" content={import.meta.env.PUBLIC_BUILD_ID} />
 		<script>
 			const dataLayer = (window.dataLayer ??= []);
 			dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
@@ -737,6 +739,7 @@ const bannerOffset =
 		)}
 		
 		
+		<BuildUpdateNotice />
 	</body>
 </html>
 

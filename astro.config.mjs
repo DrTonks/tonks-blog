@@ -1,4 +1,5 @@
 import sitemap from "@astrojs/sitemap";
+import buildVersion from "./scripts/build-version.mjs";
 import { readFileSync } from "node:fs";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
@@ -146,6 +147,7 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 	integrations: [
+		buildVersion(),
 		tailwind({
 			nesting: true,
 		}),
