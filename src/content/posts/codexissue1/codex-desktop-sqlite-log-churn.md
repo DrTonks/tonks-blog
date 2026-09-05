@@ -14,15 +14,13 @@ pinned: false
 image: ./1.png
 ---
 
-# Codex Desktop 持续写入 SQLite 日志的可回滚解决方案
-
 最近检查 Codex 的本地数据时，我发现 `~/.codex/logs_2.sqlite` 正在持续写入大量 `TRACE`、`DEBUG` 和 `INFO` 日志。问题不只是数据库文件占用空间，高频 INSERT、WAL 刷新、旧记录清理和多进程共享数据库还可能带来额外磁盘 I/O 与 SQLite 竞争。
 
 > 方案只拦截已确认高频的 `TRACE/DEBUG/INFO`，保留 `WARN/ERROR/FATAL/CRITICAL` 以及未来未知级别。
 >
 > 如果官方以后提供日志级别、采样或轮转设置，应优先使用官方方案。
 
-## 一、测试时环境
+## 测试时环境
 
 | 项目 | 信息 |
 |---|---|
@@ -33,7 +31,7 @@ image: ./1.png
 | 日志数据库 | `%USERPROFILE%\.codex\logs_2.sqlite` |
 | SQLite journal mode | WAL |
 
-## 二、问题是什么？
+## 问题是什么？
 
 在一次正常活跃会话中观察到：
 
@@ -57,7 +55,7 @@ OpenAI Codex 的公开 issue [#24275](https://github.com/openai/codex/issues/242
 
 ---
 
-## 三、影响是什么？
+## 影响？
 
 可能的实际影响包括：
 
@@ -69,7 +67,7 @@ OpenAI Codex 的公开 issue [#24275](https://github.com/openai/codex/issues/242
 
 真实磨损还取决于 checkpoint、文件系统缓存、SSD 控制器、垃圾回收和写放大系数。本文能确认和解决的是：**Codex 是否在持续落盘大量低级别日志，以及如何减少这部分不必要的写入。**
 
-## 四、诊断
+## 诊断
 
 下面的脚本只依赖 Python 标准库，提供：
 
@@ -296,7 +294,7 @@ grep -Ei 'trace|debug|verbosity|otel|log_level|log-level' ~/.codex/config.toml
 
 ---
 
-## 五、解决原理：在 SQLite INSERT 之前过滤低级别日志
+## 解决原理：在 SQLite INSERT 之前过滤低级别日志
 
 SQLite trigger 是存储在数据库 schema 中的自动规则。Codex 每次向 `logs` 表 INSERT 时，SQLite 会先检查日志级别：
 
@@ -341,7 +339,7 @@ SQLite 官方文档说明，trigger 会在指定数据库事件发生时自动�
 
 ---
 
-## 六、安装/验证与回滚
+## 安装/验证与回滚
 
 ### 1. 安装
 
@@ -416,9 +414,9 @@ py -3 .\codex_log_guard.py remove
 
 ---
 
-## 七、实际优化结果
+## 实际优化结果
 
-真实环境安装前后对比：
+本着软件工程思维，还是需要提供一点真实环境安装前后对比的：
 
 | 指标 | 安装前 | 安装后 |
 |---|---:|---:|
@@ -451,7 +449,7 @@ py -3 .\codex_log_guard.py remove
 
 ---
 
-## 八、副作用与维护建议
+## 副作用与维护建议
 
 ### 会失去哪些信息
 
@@ -476,21 +474,5 @@ py -3 .\codex_log_guard.py check
 
 ### 并非全局 I/O 修复
 
-该方案只处理 `logs_2.sqlite`：
+该方案只处理 `logs_2.sqlite`：不处理 GPUCache、Chromium/LevelDB、会话 JSONL、不处理其他 Codex 临时文件、不改变应用层日志生成成本。
 
-- 不处理 GPUCache；
-- 不处理 Chromium/LevelDB；
-- 不处理会话 JSONL；
-- 不处理其他 Codex 临时文件；
-- 不改变应用层日志生成成本。
-
-如果系统仍有明显 I/O 或 CPU 异常，需要继续用资源监视器、Process Monitor、`iotop` 等工具定位其他路径。
-
----
-
-## 九、参考资料
-
-- [OpenAI Codex issue #24275：logs_2.sqlite / WAL 快速增长](https://github.com/openai/codex/issues/24275)
-- [SQLite CREATE TRIGGER 官方文档](https://www.sqlite.org/lang_createtrigger.html)
-- [SQLite Write-Ahead Logging 官方文档](https://www.sqlite.org/wal.html)
-- [Codex SSD Saver 项目](https://github.com/Simmons-jg/codex-ssd-saver)

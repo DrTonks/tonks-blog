@@ -50,7 +50,7 @@ import TypewriterText from "../TypewriterText.astro";
 		</div>
 		<div class="flex gap-2 justify-center mb-1">
 			{profileConfig.links.length > 1 && profileConfig.links.map((item) => (
-				<a rel="me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular rounded-lg h-10 w-10 active:scale-90">
+				<a rel="me" aria-label={item.name} href={item.url} target={item.url.startsWith("/") ? undefined : "_blank"} class="btn-regular rounded-lg h-10 w-10 active:scale-90">
 					<Icon name={item.icon} class="text-[1.5rem]" />
 				</a>
 			))}
@@ -59,7 +59,7 @@ import TypewriterText from "../TypewriterText.astro";
 					rel="me"
 					aria-label={profileConfig.links[0].name}
 					href={profileConfig.links[0].url}
-					target="_blank"
+					target={profileConfig.links[0].url.startsWith("/") ? undefined : "_blank"}
 					class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95"
 				>
 					<Icon name={profileConfig.links[0].icon} class="text-[1.5rem]" />

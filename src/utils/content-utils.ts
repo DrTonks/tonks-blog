@@ -3,11 +3,16 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils";
 
-// // Retrieve posts and sort them by publication date
-async function getRawSortedPosts() {
-	const allBlogPosts = await getCollection("posts", ({ data }) => {
+// // 获取所有非草稿文章，供各处排序使用
+async function getAllPosts() {
+	return await getCollection("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
+}
+
+// 主页/列表/RSS：置顶优先，再按发布日期倒序
+async function getRawSortedPosts() {
+	const allBlogPosts = await getAllPosts();
 
 	const sorted = allBlogPosts.sort((a, b) => {
 		// 首先按置顶状态排序，置顶文章在前
@@ -40,14 +45,20 @@ export type PostForList = {
 	slug: string;
 	data: CollectionEntry<"posts">["data"];
 };
+// 归档页：纯按发布日期倒序，不受置顶影响
 export async function getSortedPostsList(): Promise<PostForList[]> {
-	const sortedFullPosts = await getRawSortedPosts();
+	const allBlogPosts = await getAllPosts();
 
-	// delete post.body
-	const sortedPostsList = sortedFullPosts.map((post) => ({
-		slug: post.slug,
-		data: post.data,
-	}));
+	const sortedPostsList = allBlogPosts
+		.sort(
+			(a, b) =>
+				new Date(b.data.published).getTime() -
+				new Date(a.data.published).getTime(),
+		)
+		.map((post) => ({
+			slug: post.slug,
+			data: post.data,
+		}));
 
 	return sortedPostsList;
 }
