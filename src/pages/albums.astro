@@ -25,7 +25,7 @@ const albumsData = await scanAlbums();
                   before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4 font-hanalei">
           {i18n(I18nKey.albums)}
         </h1>
-        <p class="text-neutral-600 dark:text-neutral-400">
+        <p class="page-intro-caption">
           {i18n(I18nKey.albumsSubtitle)}
         </p>
       </header>
@@ -107,7 +107,7 @@ const albumsData = await scanAlbums();
           <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
             {i18n(I18nKey.albumsEmpty)}
           </h3>
-          <p class="text-neutral-600 dark:text-neutral-400">
+          <p class="page-intro-caption">
             {i18n(I18nKey.albumsEmptyDesc)}
           </p>
         </div>
@@ -141,5 +141,14 @@ const albumsData = await scanAlbums();
   
   .album-card {
     animation: fadeInUp 0.3s ease-out;
+  }
+</style>
+<style>
+  p.page-intro-caption {
+    font: 400 1rem/1.75 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+    letter-spacing: .025em;
+    color: var(--tw-prose-body, currentColor);
+    opacity: .72;
+    margin-block: .65rem 0;
   }
 </style>

@@ -79,6 +79,7 @@
 
 	// 设置其他事件监听器
 	function setupEventListeners() {
+		document.addEventListener("tonks:article-ready", () => renderMermaidDiagrams());
 		// 监听页面切换
 		document.addEventListener("astro:page-load", () => {
 			// 重新初始化主题状态

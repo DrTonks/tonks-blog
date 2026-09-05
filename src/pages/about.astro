@@ -287,9 +287,11 @@ const aboutRoutes = [
 	.about-hero::before { position: absolute; inset: 0 auto 0 0; width: 0.38rem; background: repeating-linear-gradient(to bottom, var(--signal-line) 0 0.32rem, transparent 0.32rem 0.62rem); content: ""; opacity: 0.78; }
 	.about-hero::after { position: absolute; top: 0; right: 0; width: 3.2rem; height: 3.2rem; border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-left: 1px solid color-mix(in srgb, currentColor 14%, transparent); background: var(--card-bg); clip-path: polygon(100% 0, 0 0, 100% 100%); content: ""; }
 	.about-hero__register { position: absolute; top: 0.7rem; right: 3.75rem; color: color-mix(in srgb, currentColor 38%, transparent); font: 700 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.12em; }
-	.about-hero__copy { align-self: center; }
-	.about-hero__title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: clamp(1rem, 3vw, 2.5rem); }
-	.about-hero h1 { width: fit-content; margin: 0.7rem 0 0; font-size: clamp(2.8rem, 6vw, 4.8rem); line-height: 1; text-shadow: 0.18rem 0.18rem 0 color-mix(in srgb, currentColor 9%, transparent); }
+	.about-hero__title-row :global(.community-like--about) { min-width: 8rem; width: clamp(8rem, 32cqi, 12rem); min-height: 7rem; }
+	.about-hero__title-row > div { min-width: 0; }
+	.about-hero__copy { align-self: center; min-width: 0; container-type: inline-size; }
+	.about-hero__title-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: flex-end; justify-content: space-between; gap: clamp(1rem, 3vw, 2.5rem); }
+	.about-hero h1 { width: fit-content; margin: 0.7rem 0 0; font-size: clamp(1.65rem, 11cqi, 4rem); white-space: nowrap; line-height: 1; text-shadow: 0.18rem 0.18rem 0 color-mix(in srgb, currentColor 9%, transparent); }
 	.about-hero__title-row p { max-width: 34rem; margin: 0.75rem 0 0; color: color-mix(in srgb, currentColor 66%, transparent); font-size: 0.92rem; line-height: 1.65; }
 	.about-hero__coordinate { display: flex; gap: 1rem; margin-top: 1.25rem; color: color-mix(in srgb, currentColor 34%, transparent); font: 650 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; }
 
@@ -413,7 +415,7 @@ const aboutRoutes = [
 	@media (max-width: 720px) {
 		.about-hero { gap: 1rem; }
 		.about-hero__title-row { align-items: center; gap: 0.65rem; }
-		.about-hero h1 { font-size: clamp(2.55rem, 13vw, 3.6rem); }
+		.about-hero h1 { font-size: clamp(1.75rem, 10cqi, 3.6rem); }
 		.about-record { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 		.about-routes { gap: 0.4rem; }
 		.about-route { grid-template-columns: auto minmax(0, 1fr); gap: 0.4rem; padding: 0.68rem 0.55rem; }

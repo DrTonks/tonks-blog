@@ -18,17 +18,16 @@
 		let x = window.innerWidth / 2;
 		let y = window.innerHeight / 2;
 		let hasPointerPosition = false;
-		let pinAt = Number.POSITIVE_INFINITY;
-
-		const updateArtworkPin = () => {
+		const updateArtworkVisibility = () => {
 			const art = document.querySelector<HTMLElement>(".ambient-light-art");
-			const figures = art?.querySelectorAll<HTMLElement>(".ambient-light-art__figure");
-			if (!art || !figures?.length) return;
-			const figure = figures[0];
-			const canPin = art.clientHeight > figure.offsetHeight;
-			art.classList.toggle("is-too-short-to-pin", !canPin);
-			pinAt = art.getBoundingClientRect().top + window.scrollY + figure.offsetHeight - window.innerHeight;
-			for (const item of figures) item.classList.toggle("is-viewport-pinned", canPin && window.scrollY >= pinAt);
+			if (!art) return;
+			// The original document position is only a reveal threshold. Artwork
+			// stays viewport-fixed throughout; no sticky/fixed handoff on scroll.
+			const origin = art.getBoundingClientRect().top;
+			for (const figure of art.querySelectorAll<HTMLElement>(".ambient-light-art__figure")) {
+				const visible = origin + figure.offsetHeight <= window.innerHeight;
+				figure.classList.toggle("is-art-visible", visible);
+			}
 		};
 
 		const paint = () => {
@@ -44,11 +43,11 @@
 				let side = "";
 				let sideX = x;
 				let sideY = y;
-				if (leftRect && x >= leftRect.left && x <= leftRect.right && y >= leftRect.top && y <= leftRect.bottom) {
+				if (leftFigure?.classList.contains("is-art-visible") && leftRect && x >= leftRect.left && x <= leftRect.right && y >= leftRect.top && y <= leftRect.bottom) {
 					side = "left";
 					sideX = x - leftRect.left;
 					sideY = y - leftRect.top;
-				} else if (rightRect && x >= rightRect.left && x <= rightRect.right && y >= rightRect.top && y <= rightRect.bottom) {
+				} else if (rightFigure?.classList.contains("is-art-visible") && rightRect && x >= rightRect.left && x <= rightRect.right && y >= rightRect.top && y <= rightRect.bottom) {
 					side = "right";
 					sideX = x - rightRect.left;
 					sideY = y - rightRect.top;
@@ -67,13 +66,18 @@
 			if (layoutFrame) return;
 			layoutFrame = requestAnimationFrame(() => {
 				layoutFrame = 0;
-				updateArtworkPin();
+				updateArtworkVisibility();
 				if (hasPointerPosition && !frame) frame = requestAnimationFrame(paint);
 			});
 		};
 
 		loadLightArt();
-		new MutationObserver(loadLightArt).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+		const layoutObserver = new MutationObserver(() => { loadLightArt(); scheduleArtworkLayoutUpdate(); });
+		layoutObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+		layoutObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+		document.addEventListener("transitionend", (event) => {
+			if ((event.target as HTMLElement).id === "main-panel-wrapper") scheduleArtworkLayoutUpdate();
+		});
 		scheduleArtworkLayoutUpdate();
 		window.addEventListener("scroll", scheduleArtworkLayoutUpdate, { passive: true });
 		window.addEventListener("resize", scheduleArtworkLayoutUpdate, { passive: true });
@@ -130,7 +134,7 @@
 		overflow: visible;
 		pointer-events: none;
 		opacity: 1;
-		transition: top 420ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 240ms ease;
+		transition: none;
 	}
 
 	:global(body.lg\:is-home .ambient-light-art) {
@@ -147,26 +151,22 @@
 	:global(.ambient-light-art__side--left) { left: 0; }
 	:global(.ambient-light-art__side--right) { right: 0; }
 	:global(.ambient-light-art__figure) {
-		position: sticky;
-		top: max(0px, calc(100vh - 30vw * var(--ambient-art-ratio)));
-		width: 100%;
-		height: min(100vh, calc(30vw * var(--ambient-art-ratio)));
-	}
-	:global(.ambient-light-art.is-too-short-to-pin) {
-		overflow: hidden;
-	}
-	:global(.ambient-light-art.is-too-short-to-pin .ambient-light-art__figure) {
-		position: absolute;
-		top: 0;
-	}
-	:global(.ambient-light-art__figure.is-viewport-pinned) {
 		position: fixed;
-		top: auto;
 		bottom: 0;
 		width: 30vw;
+		height: min(100vh, calc(30vw * var(--ambient-art-ratio)));
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 300ms ease, visibility 0s linear 300ms;
 	}
-	:global(.ambient-light-art__side--left .ambient-light-art__figure.is-viewport-pinned) { left: 0; }
-	:global(.ambient-light-art__side--right .ambient-light-art__figure.is-viewport-pinned) { right: 0; }
+	:global(.ambient-light-art__figure.is-art-visible) {
+		opacity: 1;
+		visibility: visible;
+		transition-delay: 0s;
+	}
+	:global(.ambient-light-art__side--left .ambient-light-art__figure) { left: 0; }
+	:global(.ambient-light-art__side--right .ambient-light-art__figure) { right: 0; }
+	:global(.ambient-light-art__figure:not(.is-art-visible) .ambient-light-art__hover) { opacity: 0 !important; }
 	:global(.ambient-light-art__figure img) {
 		position: absolute;
 		inset: 0;
@@ -268,6 +268,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		:global(.ambient-light-art__figure) { transition: none; }
 		:global(.ambient-document-stars__base),
 		:global(.ambient-document-stars)::before,
 		:global(.ambient-document-stars)::after {

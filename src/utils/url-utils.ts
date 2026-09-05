@@ -1,6 +1,22 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 
+export function profileLinkAttributes(
+	item: { url: string; identity?: boolean },
+	site: URL,
+) {
+	const resolved = new URL(item.url, site);
+	const external =
+		/^https?:$/.test(resolved.protocol) && resolved.origin !== site.origin;
+	return {
+		target: external ? "_blank" : undefined,
+		rel:
+			[item.identity ? "me" : "", external ? "noopener noreferrer" : ""]
+				.filter(Boolean)
+				.join(" ") || undefined,
+	};
+}
+
 export function pathsEqual(path1: string, path2: string) {
 	const normalizedPath1 = path1.replace(/^\/|\/$/g, "").toLowerCase();
 	const normalizedPath2 = path2.replace(/^\/|\/$/g, "").toLowerCase();

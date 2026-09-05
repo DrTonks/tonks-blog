@@ -96,12 +96,7 @@ function selectCategory(category: string) {
 	updateArchiveQuery();
 }
 
-function selectUncategorized() {
-	categories = [];
-	uncategorized = true;
-	filterRevision += 1;
-	updateArchiveQuery();
-}
+
 
 $: groups = Object.entries(
 	filteredPosts.reduce(
@@ -138,7 +133,6 @@ $: groups = Object.entries(
       {#each categoryOptions as category}
         <button type="button" class:active={selectedCategory === category} on:click={() => selectCategory(category)}>{category} <small>{sortedPosts.filter((post) => post.data.category === category).length}</small></button>
       {/each}
-      <button type="button" class:active={uncategorized} on:click={selectUncategorized}>未分类 <small>{sortedPosts.filter((post) => !post.data.category).length}</small></button>
     </div>
   </nav>
 

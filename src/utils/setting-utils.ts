@@ -125,12 +125,50 @@ function announceThemeChange(changed: boolean): void {
 	setTimeout(() => window.dispatchEvent(new CustomEvent("theme-change")), 0);
 }
 
+// The navbar has independent banner/wallpaper/responsive transition rules.
+// Freeze its surfaces before either snapshot, and resolve the target styles
+// before restoring transitions; otherwise a pending background transition can
+// be captured in the new snapshot and finish only after the reveal disappears.
+const navbarSurfaceFreezes = new Map<HTMLElement, { count: number; value: string; priority: string }>();
+function freezeNavbarThemeSurfaces(): () => void {
+	const surfaces = Array.from(document.querySelectorAll<HTMLElement>(
+		"#navbar > div, #navbar .float-panel, #navbar .theme-mode-menu",
+	));
+	for (const surface of surfaces) {
+		const active = navbarSurfaceFreezes.get(surface);
+		if (active) active.count++;
+		else navbarSurfaceFreezes.set(surface, {
+			count: 1,
+			value: surface.style.getPropertyValue("transition"),
+			priority: surface.style.getPropertyPriority("transition"),
+		});
+		surface.style.setProperty("transition", "none", "important");
+	}
+	for (const surface of surfaces) void getComputedStyle(surface).backgroundColor;
+	return () => {
+		// Read while still frozen so restoration cannot start a deferred theme tween.
+		for (const surface of surfaces) void getComputedStyle(surface).backgroundColor;
+		for (const surface of surfaces) {
+			const active = navbarSurfaceFreezes.get(surface);
+			if (!active || --active.count > 0) continue;
+			const { value, priority } = active;
+			if (value) surface.style.setProperty("transition", value, priority);
+			else surface.style.removeProperty("transition");
+			navbarSurfaceFreezes.delete(surface);
+		}
+	};
+}
+
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 	const root = document.documentElement;
+	const restoreSurfaces = freezeNavbarThemeSurfaces();
 	root.classList.add("is-theme-transitioning");
 	const changed = commitTheme(theme);
 	announceThemeChange(changed);
-	requestAnimationFrame(() => root.classList.remove("is-theme-transitioning"));
+	requestAnimationFrame(() => {
+		restoreSurfaces();
+		root.classList.remove("is-theme-transitioning");
+	});
 }
 
 export function setTheme(theme: LIGHT_DARK_MODE): void {
@@ -138,11 +176,15 @@ export function setTheme(theme: LIGHT_DARK_MODE): void {
 	applyThemeToDocument(theme);
 }
 
+let themeRevealRunning = false;
+
 export function setThemeFromPoint(
 	theme: LIGHT_DARK_MODE,
 	x: number,
 	y: number,
-): void {
+): boolean {
+	// Ignore repeated clicks while the snapshot transition owns the screen.
+	if (themeRevealRunning) return false;
 	persistTheme(theme);
 	const root = document.documentElement;
 	const reducedMotion = window.matchMedia(
@@ -157,7 +199,7 @@ export function setThemeFromPoint(
 
 	if (!viewTransitionDocument.startViewTransition || reducedMotion) {
 		applyThemeToDocument(theme);
-		return;
+		return true;
 	}
 
 	const radius = Math.hypot(
@@ -174,13 +216,26 @@ export function setThemeFromPoint(
 	root.style.setProperty("--theme-reveal-y", `${py}%`);
 	root.style.setProperty("--theme-reveal-radius", `${pr}%`);
 	root.classList.add("is-theme-revealing");
-
-	const transition = viewTransitionDocument.startViewTransition(() => {
-		announceThemeChange(commitTheme(theme));
-	});
-	transition.finished.finally(() =>
-		root.classList.remove("is-theme-revealing"),
-	);
+	const restoreSurfaces = freezeNavbarThemeSurfaces();
+	themeRevealRunning = true;
+	let changed = false;
+	const finish = () => {
+		restoreSurfaces();
+		root.classList.remove("is-theme-revealing");
+		themeRevealRunning = false;
+		announceThemeChange(changed);
+	};
+	try {
+		const transition = viewTransitionDocument.startViewTransition(() => {
+			changed = commitTheme(theme);
+		});
+		void transition.ready.catch(() => {});
+		void transition.finished.then(finish, finish);
+	} catch {
+		changed = commitTheme(theme);
+		finish();
+	}
+	return true;
 }
 
 export function getStoredTheme(): LIGHT_DARK_MODE {

@@ -1,13 +1,13 @@
 ---
 import { Icon } from "astro-icon/components";
 import { profileConfig } from "../../config";
-import { url } from "../../utils/url-utils";
+import { profileLinkAttributes, url } from "../../utils/url-utils";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
 ---
 
 <div class="card-base p-3 font-hanalei">
-	<div class="profile-identity">
+	<div class="mb-3">
 		<a
 			aria-label="Go to About Page"
 			href={url("/about/")}
@@ -25,19 +25,9 @@ import TypewriterText from "../TypewriterText.astro";
 				fetchpriority="auto"
 			/>
 		</a>
-		<div
-			class="profile-signature-stage"
-			data-profile-signature-stage
-			data-animated-src="/images/profile-signature-once.gif"
-			data-final-src="/images/profile-signature-final.png"
-			data-duration="3450"
-			aria-hidden="true"
-		>
-			<span class="profile-signature-ink"></span>
-		</div>
-		<span class="sr-only">{profileConfig.name}</span>
 	</div>
 	<div class="px-2">
+		<div class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition">{profileConfig.name}</div>
 		<div class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"></div>
 		<div class="text-center text-neutral-400 mb-2.5 transition">
 			{profileConfig.typewriter?.enable ? (
@@ -50,16 +40,16 @@ import TypewriterText from "../TypewriterText.astro";
 		</div>
 		<div class="flex gap-2 justify-center mb-1">
 			{profileConfig.links.length > 1 && profileConfig.links.map((item) => (
-				<a rel="me" aria-label={item.name} href={item.url} target={item.url.startsWith("/") ? undefined : "_blank"} class="btn-regular rounded-lg h-10 w-10 active:scale-90">
+				<a {...profileLinkAttributes(item, Astro.site!)} aria-label={item.name} href={item.url} class="btn-regular rounded-lg h-10 w-10 active:scale-90">
 					<Icon name={item.icon} class="text-[1.5rem]" />
 				</a>
 			))}
 			{profileConfig.links.length === 1 && (
 				<a
-					rel="me"
+					{...profileLinkAttributes(profileConfig.links[0], Astro.site!)}
 					aria-label={profileConfig.links[0].name}
 					href={profileConfig.links[0].url}
-					target={profileConfig.links[0].url.startsWith("/") ? undefined : "_blank"}
+
 					class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95"
 				>
 					<Icon name={profileConfig.links[0].icon} class="text-[1.5rem]" />
@@ -70,193 +60,3 @@ import TypewriterText from "../TypewriterText.astro";
 	</div>
 </div>
 
-<script>
-	type SignatureWindow = Window & {
-		__tonksProfileSignaturePlayed?: boolean;
-	};
-
-	function setSignatureImage(element: HTMLElement, source: string) {
-		element.style.setProperty(
-			"--profile-signature-image",
-			`url("${source}")`,
-		);
-	}
-
-	function initializeProfileSignature() {
-		const stage = document.querySelector<HTMLElement>(
-			"[data-profile-signature-stage]",
-		);
-		if (!stage || stage.dataset.initialized === "true") return;
-		stage.dataset.initialized = "true";
-
-		const ink = stage.querySelector<HTMLElement>(".profile-signature-ink");
-		const animatedSource = stage.dataset.animatedSrc;
-		const finalSource = stage.dataset.finalSrc;
-		const duration = Number(stage.dataset.duration) || 3450;
-		if (!ink || !animatedSource || !finalSource) return;
-
-		const runtime = window as SignatureWindow;
-		const reducedMotion = window.matchMedia(
-			"(prefers-reduced-motion: reduce)",
-		).matches;
-
-		const settle = () => {
-			setSignatureImage(ink, finalSource);
-			stage.classList.remove("is-playing");
-			stage.classList.add("is-visible", "is-settled");
-		};
-
-		if (runtime.__tonksProfileSignaturePlayed || reducedMotion) {
-			settle();
-			return;
-		}
-
-		const play = () => {
-			if (runtime.__tonksProfileSignaturePlayed) {
-				settle();
-				return;
-			}
-
-			runtime.__tonksProfileSignaturePlayed = true;
-			setSignatureImage(ink, `${animatedSource}?run=${Date.now()}`);
-			stage.classList.add("is-visible", "is-playing");
-			window.setTimeout(settle, duration + 120);
-		};
-
-		const loadingScreen = document.getElementById("initial-loading-screen");
-		if (loadingScreen && loadingScreen.dataset.complete !== "true") {
-			window.addEventListener("tonks:initial-loader:done", play, { once: true });
-		} else {
-			requestAnimationFrame(play);
-		}
-	}
-
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", initializeProfileSignature, {
-			once: true,
-		});
-	} else {
-		initializeProfileSignature();
-	}
-
-	document.addEventListener("swup:contentReplaced", initializeProfileSignature);
-</script>
-
-<style>
-	.profile-identity {
-		position: relative;
-		padding-bottom: clamp(3.25rem, 22%, 4rem);
-	}
-
-	.profile-signature-stage {
-		position: absolute;
-		left: 50%;
-		bottom: 0;
-		z-index: 60;
-		width: min(calc(100% - 0.75rem), 15rem);
-		aspect-ratio: 2 / 1;
-		pointer-events: none;
-		transform: translateX(-50%);
-	}
-
-	.profile-signature-stage::before {
-		position: absolute;
-		inset: 24% 7%;
-		border-radius: 999px;
-		background: radial-gradient(
-			ellipse,
-			color-mix(in oklch, var(--primary) 34%, transparent),
-			transparent 72%
-		);
-		content: "";
-		filter: blur(0.8rem);
-		opacity: 0;
-		transform: scale(0.72);
-		transition:
-			opacity 500ms ease,
-			transform 700ms ease;
-	}
-
-	.profile-signature-ink {
-		--profile-signature-image: url("/images/profile-signature-final.png");
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			135deg,
-			color-mix(in oklch, var(--primary) 68%, white),
-			var(--primary) 52%,
-			color-mix(in oklch, var(--primary) 78%, black)
-		);
-		filter:
-			drop-shadow(0.045rem 0 0 var(--primary))
-			drop-shadow(-0.045rem 0 0 var(--primary))
-			drop-shadow(0 0.045rem 0 var(--primary))
-			drop-shadow(0 -0.045rem 0 var(--primary))
-			drop-shadow(0 0 0.2rem color-mix(in oklch, var(--primary) 58%, transparent))
-			drop-shadow(0 0.35rem 0.45rem rgb(0 0 0 / 28%));
-		mask: var(--profile-signature-image) center / 195% auto no-repeat;
-		opacity: 0;
-		transform: translateY(1.1rem) rotate(-4deg) scale(0.76);
-		-webkit-mask: var(--profile-signature-image) center / 195% auto no-repeat;
-	}
-
-	.profile-signature-stage.is-visible::before {
-		opacity: 0.82;
-		transform: scale(1);
-	}
-
-	.profile-signature-stage.is-visible .profile-signature-ink {
-		opacity: 1;
-		transform: translateY(0) rotate(-1.5deg) scale(1);
-	}
-
-	.profile-signature-stage.is-playing .profile-signature-ink {
-		animation: profile-signature-arrive 900ms cubic-bezier(0.16, 1, 0.3, 1)
-			both;
-	}
-
-	.profile-signature-stage.is-settled .profile-signature-ink {
-		transition:
-			background 250ms ease,
-			filter 250ms ease;
-	}
-
-	:global(html:not(.dark)[data-accent-light="blue"]) .profile-signature-ink {
-		background: linear-gradient(
-			135deg,
-			color-mix(in oklch, var(--primary) 82%, black),
-			color-mix(in oklch, var(--primary) 68%, black) 58%,
-			color-mix(in oklch, var(--primary) 55%, black)
-		);
-		filter:
-			drop-shadow(0.045rem 0 0 color-mix(in oklch, var(--primary) 62%, black))
-			drop-shadow(-0.045rem 0 0 color-mix(in oklch, var(--primary) 62%, black))
-			drop-shadow(0 0.045rem 0 color-mix(in oklch, var(--primary) 62%, black))
-			drop-shadow(0 -0.045rem 0 color-mix(in oklch, var(--primary) 62%, black))
-			drop-shadow(0 0 0.28rem color-mix(in oklch, var(--primary) 44%, transparent))
-			drop-shadow(0 0.35rem 0.45rem rgb(0 0 0 / 24%));
-	}
-
-	@keyframes profile-signature-arrive {
-		0% {
-			opacity: 0;
-			transform: translateY(1.1rem) rotate(-4deg) scale(0.76);
-		}
-		62% {
-			opacity: 1;
-			transform: translateY(-0.22rem) rotate(-0.5deg) scale(1.04);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0) rotate(-1.5deg) scale(1);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.profile-signature-stage::before,
-		.profile-signature-ink {
-			animation: none !important;
-			transition: none !important;
-		}
-	}
-</style>

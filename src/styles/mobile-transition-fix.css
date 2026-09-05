@@ -76,7 +76,7 @@
   
   /* 优化滚动行为 */
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
   
   /* 减少动画元素的数量 */

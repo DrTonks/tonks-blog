@@ -26,7 +26,7 @@ Rich Sutton曾在19年发表过一篇短文《The Bitter Lesson》，指出**能
 
 还有个我印象很深刻的例子，前两个月在使用Claude Code时，我在没有安装grill-me skill的情况下（虽然matt的grill-me的skill本身就很描述就很简短），模型就会以相同的形式开始发起问卷、质疑我的观点等；这也许跟用户偏好（比如我的某些行为被写进system prompt）有关，但是它展示了一个未来Agent弱skill的可能性——好用的skill会自己集成进大模型里。
 
-![](wenjuan.png)
+![](wenjuan.png "依旧是整个A/ 公司里最像人的")
 
 Anthropic联合创始人Boris Cherny认为，随着模型能力跃迁，许多外部的Harness能力（如工作流编排、治理控制）会被模型原生吸收，Harness会越来越薄。
 

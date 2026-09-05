@@ -25,7 +25,7 @@ function switchScheme(newMode: LIGHT_DARK_MODE, event: MouseEvent) {
 		menuOpen = false;
 		return;
 	}
-	setThemeFromPoint(newMode, event.clientX, event.clientY);
+	if (!setThemeFromPoint(newMode, event.clientX, event.clientY)) return;
 	activeMode = newMode;
 	isDark = document.documentElement.classList.contains("dark");
 	menuOpen = false;
@@ -35,7 +35,7 @@ function toggleScheme(event: MouseEvent) {
 	const cycle: LIGHT_DARK_MODE[] = [LIGHT_MODE, DARK_MODE, SYSTEM_MODE];
 	const currentIndex = cycle.indexOf(activeMode);
 	const newMode = cycle[(currentIndex + 1) % cycle.length];
-	setThemeFromPoint(newMode, event.clientX, event.clientY);
+	if (!setThemeFromPoint(newMode, event.clientX, event.clientY)) return;
 	activeMode = newMode;
 	isDark = newMode === DARK_MODE || (
 		newMode === SYSTEM_MODE &&
@@ -167,16 +167,17 @@ onMount(() => {
 		background: var(--btn-plain-bg-hover);
 	}
 
+	.theme-mode-menu::before { content: ''; position: absolute; left: 0; right: 0; top: -0.9rem; height: 0.9rem; }
 	.theme-mode-menu {
 		position: absolute;
-		top: calc(100% + 0.45rem);
+		top: calc(100% + 0.85rem);
 		right: 0;
 		display: grid;
 		width: 9.25rem;
 		padding: 0.4rem;
 		border: 1px solid var(--line-color);
 		border-radius: 0.9rem;
-		background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+		background: var(--card-bg);
 		box-shadow: 0 0.8rem 2rem rgba(15, 23, 42, 0.2);
 		backdrop-filter: blur(18px);
 		opacity: 0;

@@ -126,7 +126,8 @@ import { Icon } from "astro-icon/components";
 
 <style>
 	.friend-apply { display: inline-flex; }
-	.friend-apply__trigger { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.75rem; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.25rem; background: var(--signal); cursor: pointer; font: 800 0.68rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.03em; transition: transform var(--motion-signal-fast) var(--ease-signal), box-shadow var(--motion-signal-fast) ease; }
+	.friend-apply { flex-shrink: 0; }
+	.friend-apply__trigger { white-space: nowrap; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.75rem; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.25rem; background: var(--signal); cursor: pointer; font: 800 0.68rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.03em; transition: transform var(--motion-signal-fast) var(--ease-signal), box-shadow var(--motion-signal-fast) ease; }
 	.friend-apply__trigger:hover,
 	.friend-apply__trigger:focus-visible { box-shadow: 0.18rem 0.2rem 0 color-mix(in srgb, currentColor 18%, transparent); transform: translate(-0.06rem, -0.06rem); }
 	.friend-apply__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

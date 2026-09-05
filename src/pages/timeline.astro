@@ -15,7 +15,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
   <section class="timeline-page-heading prose prose-lg dark:prose-invert mb-6 font-hanalei">
     <span>TIME / PERSONAL CHRONICLE</span>
     <h1 class="text-2xl lg:text-3xl font-bold">{title}</h1>
-    <p class="text-sm text-muted-foreground mt-2">{subtitle}</p>
+    <p class="page-intro-caption">{subtitle}</p>
   </section>
 
   <TimelineClient initialItems={timelineData} client:load />
@@ -32,5 +32,15 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
 
   .timeline-page-heading h1 {
     margin-top: 0;
+  }
+</style>
+
+<style>
+  p.page-intro-caption {
+    font: 400 1rem/1.75 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+    letter-spacing: .025em;
+    color: var(--tw-prose-body, currentColor);
+    opacity: .72;
+    margin-block: .65rem 0;
   }
 </style>

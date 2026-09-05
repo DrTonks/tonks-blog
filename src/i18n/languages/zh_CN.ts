@@ -84,7 +84,7 @@ export const zh_CN: Translation = {
 
 	// 相册页面
 	[Key.albums]: "相册",
-	[Key.albumsSubtitle]: "美好瞬间",
+	[Key.albumsSubtitle]: "捕捉光影，定格朝夕",
 	[Key.albumsEmpty]: "暂无内容",
 	[Key.albumsEmptyDesc]: "还没有创建任何相册，快去添加一些美好的回忆吧！",
 	[Key.albumsBackToList]: "返回相册",
@@ -92,8 +92,8 @@ export const zh_CN: Translation = {
 	[Key.albumsPhotosCount]: "张照片",
 
 	// 项目展示页面
-	[Key.projects]: "项目展示",
-	[Key.projectsSubtitle]: "我的开发项目作品集",
+	[Key.projects]: "作品集",
+	[Key.projectsSubtitle]: "数字手迹，编译现实",
 	[Key.projectsAll]: "全部",
 	[Key.projectsWeb]: "网页应用",
 	[Key.projectsMobile]: "移动应用",
@@ -163,8 +163,8 @@ export const zh_CN: Translation = {
 	[Key.skillsByCategory]: "按分类分布",
 
 	// 时间线页面
-	[Key.timeline]: "时间线",
-	[Key.timelineSubtitle]: "小人物也有自己的里程碑",
+	[Key.timeline]: "时光机",
+	[Key.timelineSubtitle]: "时序流转，打捞过往",
 	[Key.timelineEducation]: "教育经历",
 	[Key.timelineWork]: "工作经历",
 	[Key.timelineProject]: "项目经历",

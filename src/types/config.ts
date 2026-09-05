@@ -171,6 +171,7 @@ export type ProfileConfig = {
 	name: string;
 	bio?: string;
 	links: {
+		identity?: boolean;
 		name: string;
 		url: string;
 		icon: string;

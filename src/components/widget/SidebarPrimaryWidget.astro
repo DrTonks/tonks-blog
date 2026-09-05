@@ -1,0 +1,18 @@
+---
+interface Props { mode: 'profile' | 'summary'; }
+const { mode } = Astro.props;
+---
+<div id="sidebar-primary-widget" data-sidebar-motion-item data-mode={mode}>
+    <div data-sidebar-profile-panel hidden={mode === 'summary'}><slot name="profile" /></div>
+    <div data-sidebar-summary-panel hidden={mode !== 'summary'}><slot name="summary" /></div>
+</div>
+<style>
+    #sidebar-primary-widget { opacity: 1; transition: opacity 200ms ease; }
+    #sidebar-primary-widget[data-navigation-out] { opacity: 0; pointer-events: none; }
+    [hidden] { display: none; }
+    @media (prefers-reduced-motion: reduce) { #sidebar-primary-widget { transition: none; } }
+</style>
+<script>
+    import { initializePrimaryWidget } from '../../scripts/sidebar-primary';
+    initializePrimaryWidget();
+</script>

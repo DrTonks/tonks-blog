@@ -7,6 +7,7 @@ import { i18n } from "../../i18n/translation";
 import { widgetManager } from "../../utils/widget-manager";
 import Announcement from "./Announcement.astro";
 import AISummary from "./AISummary.astro";
+import SidebarPrimaryWidget from "./SidebarPrimaryWidget.astro";
 import Categories from "./Categories.astro";
 import MusicPlayer from "./MusicPlayer.svelte";
 import Profile from "./Profile.astro";
@@ -58,7 +59,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 }
 ---
 
-<div id="sidebar" class:list={[className, "w-full", {
+<div id="sidebar" class:list={[className, "w-full",   {
 	"sidebar-article-mode": Boolean(aiSummary),
 	"sidebar-has-inline-toc": siteConfig.toc.enable,
 	"sidebar-inline-active": showSidebarToc,
@@ -73,11 +74,11 @@ function renderComponent(component: any, index: number, _components: any[]) {
 				const { Component, props } = renderData;
 				if (component.type === "profile") {
 					return <>
-						<div id="sidebar-primary-widget" data-sidebar-motion-item data-mode={aiSummary ? "summary" : "profile"}>
-							<div data-sidebar-profile-panel hidden={Boolean(aiSummary)}><Profile {...props} /></div>
-							<div data-sidebar-summary-panel hidden={!aiSummary}><AISummary summary={aiSummary?.summary} /></div>
-						</div>
-						{siteConfig.toc.enable && <div class="sidebar-inline-toc hidden md:block 2xl:hidden" hidden={!showSidebarToc} data-sidebar-motion-item>
+						<SidebarPrimaryWidget mode={aiSummary ? "summary" : "profile"}>
+							<Profile slot="profile" {...props} />
+							<AISummary slot="summary" summary={aiSummary?.summary} />
+						</SidebarPrimaryWidget>
+						{siteConfig.toc.enable && <div class="sidebar-inline-toc hidden md:block" hidden={!showSidebarToc} data-sidebar-motion-item>
 							<WidgetLayout id="sidebar-toc-card" name={i18n(I18nKey.tableOfContents)} titleClass="font-hanalei">
 								<button slot="title-action" type="button" class="sidebar-collapse-toggle" data-sidebar-toc-toggle aria-expanded="true" aria-controls="sidebar-toc-card" aria-label="收起目录" title="收起目录">
 									<Icon name="material-symbols:keyboard-arrow-up-rounded" class="sidebar-collapse-toggle__icon" />
@@ -110,6 +111,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 
 <!-- 响应式样式和JavaScript -->
 <style>
+
 	/* 响应式断点样式 */
 	@media (max-width: 768px) {
 		#sidebar {
@@ -146,23 +148,6 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		}
 	}
 
-	#sidebar-primary-widget [data-sidebar-profile-panel],
-	#sidebar-primary-widget [data-sidebar-summary-panel] {
-		transform: translateY(0) scale(1);
-		opacity: 1;
-		transition: opacity 180ms ease, transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-
-	#sidebar-primary-widget .is-leaving {
-		transform: translateY(-0.45rem) scale(0.985);
-		opacity: 0;
-	}
-
-	#sidebar-primary-widget .is-entering {
-		transform: translateY(0.55rem) scale(0.985);
-		opacity: 0;
-	}
-
 	[data-sidebar-motion-item] {
 		display: block;
 		width: 100%;
@@ -197,7 +182,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 
 	/* The scoped motion-item rule is more specific than Tailwind's responsive
 	   display utilities, so enforce the inline TOC's actual viewport range. */
-	@media (max-width: 767px), (min-width: 1536px) {
+	@media (max-width: 767px), (min-width: 1728px) {
 		#sidebar .sidebar-inline-toc {
 			display: none !important;
 		}
@@ -247,7 +232,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 	/* Flatten the top group only while the inline TOC is active. This makes the
 	   TOC's sticky containing block the whole sidebar instead of the short top
 	   group, so it can remain sticky until the sidebar/article release point. */
-	@media (min-width: 768px) and (max-width: 1535px) {
+	@media (min-width: 768px) and (max-width: 1727px) {
 		#sidebar.sidebar-has-inline-toc {
 			display: flex;
 			flex-direction: column;
@@ -268,11 +253,6 @@ function renderComponent(component: any, index: number, _components: any[]) {
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		#sidebar-primary-widget [data-sidebar-profile-panel],
-		#sidebar-primary-widget [data-sidebar-summary-panel] {
-			transition: none;
-		}
-
 		.sidebar-inline-toc__viewport,
 		.sidebar-collapse-toggle__icon {
 			transition: none;
@@ -281,6 +261,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 </style>
 
 <script>
+    import { syncPrimaryWidget } from "../../scripts/sidebar-primary";
 	import { widgetManager } from "../../utils/widget-manager";
 	
 	type SidebarWindow = Window & {
@@ -321,8 +302,9 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		window.addEventListener("resize", updateResponsiveDisplay, { passive: true });
 	}
 
-	const wait = (duration: number) => new Promise<void>((resolve) => window.setTimeout(resolve, duration));
 
+	let summaryToggleFrame = 0;
+	let tocToggleFrame = 0;
 	let stickyFrame = 0;
 	let inlineTocFrame = 0;
 	function syncArticleSidebarSticky(reset = false) {
@@ -383,18 +365,10 @@ function renderComponent(component: any, index: number, _components: any[]) {
 
 		const contentRoot = document.querySelector(".custom-md, .markdown-content, .prose");
 		const hasArticleHeadings = Boolean(contentRoot?.querySelector("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]"));
-		const inlineViewportActive = window.matchMedia("(min-width: 768px) and (max-width: 1535px)").matches;
+		const inlineViewportActive = window.matchMedia("(min-width: 768px) and (max-width: 1727px)").matches;
 		const shouldShowInlineToc = hasArticleHeadings && inlineViewportActive;
-		if (shouldShowInlineToc && inlineToc.hidden) {
-			inlineToc.classList.add("is-revealing");
-			inlineToc.hidden = false;
-			requestAnimationFrame(() => requestAnimationFrame(() => {
-				inlineToc.classList.remove("is-revealing");
-			}));
-		} else if (!shouldShowInlineToc) {
-			inlineToc.hidden = true;
-			inlineToc.classList.remove("is-revealing");
-		}
+		inlineToc.hidden = !shouldShowInlineToc;
+		inlineToc.classList.remove("is-revealing");
 		sidebar.classList.toggle("sidebar-inline-active", shouldShowInlineToc);
 		// content:replace 已经重建目录；page:view 只切换可见实例的跟踪权。
 		toc?.syncTracking?.(true);
@@ -432,7 +406,8 @@ function renderComponent(component: any, index: number, _components: any[]) {
 				viewport.style.maxHeight = `${startHeight}px`;
 				viewport.getBoundingClientRect();
 				viewport.style.removeProperty("transition");
-				requestAnimationFrame(() => {
+				tocToggleFrame = requestAnimationFrame(() => {
+					tocToggleFrame = 0;
 					viewport.style.maxHeight = `${endHeight}px`;
 				});
 				viewport.addEventListener("transitionend", (event) => {
@@ -471,7 +446,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 					content.style.height = `${startHeight}px`;
 					content.getBoundingClientRect();
 					content.style.removeProperty("transition");
-					requestAnimationFrame(() => content.style.height = `${endHeight}px`);
+					summaryToggleFrame = requestAnimationFrame(() => { summaryToggleFrame = 0; content.style.height = `${endHeight}px`; });
 					content.addEventListener("transitionend", (event) => {
 						if (event.propertyName === "height") content.style.removeProperty("height");
 					}, { once: true });
@@ -492,108 +467,37 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		}, { passive: true });
 	}
 
-	function typeSummary(summary: string, run: number) {
-		const card = document.querySelector<HTMLElement>(".ai-summary-card");
-		const visual = card?.querySelector<HTMLElement>("[data-ai-summary-visual]");
-		const accessible = card?.querySelector<HTMLElement>("[data-ai-summary-accessible]");
-		const count = card?.querySelector<HTMLElement>("[data-ai-summary-count]");
-		if (!card || !visual || !accessible || !count) return;
+	const syncAISummary = syncPrimaryWidget;
 
-		const characters = Array.from(summary).slice(0, 181);
-		accessible.textContent = summary;
-		count.textContent = "0 字";
-		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-			visual.textContent = summary;
-			count.textContent = `${characters.length} 字`;
-			return;
-		}
-
-		visual.textContent = "";
-		card.classList.add("is-typing");
-		const startedAt = performance.now();
-		const step = (now: number) => {
-			if (sidebarWindow.__aiSummaryRun !== run) return;
-			const visibleCount = Math.min(characters.length, Math.floor((now - startedAt) / 24));
-			visual.textContent = characters.slice(0, visibleCount).join("");
-			count.textContent = `${visibleCount} 字`;
-			if (visibleCount < characters.length) requestAnimationFrame(step);
-			else card.classList.remove("is-typing");
-		};
-		requestAnimationFrame(step);
-	}
-
-	async function syncAISummary(initial = false) {
-		const host = document.getElementById("sidebar-primary-widget");
-		const sidebar = document.getElementById("sidebar");
-		const profilePanel = host?.querySelector<HTMLElement>("[data-sidebar-profile-panel]");
-		const summaryPanel = host?.querySelector<HTMLElement>("[data-sidebar-summary-panel]");
-		if (!host || !sidebar || !profilePanel || !summaryPanel) return;
-
-		const payload = document.getElementById("ai-summary-data") as HTMLElement | null;
-		const summary = payload?.dataset.summary || "";
-		const nextMode = payload ? "summary" : "profile";
-		const currentMode = host.dataset.mode || "profile";
-		const run = (sidebarWindow.__aiSummaryRun || 0) + 1;
-		sidebarWindow.__aiSummaryRun = run;
-
-		if (initial || currentMode === nextMode) {
-			host.dataset.mode = nextMode;
-			profilePanel.hidden = nextMode !== "profile";
-			summaryPanel.hidden = nextMode !== "summary";
-			sidebar.classList.toggle("sidebar-article-mode", nextMode === "summary");
-			if (nextMode === "summary") typeSummary(summary, run);
-			scheduleArticleSidebarSticky(true);
-			return;
-		}
-
-		const movingItems = [...sidebar.querySelectorAll<HTMLElement>("[data-sidebar-motion-item]")]
-			.slice(1)
-			.filter((item) => !item.classList.contains("sidebar-inline-toc") && !item.hidden);
-		const before = new Map(movingItems.map((item) => [item, item.getBoundingClientRect().top]));
-		const currentPanel = currentMode === "summary" ? summaryPanel : profilePanel;
-		const nextPanel = nextMode === "summary" ? summaryPanel : profilePanel;
-		currentPanel.classList.add("is-leaving");
-		await wait(150);
-		if (sidebarWindow.__aiSummaryRun !== run) return;
-
-		currentPanel.hidden = true;
-		currentPanel.classList.remove("is-leaving");
-		nextPanel.classList.add("is-entering");
-		nextPanel.hidden = false;
-		host.dataset.mode = nextMode;
-		sidebar.classList.toggle("sidebar-article-mode", nextMode === "summary");
-
-		for (const item of movingItems) {
-			const delta = (before.get(item) || 0) - item.getBoundingClientRect().top;
-			if (!delta) continue;
-			item.style.transition = "none";
-			item.style.transform = `translateY(${delta}px)`;
-		}
-		requestAnimationFrame(() => requestAnimationFrame(() => {
-			nextPanel.classList.remove("is-entering");
-			for (const item of movingItems) {
-				item.style.transition = "transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1)";
-				item.style.transform = "translateY(0)";
-			}
-		}));
-		window.setTimeout(() => {
-			for (const item of movingItems) {
-				item.style.removeProperty("transition");
-				item.style.removeProperty("transform");
-			}
-		}, 430);
-		if (nextMode === "summary") typeSummary(summary, run);
-		scheduleArticleSidebarSticky(true);
+	// Populate and position the persistent sidebar while the incoming page is
+	// still hidden. No FLIP offsets may span two different window scroll positions.
+	function settleSidebar() {
+        cancelAnimationFrame(summaryToggleFrame);
+        cancelAnimationFrame(tocToggleFrame);
+        summaryToggleFrame = tocToggleFrame = 0;
+        for (const element of document.querySelectorAll<HTMLElement>("#ai-summary-content, .sidebar-inline-toc__viewport")) {
+            element.style.removeProperty("height");
+            element.style.removeProperty("max-height");
+            element.style.removeProperty("transition");
+        }
+		initSidebarTocToggle();
+		initAISummaryToggle();
+		syncAISummary();
+		syncInlineToc();
+		if (stickyFrame) { cancelAnimationFrame(stickyFrame); stickyFrame = 0; }
+		syncArticleSidebarSticky(true);
+		document.querySelectorAll<HTMLElement & { settleForNavigation?: () => void }>("table-of-contents").forEach(toc => toc.settleForNavigation?.());
 	}
 
 	if (!sidebarWindow.__aiSummarySidebarInitialized) {
 		sidebarWindow.__aiSummarySidebarInitialized = true;
-		const registerSwup = () => window.swup?.hooks?.on("page:view", () => {
-			initSidebarTocToggle();
-			initAISummaryToggle();
-			syncInlineToc();
-			syncAISummary(false);
-		});
+		const registerSwup = () => {
+
+			window.swup?.hooks?.on("content:replace", settleSidebar);
+			window.swup?.hooks?.on("content:scroll", settleSidebar);
+			window.swup?.hooks?.before("animation:in:start", settleSidebar);
+
+		};
 		if (window.swup) registerSwup();
 		else document.addEventListener("swup:enable", registerSwup, { once: true });
 	}
@@ -601,6 +505,9 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		initSidebarTocToggle();
 		initAISummaryToggle();
 		syncInlineToc();
-		syncAISummary(true);
+		syncAISummary();
+        const host = document.getElementById('sidebar-primary-widget');
+        if (host) delete host.dataset.animateContent;
 	});
 </script>
+

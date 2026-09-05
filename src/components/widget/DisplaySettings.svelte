@@ -44,7 +44,7 @@ function syncThemeMode() {
 function applyThemeMode(mode: "light" | "dark", x: number, y: number) {
 	const theme = mode === "dark" ? DARK_MODE : LIGHT_MODE;
 	if (mode === activeThemeMode && localStorage.getItem("theme") === theme) return;
-	setThemeFromPoint(theme, x, y);
+	if (!setThemeFromPoint(theme, x, y)) return;
 	activeThemeMode = mode;
 }
 
@@ -326,4 +326,8 @@ onMount(() => {
       .wave-switch,
       .wave-switch span
         transition none
+    :global(html body #navbar #display-setting#display-setting)
+      background var(--card-bg) !important
+      backdrop-filter none !important
+      -webkit-backdrop-filter none !important
 </style>

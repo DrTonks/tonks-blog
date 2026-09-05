@@ -161,11 +161,11 @@
 
 /* 移动端暗色主题下的半完全透明模式 - 仅在有壁纸且为首页时启用 */
 @media (max-width: 1023px) {
-    /* 默认状态：页面顶部时完全透明 */
+    /* Wallpaper mode retains the same glass surface in both themes. */
     :root.dark body.wallpaper-transparent #navbar[data-transparent-mode="semifull"][data-is-home="true"] > div {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
+        background: rgba(0, 0, 0, 0.55) !important;
+        border: 1px solid rgba(0, 0, 0, 0.55) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
     }
     
     /* 滚动状态：下滑后变为半透明圆角 */

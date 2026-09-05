@@ -1,8 +1,10 @@
 interface SwupHookRegistry {
+	before<TVisit = unknown>(event: string, handler: (visit: TVisit) => void): void;
 	on<TVisit = unknown>(event: string, handler: (visit: TVisit) => void): void;
 }
 
 interface SwupRuntime {
+    scrollTo?: (target: number, animate?: boolean) => void;
 	hooks: SwupHookRegistry;
 	options: {
 		animateHistoryBrowsing: boolean;
@@ -79,3 +81,4 @@ interface SearchResult {
 }
 
 export {};
+

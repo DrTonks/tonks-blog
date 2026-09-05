@@ -11,7 +11,7 @@ import { getSortedPosts } from "@utils/content-utils";
 import { getDir, getPostUrlBySlug } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
 import bcryptjs from "bcryptjs";
-import CryptoJS from "crypto-js";
+
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { licenseConfig } from "src/config";
@@ -51,21 +51,12 @@ const showCoverInContent = Boolean(
 const { remarkPluginFrontmatter } = await entry.render();
 
 // 处理加密逻辑
-let encryptedContent = "";
+
 let passwordHash = "";
 let isEncrypted = entry.data.encrypted && entry.data.password;
 
 if (isEncrypted) {
-	// 对于加密文章，我们将使用内容进行加密
-	// 在客户端解密后，会通过JavaScript重新渲染
-	const contentToEncrypt = entry.body;
-
-	// 使用AES加密内容
-	encryptedContent = CryptoJS.AES.encrypt(
-		contentToEncrypt,
-		entry.data.password,
-	).toString();
-
+	// The rendered Markdown is encrypted inside PasswordProtection.
 	// 生成密码哈希
 	const saltRounds = 10;
 	passwordHash = bcryptjs.hashSync(entry.data.password, saltRounds);
@@ -146,7 +137,7 @@ const jsonLd = {
         >
             <!-- word count and reading time -->
             <div
-                class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation"
+                class="article-reading-meta flex flex-row justify-center text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation"
             >
                 <div class="flex flex-row items-center">
                     <div
@@ -182,7 +173,7 @@ const jsonLd = {
             </div>
 
             <!-- title -->
-            <div class="relative onload-animation">
+            <div class="article-heading relative onload-animation">
                 <div
                     data-pagefind-body
                     data-pagefind-weight="10"
@@ -200,7 +191,7 @@ const jsonLd = {
             <!-- metadata -->
             <div class="onload-animation">
                 <PostMetadata
-                    className="mb-5"
+                    className="mb-5 justify-center"
                     published={entry.data.published}
                     updated={entry.data.updated}
                     tags={entry.data.tags}
@@ -235,9 +226,12 @@ const jsonLd = {
             {
                 isEncrypted ? (
                     <PasswordProtection
-                        encryptedContent={encryptedContent}
+                        encryptedContent=""
                         passwordHash={passwordHash}
-                    />
+                        password={entry.data.password}
+                    >
+                        <Markdown class="mb-6 markdown-content onload-animation"><Content /></Markdown>
+                    </PasswordProtection>
                 ) : (
                     <>
                         <Markdown class="mb-6 markdown-content onload-animation">

@@ -109,7 +109,7 @@ class TableOfContents extends HTMLElement {
         }
     };
 
-    scrollToActiveHeading = () => {
+    scrollToActiveHeading = (instant = false) => {
         // If the TOC widget can accommodate both the topmost
         // and bottommost items, scroll to the topmost item. 
         // Otherwise, scroll to the bottommost one.
@@ -133,9 +133,22 @@ class TableOfContents extends HTMLElement {
         this.tocEl.scrollTo({
             top,
             left: 0,
-            behavior: "smooth",
+            behavior: instant || document.documentElement.classList.contains("is-changing") ? "instant" : "smooth",
         });
     };
+
+    settleForNavigation() {
+        if (!this.tocEl || !this.getClientRects().length) return;
+        if (this.updateFrame !== null) { cancelAnimationFrame(this.updateFrame); this.updateFrame = null; }
+        this.active = this.sections.map(section => {
+            const rect = section?.getBoundingClientRect();
+            return Boolean(rect && rect.bottom > 0 && rect.top < innerHeight);
+        });
+        if (!this.active.includes(true)) this.fallback();
+        this.lastActiveKey = this.active.map(value => value ? "1" : "0").join("");
+        this.toggleActiveHeading();
+        this.scrollToActiveHeading(true);
+    }
 
     update = (force = false) => {
         const activeKey = this.active.map((value) => value ? "1" : "0").join("");
@@ -349,7 +362,7 @@ class TableOfContents extends HTMLElement {
 		const contentRoot = document.querySelector('.custom-md, .markdown-content, .prose');
 		const headings = contentRoot
 			? Array.from(contentRoot.querySelectorAll('h1, h2, h3, h4, h5, h6'))
-			.filter(h => h.id)
+			.filter(h => h.id && !h.closest("[data-footnotes]"))
 			.map(h => ({
 				depth: parseInt(h.tagName.substring(1)),
 				slug: h.id,

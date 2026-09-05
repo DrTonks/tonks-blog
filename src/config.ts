@@ -151,6 +151,7 @@ export const siteConfig: SiteConfig = {
 	},
 	generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
 	favicon: [
+		{ src: "/favicon/tonks.ico" },
 		// 留空以使用默认 favicon
 		// {
 		//   src: '/favicon/icon.png',    // 图标文件路径
@@ -220,7 +221,7 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:timeline",
 				},
 				{
-					name: "项目",
+					name: "作品",
 					url: "/projects/",
 					icon: "material-symbols:work",
 				},
@@ -276,16 +277,19 @@ export const profileConfig: ProfileConfig = {
 	links: [
 		{
 			name: "我在干什么？",
+			identity: true,
 			icon: "material-symbols:update",
 			url: "https://tonks.top",
 		},
 		{
 			name: "Bilibli",
+			identity: true,
 			icon: "fa6-brands:bilibili",
 			url: "https://space.bilibili.com/519765623",
 		},
 		{
 			name: "GitHub",
+			identity: true,
 			icon: "fa6-brands:github",
 			url: "https://github.com/DrTonks/",
 		},

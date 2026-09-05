@@ -9,6 +9,7 @@ import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-s
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import swup from "@swup/astro";
 import { defineConfig } from "astro/config";
+import articleMedia from "./src/plugins/rehype-article-media.mjs";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
@@ -159,11 +160,11 @@ export default defineConfig({
 			// 接管视口的加速滚动。默认配置会先等内容替换，再滚动到目标，
 			// 因而产生“静滞一下后才动”以及和滚轮输入争抢的手感。
 			smoothScrolling: {
-				doScrollingRightAway: true,
+				doScrollingRightAway: false,
 				animateScroll: {
-					betweenPages: false,
+					betweenPages: true,
 					samePageWithHash: false,
-					samePage: false,
+					samePage: true,
 				},
 			},
 			cache: true,
@@ -251,6 +252,7 @@ export default defineConfig({
 			remarkMermaid,
 		],
 		rehypePlugins: [
+			articleMedia,
 			rehypeKatex,
 			rehypeSlug,
 			rehypeMermaid,

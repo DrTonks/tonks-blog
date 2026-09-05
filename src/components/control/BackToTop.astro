@@ -6,8 +6,13 @@ import {Icon} from "astro-icon/components";
 <div class="back-to-top-wrapper block">
     <div id="back-to-top-btn" class="back-to-top-btn hide flex items-center rounded-2xl overflow-hidden transition"
          onclick="backToTop()">
-        <button aria-label="Back to Top" class="btn-card h-[3.75rem] w-[3.75rem]">
+        <button aria-label="回到页头" title="回到页头" class="btn-card h-[3.75rem] w-[3.75rem]">
             <Icon name="material-symbols:keyboard-arrow-up-rounded" class="mx-auto"></Icon>
+        </button>
+    </div>
+    <div id="back-to-bottom-btn" class="back-to-top-btn back-to-bottom-btn flex items-center rounded-2xl overflow-hidden transition">
+        <button type="button" aria-label="跳到页尾" title="跳到页尾" class="btn-card h-[3.75rem] w-[3.75rem]" onclick="window.scrollTo({top: document.documentElement.scrollHeight, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'})">
+            <Icon name="material-symbols:keyboard-arrow-down-rounded" class="mx-auto"></Icon>
         </button>
     </div>
 </div>
@@ -41,12 +46,16 @@ import {Icon} from "astro-icon/components";
       font-size: 1.75rem
 
     &.hide
+      visibility: hidden
       transform: translateX(5rem) scale(0.9)
       opacity: 0
       pointer-events: none
 
     &:active
       transform: translateX(5rem) scale(0.9)
+
+  .back-to-bottom-btn
+    bottom: 5.5rem
 
   @media (max-width: 1560px)
     .back-to-top-btn

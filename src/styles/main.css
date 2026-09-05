@@ -27,9 +27,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 确保平滑滚动 */
+/* Snapshot reveal supplies the visual transition; avoid repainting every color
+   and running decorative CSS animations beneath it at the same time. */
+html.is-theme-revealing,
+.is-theme-revealing *,
+.is-theme-revealing *::before,
+.is-theme-revealing *::after {
+  transition: none !important;
+  animation-play-state: paused !important;
+}
+
+/* Navigation restoration must settle before the incoming page is revealed. */
 html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
 }
 
 /* Prevent layout shift when the vertical scrollbar appears/disappears.
@@ -105,7 +115,6 @@ html {
     .is-theme-transitioning body:has(#banner-wrapper) #navbar > div,
     .is-theme-transitioning body:has(#banner-wrapper) #navbar[data-transparent-mode] > div {
         transition: none !important;
-        backdrop-filter: none !important;
     }
     
     /* 导航栏相关浮动面板的过渡禁用 */
@@ -117,7 +126,6 @@ html {
     .is-theme-transitioning #mobile-toc-panel,
     .is-theme-transitioning #search-panel {
         transition: none !important;
-        backdrop-filter: none !important;
     }
     
     /* 波浪容器的颜色传递 */
@@ -648,4 +656,11 @@ html {
   .signal-arrow {
     transition: none !important;
   }
+}
+
+/* Freeze theme-dependent surfaces, not their blur, inside theme snapshots. */
+html:is(.is-theme-revealing,.is-theme-transitioning) body #navbar#navbar[data-transparent-mode] > div,
+html:is(.is-theme-revealing,.is-theme-transitioning) #navbar .float-panel,
+html:is(.is-theme-revealing,.is-theme-transitioning) #navbar .theme-mode-menu {
+    transition: none !important;
 }

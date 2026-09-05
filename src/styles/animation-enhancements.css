@@ -215,7 +215,7 @@ html.is-entering .transition-main {
     
     /* 确保TOC组件仍然有平滑滚动 */
     table-of-contents#toc {
-        scroll-behavior: smooth !important;
+        scroll-behavior: auto !important;
     }
 }
 

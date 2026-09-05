@@ -28,6 +28,7 @@ import "katex/dist/katex.css";
 import "../styles/mobile-navbar.css";
 import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
+import "../styles/article.css";
 import "../styles/hanalei-font.css";
 import "../styles/mobile-transition-fix.css";
 import "../styles/mobile-post-list-fix.css";
@@ -312,12 +313,6 @@ const bannerOffset =
 				}
 			}
 
-			@media (min-width: 1536px) {
-				:root {
-					--page-width: min(75vw, var(--page-width-max));
-				}
-			}
-
 			@media (prefers-reduced-motion: reduce) {
 				.is-theme-revealing::view-transition-new(root) {
 					animation: none;
@@ -390,7 +385,7 @@ const bannerOffset =
 		{pioEnabled && <Pio client:idle />}
 		
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
-		<div id="page-height-extend" class="hidden h-[300vh]"></div>
+		<div id="page-height-extend" aria-hidden="true"></div>
 
 		<!-- Sakura Effect -->
 		{(widgetConfigs.sakura as SakuraConfig)?.enable && (
@@ -1304,102 +1299,25 @@ const setup = () => {
 		scrollRestoreInputController = null;
 	};
 
-	// TODO: temp solution to change the height of the banner
-/*
-	window.swup.hooks.on('animation:out:start', () => {
-		const path = window.location.pathname
-		const body = document.querySelector('body')
-		if (path[path.length - 1] === '/' && !body.classList.contains('is-home')) {
-			body.classList.add('is-home')
-		} else if (path[path.length - 1] !== '/' && body.classList.contains('is-home')) {
-			body.classList.remove('is-home')
-		}
-	})
-*/
+    // ScrollPlugin owns destinations/cache; native scrolling owns interpolation.
+    let navigationScrollCancelled = false;
+    const resetScrollCancellation = () => { navigationScrollCancelled = false; };
+    window.swup.hooks.before('link:self', resetScrollCancellation);
+    window.swup.hooks.before('link:anchor', resetScrollCancellation);
+    window.swup.scrollTo = (target: number, animate = true) => {
+        if (navigationScrollCancelled) return;
+        const smooth = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({top: target, behavior: smooth ? 'smooth' : 'instant'});
+        scrollFunction();
+    };
+
 	window.swup.hooks.on('link:click', () => {
 		// Remove the delay for the first time page load
 		document.documentElement.style.setProperty('--content-delay', '0ms')
 
-		// 简化navbar处理逻辑
-		if (bannerEnabled) {
-			const navbar = document.getElementById('navbar-wrapper')
-			if (navbar && document.body.classList.contains('lg:is-home')) {
-				const threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 88
-				if (document.documentElement.scrollTop >= threshold) {
-					navbar.classList.add('navbar-hidden')
-				}
-			}
-		}
+
 	})
-	window.swup.hooks.on('content:replace', () => {
-		// 只处理新的katex元素的滚动条，使用原生CSS滚动条
-		initCustomScrollbar();
-		
-		// 左右目录都在 Swup 容器外，节点会跨页保留。
-		// 以新正文为唯一依据，同步可见性并重建每一个实例。
-		const tocWrapper = document.getElementById('toc-wrapper');
-		const contentRoot = document.querySelector('.custom-md, .markdown-content, .prose');
-		const isArticlePage = Boolean(contentRoot?.querySelector('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]'));
-		if (tocWrapper) tocWrapper.hidden = !isArticlePage;
-		
-		document.querySelectorAll('table-of-contents').forEach((tocElement) => {
-			if (typeof (tocElement as any).init === 'function') {
-				(tocElement as any).init();
-			}
-		});
-			
-		if (isArticlePage) {
-			// 重新初始化移动端 TOC 组件
-			if (typeof (window as any).mobileTOCInit === 'function') {
-				setTimeout(() => {
-					(window as any).mobileTOCInit();
-				}, 100);
-			}
-		}
-		
-		
-		
-		// 重新初始化semifull模式的滚动检测
-		const navbar = document.getElementById('navbar')
-		if (navbar) {
-			const transparentMode = navbar.getAttribute('data-transparent-mode')
-			
-			if (transparentMode === 'semifull') {
-				// 重新调用初始化函数来重新绑定滚动事件
-				if (typeof (window as any).initSemifullScrollDetection === 'function') {
-					(window as any).initSemifullScrollDetection()
-				}
-			}
-		}
-	})
-	window.swup.hooks.on('visit:start', (visit: {
-		to: {url: string};
-		scroll: {reset: boolean};
-	}) => {
-		// 页面过渡期间冻结轮播，避免切页时同时触发图片切换和过渡布局。
-		window.__tonksBannerPageTransitionPaused = true;
-		window.__tonksBannerCarouselRuntime?.setPageTransitionPaused(true);
-		window.scrollProtectionManager?.setPageTransitioning(true);
-		stopWatchingScrollRestore();
-		scrollRestoreInputController = new AbortController();
-		const cancelPendingScrollRestore = () => {
-			// The user now owns the viewport. Prevent ScrollPlugin's delayed
-			// content:scroll hook from restoring an older cached Y position.
-			visit.scroll.reset = false;
-			window.scrollTo({ top: window.scrollY, left: window.scrollX, behavior: 'instant' });
-			stopWatchingScrollRestore();
-		};
-		const passiveInputOptions = {
-			passive: true,
-			signal: scrollRestoreInputController.signal,
-		};
-		window.addEventListener('wheel', cancelPendingScrollRestore, passiveInputOptions);
-		window.addEventListener('touchstart', cancelPendingScrollRestore, passiveInputOptions);
-		window.addEventListener('pointerdown', cancelPendingScrollRestore, passiveInputOptions);
-		window.addEventListener('keydown', cancelPendingScrollRestore, {
-			signal: scrollRestoreInputController.signal,
-		});
-		// change banner height immediately when a link is clicked
+	function beginBannerTransition(visit: {to: {url: string}}) {
 		const bodyElement = document.querySelector('body')
 		const isHomePage = pathsEqual(visit.to.url, url('/'))
 		const wasHomePage = bodyElement?.classList.contains('lg:is-home') ?? false
@@ -1457,30 +1375,94 @@ const setup = () => {
 			}
 		}
 
-		// NOTE: temporarily disabled height-extend logic for A/B testing because
-		// it can trigger layout changes that cause scrollbar to appear/disappear
-		// and lead to visual jitter on some platforms. If you want to re-enable,
-		// remove the surrounding `if (false)` guard.
-		if (false) {
-			// increase the page height during page transition to prevent the scrolling animation from jumping
-const heightExtend = document.getElementById('page-height-extend')
-			heightExtend?.classList.remove('hidden')
+    }
+    window.swup.hooks.before('content:replace', () => {
+        // Prevent clamping when the incoming document is shorter.
+        document.body.style.minHeight = String(scrollY + innerHeight) + 'px';
+    });
+    window.swup.hooks.before('animation:in:start', scrollFunction);
+    window.swup.hooks.on('content:scroll', scrollFunction);
+	window.swup.hooks.on('content:replace', () => {
+		// 只处理新的katex元素的滚动条，使用原生CSS滚动条
+		initCustomScrollbar();
+		
+		// 左右目录都在 Swup 容器外，节点会跨页保留。
+		// 以新正文为唯一依据，同步可见性并重建每一个实例。
+		const tocWrapper = document.getElementById('toc-wrapper');
+		const contentRoot = document.querySelector('.custom-md, .markdown-content, .prose');
+		const isArticlePage = Boolean(contentRoot?.querySelector('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]'));
+		if (tocWrapper) tocWrapper.hidden = !isArticlePage;
+		
+		document.querySelectorAll('table-of-contents').forEach((tocElement) => {
+			if (typeof (tocElement as any).init === 'function') {
+				(tocElement as any).init();
+			}
+		});
+			
+		if (isArticlePage) {
+			// 重新初始化移动端 TOC 组件
+			if (typeof (window as any).mobileTOCInit === 'function') {
+				setTimeout(() => {
+					(window as any).mobileTOCInit();
+				}, 100);
+			}
 		}
+		
+		
+		
+		// 重新初始化semifull模式的滚动检测
+		const navbar = document.getElementById('navbar')
+		if (navbar) {
+			const transparentMode = navbar.getAttribute('data-transparent-mode')
+			
+			if (transparentMode === 'semifull') {
+				// 重新调用初始化函数来重新绑定滚动事件
+				if (typeof (window as any).initSemifullScrollDetection === 'function') {
+					(window as any).initSemifullScrollDetection()
+				}
+			}
+		}
+	})
+	window.swup.hooks.on('visit:start', (visit: {
+		to: {url: string};
+		scroll: {reset: boolean; animate?: boolean};
+	}) => {
+		navigationScrollCancelled = false;
+        window.scrollTo({top: window.scrollY, behavior: 'instant'});
+        visit.scroll.animate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // 页面过渡期间冻结轮播，避免切页时同时触发图片切换和过渡布局。
+		window.__tonksBannerPageTransitionPaused = true;
+		window.__tonksBannerCarouselRuntime?.setPageTransitionPaused(true);
+		window.scrollProtectionManager?.setPageTransitioning(true);
+		stopWatchingScrollRestore();
+		scrollRestoreInputController = new AbortController();
+		const cancelPendingScrollRestore = () => {
+			// The user now owns the viewport. Prevent ScrollPlugin's delayed
+			// content:scroll hook from restoring an older cached Y position.
+			visit.scroll.reset = false;
+            navigationScrollCancelled = true;
+			window.scrollTo({ top: window.scrollY, left: window.scrollX, behavior: 'instant' });
+			stopWatchingScrollRestore();
+		};
+		const passiveInputOptions = {
+			passive: true,
+			signal: scrollRestoreInputController.signal,
+		};
+		window.addEventListener('wheel', cancelPendingScrollRestore, passiveInputOptions);
+		window.addEventListener('touchstart', cancelPendingScrollRestore, passiveInputOptions);
+		window.addEventListener('pointerdown', cancelPendingScrollRestore, passiveInputOptions);
+		window.addEventListener('keydown', cancelPendingScrollRestore, {
+			signal: scrollRestoreInputController.signal,
+		});
 
-		// Hide the TOC while scrolling back to top
+		beginBannerTransition(visit);
+        // Hide the TOC while scrolling back to top
 		let toc = document.getElementById('toc-wrapper');
 		if (toc) {
 			toc.classList.add('toc-not-ready')
 		}
 	});
 	window.swup.hooks.on('page:view', () => {
-		// NOTE: disabled for A/B test
-		if (false) {
-			// hide the temp high element when the transition is done
-			const heightExtend = document.getElementById('page-height-extend')
-			heightExtend?.classList.remove('hidden')
-		}
-		
 		// 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
 		const storedTheme = getStoredTheme();
 		const isDark = isThemeDark(storedTheme);
@@ -1518,7 +1500,7 @@ const heightExtend = document.getElementById('page-height-extend')
 		if (carouselRuntime?.root === currentCarousel) {
 			carouselRuntime.setPageTransitionPaused(false);
 		}
-		stopWatchingScrollRestore();
+        scrollFunction();
 		window.scrollProtectionManager?.disable();
 		requestAnimationFrame(() => {
 			window.scrollProtectionManager?.setPageTransitioning(false);
@@ -1544,26 +1526,22 @@ let backToTopBtn = document.getElementById('back-to-top-btn');
 let toc = document.getElementById('toc-wrapper');
 let navbar = document.getElementById('navbar-wrapper')
 
-// 节流函数
-function throttle(func: Function, limit: number) {
-	let inThrottle: boolean;
-	return function(this: any) {
-		const args = arguments;
-		const context = this;
-		if (!inThrottle) {
-			func.apply(context, args);
-			inThrottle = true;
-			setTimeout(() => inThrottle = false, limit);
-		}
-	}
-}
+let scrollUIFrame = 0;
 
 function scrollFunction() {
-	const scrollTop = document.documentElement.scrollTop;
-	const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
-
-	// 批量处理DOM操作
-	requestAnimationFrame(() => {
+    if (scrollUIFrame) return;
+    scrollUIFrame = requestAnimationFrame(() => {
+        scrollUIFrame = 0;
+        const scrollTop = window.scrollY;
+        const endMarker = document.getElementById('main-grid');
+        if (document.body.style.minHeight && endMarker) {
+            const naturalBottom = endMarker.getBoundingClientRect().bottom + scrollTop;
+            if (scrollTop + innerHeight <= naturalBottom + 1) document.body.style.removeProperty('min-height');
+            else document.body.style.minHeight = String(scrollTop + innerHeight) + 'px';
+        }
+        const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
+        const bottomButton = document.getElementById('back-to-bottom-btn');
+        bottomButton?.classList.toggle('hide', scrollTop + innerHeight >= document.documentElement.scrollHeight - 4);
 		if (backToTopBtn) {
 			if (scrollTop > bannerHeight) {
 				backToTopBtn.classList.remove('hide')
@@ -1583,7 +1561,7 @@ function scrollFunction() {
 		if (bannerEnabled && navbar) {
 			const isHome = document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024;
 			const currentBannerHeight = isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT;
-			const threshold = window.innerHeight * (currentBannerHeight / 100) - 88;
+			const threshold = Math.max(1, window.innerHeight * (currentBannerHeight / 100) - 88);
 			
 			if (scrollTop >= threshold) {
 				navbar.classList.add('navbar-hidden')
@@ -1595,9 +1573,11 @@ function scrollFunction() {
 }
 
 // 使用节流优化滚动性能
-window.onscroll = throttle(scrollFunction, 16); // 约60fps
+window.addEventListener("scroll", scrollFunction, {passive: true});
+scrollFunction(); // 约60fps
 
 window.onresize = () => {
+    scrollFunction();
 	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
 	offset = offset - offset % 4;
@@ -1654,7 +1634,7 @@ function initFancybox() {
   Fancybox.close();
   
   // 为相册图片添加 Fancybox 支持
-  bindFancybox(".custom-md img, #post-cover img, .moment-images img", {
+  bindFancybox(".custom-md img:not(.article-post-card img):not(.article-spoiler:not(.is-revealed) img):not([data-footnotes] img), #post-cover img, .moment-images img", {
     groupAll: true,
     Thumbs: {
       autoStart: true,
@@ -1850,3 +1830,12 @@ if (window.swup) {
   }
 }
 </script>
+<script>
+  import { initializeArticle } from "../scripts/article";
+  import "../scripts/markdown-copy";
+  initializeArticle();
+  // @swup/astro emits Astro lifecycle events, not the legacy Swup DOM names.
+  document.addEventListener("astro:after-swap", initializeArticle);
+  document.addEventListener("tonks:article-ready", initializeArticle);
+</script>
+
