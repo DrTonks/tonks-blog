@@ -1,5 +1,5 @@
 ---
-title: 主页开发日志(四) · 没有登录态的网站如何共享数据
+title: 主页开发日志(四) · 网站之间的访客状态共享
 published: 2026-10-15
 description: 从 Cookie、匿名身份令牌到跨站主题同步，记录主页与博客的状态共享实践
 tags:
@@ -18,7 +18,7 @@ pinned: false
 
 ### localStorage 留下的断点
 
-## 先分清几个容易混淆的概念
+## 容易混淆的概念
 
 ### Same Origin 与 Same Site
 

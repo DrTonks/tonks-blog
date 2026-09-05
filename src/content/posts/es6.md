@@ -1,5 +1,5 @@
 ---
-title: 学习笔记(一) · ECMAScript
+title: 前端笔记(一) · ECMAScript
 published: 2024-10-01
 description: 对ES6与ES7等语法规范的学习
 tags:

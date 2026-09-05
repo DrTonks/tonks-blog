@@ -1,6 +1,6 @@
 ---
-title: Agent学习(二) · Memory系统
-published: 2026-06-10
+title: Memory系统
+published: 2026-05-16
 description: 如何让 Agent 在对话结束后仍然拥有记忆？
 tags:
   - Agent
