@@ -1,4 +1,4 @@
-name: Build
+name: Build checks (no deployment)
 
 on:
   push:

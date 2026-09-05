@@ -172,7 +172,13 @@ const cardAngles = [
 		gap: 1.5rem;
 	}
 
-	.friend-wall__copy { flex: 1 1 auto; min-width: 0; }
+	.friend-wall__copy {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
 
 	.friend-wall__actions { display: flex; flex-direction: column; align-items: flex-end; gap: 1rem; flex: 0 0 clamp(9.5rem, 18vw, 13.5rem); }
 	.friend-wall__actions .friend-wall__affection { flex: none; width: 100%; }
@@ -206,7 +212,7 @@ const cardAngles = [
 		position: absolute;
 		right: 0;
 		bottom: 0.28rem;
-		color: color-mix(in srgb, currentColor 28%, transparent);
+		color: var(--text-muted);
 		font: 700 0.46rem/1 "JetBrains Mono Variable", monospace;
 		letter-spacing: 0.1em;
 		content: "HEART ARCHIVE";
@@ -222,7 +228,7 @@ const cardAngles = [
 	.friend-wall__copy p {
 		max-width: 35rem;
 		margin: 0.9rem 0 0;
-		color: color-mix(in srgb, currentColor 62%, transparent);
+		color: var(--text-secondary);
 	}
 
 	.friend-wall__title-wrap {
@@ -266,7 +272,7 @@ const cardAngles = [
 
 	.friend-wall__counter span,
 	.friend-wall__counter small {
-		color: color-mix(in srgb, currentColor 48%, transparent);
+		color: var(--text-muted);
 		font-size: 0.62rem;
 		font-weight: 800;
 		letter-spacing: 0.1em;
@@ -283,7 +289,7 @@ const cardAngles = [
 		align-items: center;
 		gap: 0.8rem;
 		margin: 2rem 0 1.5rem;
-		color: var(--signal-line);
+		color: var(--text-accent);
 		font: 800 0.62rem/1 "JetBrains Mono Variable", monospace;
 		letter-spacing: 0.12em;
 	}
@@ -357,7 +363,7 @@ const cardAngles = [
 		z-index: 0;
 		width: 4.6rem;
 		height: 4.6rem;
-		color: var(--signal-line);
+		color: var(--text-accent);
 		opacity: 0.09;
 		pointer-events: none;
 		transform: rotate(-11deg) scale(0.94);
@@ -376,7 +382,7 @@ const cardAngles = [
 		position: absolute;
 		top: 0.48rem;
 		left: 0.8rem;
-		color: color-mix(in srgb, currentColor 42%, transparent);
+		color: var(--text-muted);
 		font: 700 0.52rem/1 "JetBrains Mono Variable", monospace;
 		letter-spacing: 0.12em;
 	}
@@ -453,7 +459,7 @@ const cardAngles = [
 
 	.friend-sticker__meta span {
 		flex: 0 0 auto;
-		color: var(--signal-line);
+		color: var(--text-accent);
 		font: 800 0.55rem/1 "JetBrains Mono Variable", monospace;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -463,7 +469,7 @@ const cardAngles = [
 		display: -webkit-box;
 		margin: 0.35rem 0 0;
 		overflow: hidden;
-		color: color-mix(in srgb, currentColor 68%, transparent);
+		color: var(--text-secondary);
 		font-size: 0.88rem;
 		line-height: 1.55;
 		-webkit-box-orient: vertical;
@@ -474,7 +480,7 @@ const cardAngles = [
 		position: relative;
 		z-index: 1;
 		width: 0.95rem;
-		color: var(--signal-line);
+		color: var(--text-accent);
 		transition: color var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal);
 	}
 

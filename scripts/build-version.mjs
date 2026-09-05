@@ -1,8 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
+import { readSiteVersion } from './version-state.mjs';
 
 export default function buildVersion() {
-  const version = { id: randomUUID(), builtAt: new Date().toISOString() };
+  const id = process.env.TONKS_BUILD_ID || readSiteVersion(new URL('../site-version.json', import.meta.url));
+  const version = { id, builtAt: new Date().toISOString() };
   return {
     name: 'tonks-build-version',
     hooks: {

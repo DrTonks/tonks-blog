@@ -2,8 +2,8 @@
   <div class="update-emblem" aria-hidden="true">↻</div>
   <div class="update-copy">
     <span class="update-kicker">A FRESH EDITION</span>
-    <h2 id="build-update-title">这里，刚刚焕新了</h2>
-    <p role="status" aria-live="polite" data-update-description>有新的内容与体验等你。更新后，会回到你正在阅读的位置。</p>
+    <h2 id="build-update-title">检测到版本更新</h2>
+    <p role="status" aria-live="polite" data-update-description>上传了新的内容或者调整了页面的样式，更新拉取后获取最新内容</p>
     <div class="update-actions">
       <button type="button" data-update-now>立即更新 <span aria-hidden="true">↗</span></button>
       <button type="button" data-update-later>稍后再说</button>
@@ -27,14 +27,14 @@
   #build-update-notice[hidden] { display: none; }
   .update-emblem { flex: 0 0 2.6rem; height: 2.6rem; display: grid; place-items: center; border-radius: .8rem; color: var(--primary); background: var(--btn-regular-bg); font-size: 1.65rem; }
   .update-copy { min-width: 0; }
-  .update-kicker { display: block; color: var(--primary); font: 650 .58rem/1.5 monospace; letter-spacing: .18em; margin-bottom: .4rem; }
+  .update-kicker { display: block; color: var(--text-accent); font: 650 .58rem/1.5 monospace; letter-spacing: .18em; margin-bottom: .4rem; }
   h2 { margin: 0; font-size: 1.12rem; font-weight: 650; letter-spacing: -.03em; }
-  p { margin: .6rem 0 1.1rem; font-size: .85rem; line-height: 1.8; opacity: .7; }
+  p { margin: .6rem 0 1.1rem; font-size: .85rem; line-height: 1.8; color: var(--text-secondary); }
   .update-actions { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
   button { font-family: inherit; font-size: .82rem; font-weight: 600; line-height: 1.5; padding: .55rem .85rem; border-radius: .55rem; cursor: pointer; }
-  [data-update-now] { color: var(--card-bg); background: var(--primary); }
+  [data-update-now] { color: var(--card-bg); background: var(--text-accent); }
   [data-update-now] span { margin-left: .45rem; }
-  [data-update-later] { color: inherit; background: transparent; opacity: .65; }
+  [data-update-later] { color: var(--text-secondary); background: transparent; }
   button:hover { filter: brightness(.95); }
   button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
   :global(html.dark) #build-update-notice { color: #e7e8ea; }

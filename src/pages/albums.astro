@@ -60,7 +60,7 @@ const albumsData = await scanAlbums();
                 )}
                 
                 <!-- 元数据 -->
-                <div class="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500">
+                <div class="flex items-center justify-between text-xs text-[var(--text-muted)]">
                   <div class="flex items-center gap-4">
                     <span>{album.photos.length} {album.photos.length > 1 ? i18n(I18nKey.albumsPhotosCount) : i18n(I18nKey.albumsPhotoCount)}</span>
                     {album.location && (
@@ -147,8 +147,7 @@ const albumsData = await scanAlbums();
   p.page-intro-caption {
     font: 400 1rem/1.75 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
     letter-spacing: .025em;
-    color: var(--tw-prose-body, currentColor);
-    opacity: .72;
+    color: var(--text-secondary);
     margin-block: .65rem 0;
   }
 </style>

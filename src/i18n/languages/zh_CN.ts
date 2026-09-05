@@ -93,7 +93,7 @@ export const zh_CN: Translation = {
 
 	// 项目展示页面
 	[Key.projects]: "作品集",
-	[Key.projectsSubtitle]: "数字手迹，编译现实",
+	[Key.projectsSubtitle]: "陈列了一些实践与收获",
 	[Key.projectsAll]: "全部",
 	[Key.projectsWeb]: "网页应用",
 	[Key.projectsMobile]: "移动应用",

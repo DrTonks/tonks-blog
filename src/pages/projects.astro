@@ -79,7 +79,7 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
 
   .project-intro__copy p {
     margin: 0;
-    color: color-mix(in srgb, currentColor 58%, transparent);
+    color: var(--text-secondary);
     font-size: 1rem;
   }
 
@@ -162,7 +162,7 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
 
   .project-stat > span,
   .project-stat > small {
-    color: color-mix(in srgb, currentColor 48%, transparent);
+    color: var(--text-muted);
     font-size: 0.58rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -225,8 +225,7 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
   p.page-intro-caption {
     font: 400 1rem/1.75 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
     letter-spacing: .025em;
-    color: var(--tw-prose-body, currentColor);
-    opacity: .72;
+    color: var(--text-secondary);
     margin-block: .65rem 0;
   }
 </style>

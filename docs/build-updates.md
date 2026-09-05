@@ -2,7 +2,9 @@
 
 ## 行为
 
-每次 Astro 构建由 `scripts/build-version.mjs` 生成一个 UUID，同时注入 HTML 的 `tonks-build` meta 和前端运行时，输出根 `version.json`。不需要手动修改 package.json 版本；回滚部署也会被识别为不同构建。
+构建版本保存在受 Git 管理的 `site-version.json`。普通构建读取并沿用它，只有明确使用 `--bump-version` 才生成新 UUID；整个构建（Astro、字体子集、搜索索引）成功后才写回版本文件。HTML meta、运行时和根 `version.json` 使用同一 ID。`builtAt` 每次构建变化，但它不触发更新提示。
+
+不会根据文件变化自动升版：仅修改 `src/content/`、`public/` 不会升版，其他源码微调也不会。需要提醒读者更新时由你显式升级；该参数不受修改路径限制。
 
 生产模式首次进入、标签重新可见、恢复联网时检查；后台标签不检查，同一标签常规检查间隔不少于一分钟，长时间阅读每三分钟检查一次。开发模式不开启提示。请求使用 no-store 和随机查询参数；离线、超时或版本文件无效时不打断旧页面。
 
@@ -14,7 +16,16 @@
 
 ## 发布
 
-`pnpm build` 正常生成版本文件；本地仅 `astro build` 也会生成。`pnpm ship` 使用更新后的部署脚本。
+| 命令 | 行为 |
+| --- | --- |
+| `pnpm build` | 构建，沿用版本，不部署 |
+| `pnpm build --bump-version` | 构建成功后升级版本，不部署 |
+| `pnpm ship` | 构建并部署，沿用版本 |
+| `pnpm ship --bump-version` | 构建成功后升级版本，再部署 |
+
+升级后将 `site-version.json` 一并提交。普通 CI 执行 `pnpm astro build` 只校验构建，既不升级版本，也不部署。开发者直接使用 Astro CLI 时也读取版本文件；升级参数仅由上述 build/ship 命令处理。部署失败时保留本地已构建版本，下次普通 ship 可重试同一版本。
+
+版本文件初始值沿用本机已有构建 ID，不会因迁移策略额外随机生成新版本。
 
 - 先上传普通资源，再上传 HTML，根 version.json 最后发布。
 - 上传失败不发布后续阶段；保留旧指纹资源供旧页面使用。
