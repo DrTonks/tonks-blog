@@ -4,12 +4,9 @@ published: 2025-10-20
 pinned: false
 description: 覆盖贷款、投资分析与项目评估的教学工具，包含贷款还款、NPV/IRR、折旧、敏感性分析等功能。
 tags:
-  - 金融
-  - 贷款
-  - Vue3
-  - TypeScript
-  - 前端
-category: 课设开发
+  - 金融课设
+  - 开发笔记
+category: 电科生涯
 draft: false
 image: ./calculator.png
 ---

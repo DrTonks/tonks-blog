@@ -3,6 +3,7 @@
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/700.css";
 
+import PageScrollbar from "@components/control/PageScrollbar.astro";
 import AmbientBackground from "@components/AmbientBackground.astro";
 import BuildUpdateNotice from "@components/BuildUpdateNotice.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
@@ -376,6 +377,7 @@ const bannerOffset =
 		{shouldShowTopHighlight && <div class="top-gradient-highlight"></div>}
 		<ConfigCarrier></ConfigCarrier>
 		<AmbientBackground />
+        <PageScrollbar />
 		<script>
 			import "../utils/blog-views";
 			import "../utils/blog-community";
@@ -920,7 +922,7 @@ function setClickOutsideToClose(panel: string, ignores: string[]) {
 }
 setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
 setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
-setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
+// Search owns its panel state and outside-click handling.
 
 
 function initCustomScrollbar() {

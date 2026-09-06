@@ -6,7 +6,10 @@ import {Icon} from "astro-icon/components";
 <div class="back-to-top-wrapper block">
     <div id="back-to-top-btn" class="back-to-top-btn hide flex items-center rounded-2xl overflow-hidden transition"
          onclick="backToTop()">
-        <button aria-label="回到页头" title="回到页头" class="btn-card h-[3.75rem] w-[3.75rem]">
+        <svg class="reading-progress" viewBox="0 0 60 60" aria-hidden="true">
+            <path d="M16 2 H44 A14 14 0 0 1 58 16 V44 A14 14 0 0 1 44 58 H16 A14 14 0 0 1 2 44 V16 A14 14 0 0 1 16 2 Z" pathLength="100" />
+        </svg>
+        <button type="button" aria-label="回到页头" title="回到页头" class="btn-card h-[3.75rem] w-[3.75rem]">
             <Icon name="material-symbols:keyboard-arrow-up-rounded" class="mx-auto"></Icon>
         </button>
     </div>
@@ -18,6 +21,19 @@ import {Icon} from "astro-icon/components";
 </div>
 
 <style lang="stylus">
+  .reading-progress
+    position absolute
+    inset 0
+    width 100%
+    height 100%
+    z-index 1
+    pointer-events none
+    fill none
+    stroke var(--primary)
+    stroke-width 3
+    stroke-dasharray 100
+    stroke-dashoffset var(--reading-offset, 100)
+
   .back-to-top-wrapper
     width: 3.75rem
     height: 3.75rem
@@ -73,6 +89,36 @@ import {Icon} from "astro-icon/components";
 <script is:raw is:inline>
     function backToTop() {
         // 直接使用原生滚动，避免OverlayScrollbars冲突
-        window.scroll({top: 0, behavior: 'smooth'});
+        window.scroll({top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
     }
+</script>
+
+<script>
+// One passive scroll listener, at most one geometry read/update per animation frame.
+let frame = 0;
+function updateReadingProgress() {
+    frame = 0;
+    const control = document.querySelector<HTMLElement>("#back-to-top-btn");
+    if (!control) return;
+    const article = document.querySelector<HTMLElement>("#post-container .custom-md");
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+    const rect = article?.getBoundingClientRect();
+    const start = rect ? Math.min(maxScroll, Math.max(0, rect.top + scrollY - 80)) : 0;
+    const end = rect ? Math.min(maxScroll, Math.max(start, rect.bottom + scrollY - innerHeight)) : maxScroll;
+    const progress = end > start ? Math.max(0, Math.min(1, (scrollY - start) / (end - start))) : (scrollY >= start ? 1 : 0);
+    const percent = Math.round(progress * 100);
+    control.style.setProperty("--reading-offset", String(100 - progress * 100));
+    const label = `回到页头 · ${article ? "阅读" : "页面"}进度 ${percent}%`;
+    control.querySelector("button")?.setAttribute("title", label);
+    control.querySelector("button")?.setAttribute("aria-label", label);
+}
+function scheduleProgress() {
+    if (!frame) frame = requestAnimationFrame(updateReadingProgress);
+}
+window.addEventListener("scroll", scheduleProgress, { passive: true });
+window.addEventListener("resize", scheduleProgress, { passive: true });
+document.addEventListener("swup:page:view", scheduleProgress);
+document.addEventListener("astro:page-load", scheduleProgress);
+new ResizeObserver(scheduleProgress).observe(document.body);
+scheduleProgress();
 </script>

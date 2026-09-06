@@ -3,12 +3,8 @@ title: 前端笔记(一) · ECMAScript
 published: 2024-10-01
 description: 对ES6与ES7等语法规范的学习
 tags:
-  - Markdown
-  - ES6
-  - JavaScript
-  - 前端
-  - 学习
-category: 学习笔记
+  - 学习笔记
+category: 学无止境
 draft: false
 ---
 

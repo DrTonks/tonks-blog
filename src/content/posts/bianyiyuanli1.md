@@ -3,10 +3,10 @@ title: 编译原理(一) · LR(0)/SLR(1)文法
 published: 2025-09-30
 description: 大学生vs变异原理，你们知道吗
 tags:
-  - 文法分析
   - 编译原理
-  - 学习
-category: 学习笔记
+  - 软工日常
+  - 学习笔记
+category: 学无止境
 draft: false
 ---
 题型比较好理解，但是考得好难好复杂，算不过来了要。闲下来翻翻ppt和网课，倒点垃圾，希望期末能过：

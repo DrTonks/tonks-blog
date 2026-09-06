@@ -1,13 +1,11 @@
 ---
 title: 主页开发日志(三) · 评论“群聊”和AI审核系统
 published: 2026-09-15
-description: 自建一个后端评论系统，把评论区变成群聊并引入大模型审核，以及为什么不用Twikoo等系统
+description: 自建一个后端评论系统，把评论区变成群聊并引入大模型审核
 tags:
-  - 前端
-  - 后端
-  - Flask
-  - LLM
-category: 网站开发
+  - 开发笔记
+  - 主页更新
+category: 数字习作
 image: ./cover.png
 draft: true
 pinned: false

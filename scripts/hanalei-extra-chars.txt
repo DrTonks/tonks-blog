@@ -4,3 +4,6 @@
 # Normal page, post, navigation, tag, category and profile text is detected
 # automatically from dist HTML. Comments in this file are ignored.
 
+
+# DisplaySettings is client-only: keep its complete static labels in production.
+主题色点击切换到对应主题亮色主题暗色主题蓝色金色显示效果水波纹动画网格卡片

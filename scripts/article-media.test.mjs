@@ -53,3 +53,14 @@ test("audio rejects executable or ambiguous source URLs", () => {
 	])
 		assert.throws(() => transform(h("audio", { src })));
 });
+
+test("fold and quotation attributes remain text and preserve nested Markdown", () => {
+ const fold = transform(h("fold", {summary: '<img src=x onerror=alert(1)>', open:'false'}, [h('p','body')]));
+ assert.equal(fold.tagName, 'details');
+ assert.equal(fold.properties.open, false);
+ assert.equal(fold.children[0].children[0].type, 'text');
+ assert.equal(fold.children[1].children[0].tagName, 'p');
+ const quote = transform(h('quote', {author:'<script>bad</script>'}, [h('p','quote')]));
+ assert.equal(quote.children.at(-1).tagName, 'footer');
+ assert.equal(quote.children.at(-1).children[0].type, 'text');
+});

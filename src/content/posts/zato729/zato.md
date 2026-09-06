@@ -3,9 +3,8 @@ title: 爱这个世界和其中的一切
 published: 2026-07-29
 description: Z.A.T.O. 读后感   // 剧透警告！
 tags:
-  - 视觉小说
-  - 鉴赏
-  - 随笔
+  - 生活随笔
+  - 创作表达
 category: 有感而发
 draft: false
 pinned: false

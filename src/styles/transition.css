@@ -156,3 +156,17 @@ html.is-animating #swup-container .onload-animation { animation-play-state: paus
 /* Persisted sidebar widgets do not replay a whole-column entrance. */
 html.swup-enabled #sidebar.onload-animation { animation: none; opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { html.is-changing .transition-swup-fade { transition: none !important; } }
+
+/* A forwards-filled opacity animation creates a persistent backdrop root.
+   Keep the navbar glass in the same backdrop context before/during theme snapshots. */
+#navbar.onload-animation {
+    opacity: 1;
+    animation: navbar-enter 300ms ease-out backwards;
+}
+@keyframes navbar-enter {
+    from { transform: translateY(-.6rem); }
+    to { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #navbar.onload-animation { animation: none; }
+}

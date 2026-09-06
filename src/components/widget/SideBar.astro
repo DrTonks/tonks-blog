@@ -8,7 +8,7 @@ import { widgetManager } from "../../utils/widget-manager";
 import Announcement from "./Announcement.astro";
 import AISummary from "./AISummary.astro";
 import SidebarPrimaryWidget from "./SidebarPrimaryWidget.astro";
-import Categories from "./Categories.astro";
+import Index from "./Index.astro";
 import MusicPlayer from "./MusicPlayer.svelte";
 import Profile from "./Profile.astro";
 import Tags from "./Tags.astro";
@@ -32,7 +32,7 @@ const showSidebarToc = Boolean(siteConfig.toc.enable && headings?.length);
 const componentMap = {
 	profile: Profile,
 	announcement: Announcement,
-	categories: Categories,
+	categories: Index,
 	tags: Tags,
 	toc: TOC,
 	"music-player": MusicPlayer,

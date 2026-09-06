@@ -2,6 +2,7 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
+import { siteConfig } from "../../config";
 import { onMount } from "svelte";
 import { DARK_MODE, LIGHT_MODE } from "@constants/constants";
 import type { AccentPreset } from "@/types/config";
@@ -17,6 +18,17 @@ const accentPresets: { id: AccentPreset; label: string }[] = [
 	{ id: "blue", label: "蓝色" },
 	{ id: "gold", label: "金色" },
 ];
+
+let gridEnabled = false;
+function syncLayout() {
+ gridEnabled = (localStorage.getItem("postListLayout") || siteConfig.postListLayout.defaultMode) === "grid";
+}
+function toggleGrid() {
+ gridEnabled = !gridEnabled;
+ const layout = gridEnabled ? "grid" : "list";
+ localStorage.setItem("postListLayout", layout);
+ window.dispatchEvent(new CustomEvent("layoutChange", { detail: { layout } }));
+}
 
 let lightAccent = getAccent("light");
 let darkAccent = getAccent("dark");
@@ -60,18 +72,24 @@ function handleThemeModeKeydown(mode: "light" | "dark", event: KeyboardEvent) {
 }
 
 onMount(() => {
+ syncLayout();
+ window.addEventListener("layoutChange", syncLayout);
+ window.addEventListener("storage", syncLayout);
 	const handleThemeChange = () => requestAnimationFrame(syncThemeMode);
 	window.addEventListener("theme-change", handleThemeChange);
 	document.addEventListener("astro:page-load", handleThemeChange);
 	handleThemeChange();
 	return () => {
+ window.removeEventListener("layoutChange", syncLayout);
+ window.removeEventListener("storage", syncLayout);
 		window.removeEventListener("theme-change", handleThemeChange);
 		document.removeEventListener("astro:page-load", handleThemeChange);
 	};
 });
 </script>
 
-<div id="display-setting" class="float-panel float-panel-closed absolute transition-all w-80 right-4 px-4 py-4">
+<div id="display-setting" class="font-hanalei float-panel float-panel-closed absolute transition-all w-80 right-4 px-4 py-4">
+    {#if !siteConfig.themeColor.fixed}
     <div class="mb-3 flex flex-row items-center justify-between gap-2">
         <div class="relative ml-3 flex gap-2 text-lg font-bold text-neutral-900 transition dark:text-neutral-100
             before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
@@ -167,10 +185,11 @@ onMount(() => {
     </div>
 
 	<div class="my-4 h-px bg-black/10 dark:bg-white/10"></div>
+    {/if}
 	<div class="mb-2 ml-3 flex items-center gap-2 font-bold text-lg text-neutral-900 dark:text-neutral-100 relative
 		before:absolute before:-left-3 before:top-[0.33rem] before:h-4 before:w-1 before:rounded-md before:bg-[var(--primary)]">
 		<Icon icon="material-symbols:wallpaper-outline-rounded" class="text-[1.15rem]"></Icon>
-		壁纸效果
+		显示效果
 	</div>
 	<button
 		type="button"
@@ -186,10 +205,22 @@ onMount(() => {
 		</span>
 		<span class:enabled={wavesEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
 	</button>
+    {#if siteConfig.postListLayout.allowSwitch}
+    <button type="button" role="switch" aria-checked={gridEnabled} aria-label="网格卡片" on:click={toggleGrid}
+      class="wave-setting-row flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[var(--primary)] transition-colors hover:bg-[var(--btn-plain-bg-hover)]">
+      <span class="flex items-center gap-2 font-medium"><Icon icon="material-symbols:grid-view-outline-rounded" class="text-[1.25rem]" />网格卡片</span>
+      <span class:enabled={gridEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
+    </button>
+    {/if}
 </div>
 
 
 <style lang="stylus">
+    #display-setting
+      max-height calc(100dvh - 6rem)
+      overflow-y auto
+
+
     .accent-groups
       display grid
       gap 0.75rem

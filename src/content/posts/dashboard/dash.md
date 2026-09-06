@@ -4,13 +4,9 @@ published: 2025-10-23
 pinned: false
 description: 使用three.js与网上公开建模搭建的数据大屏，用于搭配Web管理端使用。
 tags:
-  - 数据可视化
-  - 贷款
-  - Vue3
-  - TypeScript
-  - Three.js
-  - 前端
-category: 课设开发
+  - 金融课设
+  - 开发笔记
+category: 电科生涯
 draft: false
 image: ./dashboard.png
 showCoverInContent: true

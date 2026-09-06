@@ -3,12 +3,9 @@ title: 主页开发日志(二) · 桌宠接入AI与工具调用
 published: 2026-08-31
 description: 给桌宠的状态机接入大语言模型的输出，同时让它具有类似Agent的工具调用能力
 tags:
-  - 后端
-  - Flask
-  - LLM
-  - Agent
-  - Tool-calling
-category: 网站开发
+  - 开发笔记
+  - 主页更新
+category: 数字习作
 image: ./cover.png
 draft: false
 pinned: false

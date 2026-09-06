@@ -3,10 +3,10 @@ title: 编译原理(二) · 语义分析
 published: 2025-11-22
 description: 考前预习
 tags:
-  - 语义分析
   - 编译原理
-  - 学习
-category: 学习笔记
+  - 软工日常
+  - 学习笔记
+category: 学无止境
 draft: false
 image: ./32.png
 ---

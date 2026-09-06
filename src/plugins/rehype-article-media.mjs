@@ -5,6 +5,23 @@ import { visit } from "unist-util-visit";
 export default function articleMedia() {
 	return (tree) => {
 		visit(tree, "element", (node) => {
+			if (node.tagName === "fold") {
+				const summary = String(node.properties.summary || "展开查看");
+				const open = node.properties.open === "true" || node.properties.open === true;
+				node.tagName = "details";
+				node.properties = { className: ["article-fold"], open };
+				node.children = [h("summary", summary), h("div", { className: ["article-fold-body"] }, node.children)];
+			}
+			if (node.tagName === "quote") {
+				const author = String(node.properties.author || "");
+				node.tagName = "blockquote";
+				node.properties = { className: ["article-quote"] };
+				if (author) node.children.push(h("footer", author));
+			}
+			if (node.tagName === "signature") {
+				node.tagName = "div";
+				node.properties = { className: ["article-signature"] };
+			}
 			// Footnote definitions supply previews, not an article chapter.
 			if (node.tagName === "h2" && node.properties.id === "footnote-label") node.tagName = "div";
 			if (

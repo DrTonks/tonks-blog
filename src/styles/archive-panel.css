@@ -419,3 +419,6 @@ html.dark .archive-shell {
     transition: none;
   }
 }
+
+/* Match the category stamps in the sidebar without widening the archive grid. */
+.entry-category-icon { display: inline-block; width: 1.15em; height: 1.15em; margin-right: .45em; vertical-align: -.18em; color: var(--text-accent); opacity: .8; }

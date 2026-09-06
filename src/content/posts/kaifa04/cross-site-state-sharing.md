@@ -3,11 +3,9 @@ title: 主页开发日志(四) · 网站之间的访客状态共享
 published: 2026-10-15
 description: 从 Cookie、匿名身份令牌到跨站主题同步，记录主页与博客的状态共享实践
 tags:
-  - 前端
-  - 后端
-  - Cookie
-  - Web安全
-category: 网站开发
+  - 开发笔记
+  - 主页更新
+category: 数字习作
 draft: true
 pinned: false
 ---

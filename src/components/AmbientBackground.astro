@@ -53,8 +53,12 @@
 					sideY = y - rightRect.top;
 				}
 				art.dataset.hoverSide = side;
-				art.style.setProperty("--ambient-side-x", `${sideX}px`);
-				art.style.setProperty("--ambient-side-y", `${sideY}px`);
+				// Keep the last mask center while fading out; changing coordinates
+				// when side becomes empty makes the highlight visibly jump away.
+				if (side) {
+					art.style.setProperty("--ambient-side-x", `${sideX}px`);
+					art.style.setProperty("--ambient-side-y", `${sideY}px`);
+				}
 			}
 		};
 		const loadLightArt = () => {
@@ -180,7 +184,7 @@
 	:global(.ambient-light-art__hover) {
 		opacity: 0;
 		mask-image: radial-gradient(circle 19rem at var(--ambient-side-x, 50%) var(--ambient-side-y, 20rem), black 0 28%, transparent 75%);
-		transition: opacity 160ms ease;
+		transition: opacity 300ms ease;
 	}
 	:global(.ambient-light-art[data-hover-side="left"] .ambient-light-art__side--left .ambient-light-art__hover),
 	:global(.ambient-light-art[data-hover-side="right"] .ambient-light-art__side--right .ambient-light-art__hover) { opacity: 0.15; }

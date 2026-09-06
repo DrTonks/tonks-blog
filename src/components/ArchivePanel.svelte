@@ -1,4 +1,5 @@
 <script lang="ts">
+import { getCategoryIcon } from "../utils/category-icons";
 import { onMount } from "svelte";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -154,7 +155,7 @@ $: groups = Object.entries(
                     <span class="entry-sequence">{String(postIndex + 1).padStart(2, "0")}</span>
                     <time datetime={asDate(post.data.published).toISOString()}>{formatDate(post.data.published)}</time>
                     <span class="entry-node" aria-hidden="true"><i></i></span>
-                    <span class="entry-title">{post.data.title}</span>
+                    <span class="entry-title"><svg class="entry-category-icon" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label={post.data.category || "文章"}><title>{post.data.category || "文章"}</title>{@html getCategoryIcon(post.data.category)}</svg>{post.data.title}</span>
                     <span class="entry-tags">{formatTag(post.data.tags)}</span>
                     <span class="entry-arrow" aria-hidden="true">→</span>
                   </a>

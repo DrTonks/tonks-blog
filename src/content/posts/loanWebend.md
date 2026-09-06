@@ -5,12 +5,9 @@ description: 综合设计——Web管理后台
 encrypted: false
 pinned: false
 tags:
-  - 金融
-  - 贷款
-  - Vue3
-  - JavaScript
-  - 前端
-category: 课设开发
+  - 金融课设
+  - 开发笔记
+category: 电科生涯
 draft: false
 ---
 

@@ -1,14 +1,11 @@
 ---
-title: 前端笔记(二) · Tailwind CSS初步
+title: 前端笔记(四) · Tailwind CSS初步
 published: 2025-10-10
 description: tailwindcss学习笔记1
 image: ""
 tags:
-  - Tailwind
-  - CSS
-  - 前端
-  - 学习
-category: 学习笔记
+  - 学习笔记
+category: 学无止境
 draft: false
 lang: ""
 ---

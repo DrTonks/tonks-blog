@@ -3,11 +3,8 @@ title: 使用Github Action部署网站的常见问题
 published: 2024-09-21
 description: 初步使用GitHub工作流部署网站可能遭遇的问题
 tags:
-  - Markdown
-  - Github
-  - npm
-  - pnpm
-category: 常见问题
+  - 踩坑避雷
+category: 答疑解惑
 draft: false
 ---
 

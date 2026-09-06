@@ -54,3 +54,16 @@ slug 是 /posts/ 后面的完整文章路径，不含前后斜线。标题、摘
 全站统一最大外框 78rem（1248px），侧栏保持 17.5rem（280px），文章仅限制正文行宽最大 760px、字号 19.2px、行高 1.75（33.6px）；手机 17px。页面之间切换不会改变外框或侧栏宽度。视口 768～1727px 使用左侧栏目录，1728px 起有足够外侧空间时使用右侧目录；手机保留移动目录入口。
 
 
+
+## 补充写作块
+
+- `:::fold{summary="展开细节"}` … `:::`：原生折叠块，支持 `open="true"`。
+- `:::quote{author="—— 作者"}` … `:::`：主题引用卡片，署名可省略。
+- `:::signature` … `:::`：右对齐落款。
+- 已有 `:::note[标题]` 等五种提示块及 `> [!NOTE]`；已有 `::github{repo="owner/repo"}`。
+
+完整可复制示例见 `src/content/posts/writing-guide/index.md`，设置 `draft: true`，只在开发模式预览。参考博客的音乐搜索指令不是通用 Markdown，本项目以音频指令替代。
+
+## 局部字体
+
+引用卡片已有半透明装饰引号。局部宋体风格可写 `<p class="article-serif-center">引文</p>` 和 `<p class="article-serif-right">署名</p>`；`article-serif` 只改变字体不改变对齐。系统字体在设备之间可能不同，跨设备固定字形需要 WOFF2 + `@font-face`，详见写作草稿。

@@ -390,7 +390,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			animationDelay: 50,
 		},
 		{
-			// 组件类型：分类组件
+			// 分类与标签合并为索引组件
 			type: "categories",
 			// 是否启用该组件
 			enable: true,
@@ -411,8 +411,8 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		{
 			// 组件类型：标签组件
 			type: "tags",
-			// 是否启用该组件
-			enable: true,
+			// 标签已包含在索引中，关闭独立标签组件
+			enable: false,
 			// 组件显示顺序
 			order: 5,
 			// 组件位置："sticky" 表示粘性定位

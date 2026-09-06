@@ -3,12 +3,9 @@ title: Codex高频写入SQLite日志问题与解决方案
 published: 2026-07-23
 description: 记录 Codex Desktop 的 logs_2.sqlite/WAL 高频写入问题，提供只读诊断、风险边界、SQLite trigger 缓解方案、验证数据与完整回滚流程。
 tags:
-  - Codex
-  - SQLite
-  - SSD
-  - 性能优化
-  - Windows
-category: 常见问题
+  - 偶尔捉虫
+  - 踩坑避雷
+category: 答疑解惑
 draft: false
 pinned: false
 image: ./1.png

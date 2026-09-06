@@ -75,3 +75,50 @@ div.article-spoiler > .spoiler-content { display: block; }
   background: var(--primary);
 }
 #post-container .custom-md h1::before { width: 5px; }
+
+/* Optional writing blocks share theme colors and keep native disclosure behavior. */
+.custom-md details.article-fold {
+  margin-block: 1.5em;
+  border: 1px solid var(--line-divider);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card-bg) 95%, var(--primary));
+  overflow: hidden;
+}
+.custom-md .article-fold > summary {
+  padding: .8em 1.1em;
+  cursor: pointer;
+  color: var(--tw-prose-headings);
+  font-weight: 600;
+}
+.custom-md .article-fold > summary::marker { color: var(--primary); }
+.custom-md .article-fold > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: -4px; }
+.custom-md .article-fold[open] > summary { border-bottom: 1px solid var(--line-divider); }
+.custom-md .article-fold-body { padding: .2em 1.1em; }
+.custom-md blockquote.article-quote {
+  margin-inline: 0;
+  padding: 1.1em 1.4em;
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--line-divider));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 96%, var(--primary));
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--primary) 8%, transparent);
+}
+.custom-md blockquote.article-quote::before {
+  content: "“";
+  position: absolute;
+  inset: .02em auto auto .08em;
+  width: auto;
+  height: auto;
+  background: none;
+  border-radius: 0;
+  font: 7rem/1 Georgia, serif;
+  color: var(--primary);
+  opacity: .14;
+  pointer-events: none;
+}
+.custom-md blockquote.article-quote { position: relative; overflow: hidden; padding-top: 1.6em; }
+.custom-md .article-serif { font-family: "Songti SC", "Noto Serif CJK SC", SimSun, serif; }
+.custom-md .article-serif-center { font-family: "Songti SC", "Noto Serif CJK SC", SimSun, serif; text-align: center; }
+.custom-md .article-serif-right { font-family: "Songti SC", "Noto Serif CJK SC", SimSun, serif; text-align: right; }
+.custom-md .article-quote > footer { text-align: right; font-size: .85em; color: var(--text-secondary); }
+.custom-md .article-signature { margin-block: 2em; text-align: right; font-size: .9em; color: var(--text-secondary); }
+.custom-md .article-signature::before { content: ''; display: block; width: 3rem; height: 2px; margin: 0 0 1em auto; background: var(--primary); }

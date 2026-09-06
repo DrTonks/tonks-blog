@@ -1,0 +1,74 @@
+---
+import { getCategoryList, getTagList } from "../../utils/content-utils";
+import { getTagUrl } from "../../utils/url-utils";
+import WidgetLayout from "./WidgetLayout.astro";
+const [categories, tags] = await Promise.all([getCategoryList(), getTagList()]);
+import { getCategoryIcon } from "../../utils/category-icons";
+
+interface Props { class?: string; style?: string; }
+const { class: className = "", style } = Astro.props;
+---
+<WidgetLayout name="索引" id="categories" class={className} style={style} titleClass="font-hanalei">
+ <div class="index-category-grid font-hanalei">
+  {categories.map(category => (
+   <a class="index-category" href={category.url} aria-label={`${category.name}，${category.count} 篇文章`}>
+    <svg class="index-symbol" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" set:html={getCategoryIcon(category.name)} />
+    <span class="index-count" aria-hidden="true">{category.count}</span>
+    <span class="index-name">{category.name}</span>
+   </a>
+  ))}
+ </div>
+ {tags.length > 0 && <>
+  <div id="index-tags" class="index-tags" inert aria-hidden="true">
+   <div class="index-tags-inner">
+    <div class="index-tag-grid font-hanalei">
+     {tags.map(tag => <a href={getTagUrl(tag.name)} title={`${tag.name} · ${tag.count} 篇文章`}>{tag.name}</a>)}
+    </div>
+   </div>
+  </div>
+  <button type="button" class="index-toggle font-hanalei" data-index-toggle aria-expanded="false" aria-controls="index-tags">
+   <span aria-hidden="true" class="index-toggle-icon">⋯</span><span data-index-label>更多</span>
+  </button>
+ </>}
+</WidgetLayout>
+<style>
+ .index-category-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 8px; padding: 9px 2px 4px; }
+ .index-category { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-width: 0; min-height: 94px; padding: 16px 2px 9px; border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--line-divider)); border-radius: 5px 9px 5px 7px; color: var(--text-accent); text-decoration: none; background: color-mix(in srgb, var(--primary) 5%, var(--card-bg)); box-shadow: 2px 3px 0 color-mix(in srgb, var(--primary) 10%, transparent); transform: rotate(-1deg); transition: transform 180ms ease, background-color 180ms ease; }
+ .index-category:nth-child(3n+2) { transform: rotate(1deg); }
+ .index-category::before { content: ''; position: absolute; top: -5px; left: calc(50% - 13px); width: 26px; height: 10px; transform: rotate(-6deg); background: repeating-linear-gradient(120deg, transparent 0 3px, color-mix(in srgb, var(--primary) 12%, transparent) 3px 5px), color-mix(in srgb, var(--primary) 15%, var(--card-bg)); border-inline: 1px dashed color-mix(in srgb, var(--primary) 30%, transparent); }
+ .index-category:hover { transform: translateY(-2px) rotate(0); background: color-mix(in srgb, var(--primary) 10%, var(--card-bg)); }
+ .index-category:focus-visible, .index-toggle:focus-visible, .index-tag-grid a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+ .index-symbol { display: block; width: 34px; height: 34px; flex-shrink: 0; color: var(--text-accent); pointer-events: none; }
+ .index-count { position: absolute; top: -6px; right: -4px; display: flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding-inline: 4px; border: 2px solid var(--card-bg); border-radius: 999px; background: var(--text-accent); color: var(--card-bg); font: 700 11px/1 system-ui, sans-serif; font-family: system-ui, sans-serif !important; font-variant-numeric: tabular-nums; box-shadow: 0 2px 4px color-mix(in srgb, var(--primary) 18%, transparent); }
+ .index-name { max-width: 100%; font-size: 13px; line-height: 1.5; text-align: center; overflow-wrap: anywhere; color: var(--text-secondary); }
+ .index-toggle { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; min-height: 32px; margin-top: 10px; border-radius: 7px; color: var(--text-accent); font-size: 14px; }
+ .index-toggle:hover { background: var(--btn-plain-bg-hover); }
+ .index-toggle-icon { font: 22px/1 system-ui; }
+ .index-tags { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 240ms ease, opacity 180ms ease; }
+ .index-tags.is-open { grid-template-rows: 1fr; opacity: 1; }
+ .index-tags-inner { min-height: 0; overflow: hidden; }
+ .index-tag-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; padding-top: 12px; margin-top: 3px; border-top: 1px solid var(--line-divider); }
+ .index-tag-grid a { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 31px; padding: 5px 2px; border-radius: 5px; background: var(--btn-regular-bg); color: var(--text-accent); font-size: 12.5px; line-height: 1.4; text-align: center; overflow-wrap: anywhere; transition: background-color 160ms ease; }
+ .index-tag-grid a:hover { background: var(--btn-regular-bg-hover); }
+ @media (prefers-reduced-motion: reduce) { .index-category, .index-tags, .index-tag-grid a { transition: none; } }
+</style>
+<script>
+ const indexWindow = window as Window & { __tonksIndexToggleReady?: boolean };
+ if (!indexWindow.__tonksIndexToggleReady) {
+ indexWindow.__tonksIndexToggleReady = true;
+ document.addEventListener("click", event => {
+  if (!(event.target instanceof Element)) return;
+  const button = event.target.closest<HTMLButtonElement>("[data-index-toggle]");
+  if (!button) return;
+  const panel = button.closest("widget-layout")?.querySelector<HTMLElement>("#index-tags");
+  if (!panel) return;
+  const open = button.getAttribute("aria-expanded") !== "true";
+  button.setAttribute("aria-expanded", String(open));
+  panel.classList.toggle("is-open", open);
+  panel.inert = !open;
+  panel.setAttribute("aria-hidden", String(!open));
+  const label = button.querySelector("[data-index-label]");
+  if (label) label.textContent = open ? "收起" : "更多";
+ });
+ }
+</script>

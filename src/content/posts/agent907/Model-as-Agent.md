@@ -3,10 +3,9 @@ title: “Harness”会被淘汰吗？
 published: 2026-09-07
 description: 对“模型即 Agent”的新范式的理解与对harness本身的讨论
 tags:
-  - Agent
-  - 学习
-  - Harness
-category: 学习笔记
+  - 学习笔记
+  - 问题探讨
+category: 学无止境
 draft: true
 pinned: false
 image: ./cover.jpg
@@ -20,7 +19,9 @@ image: ./cover.jpg
 
 Rich Sutton曾在19年发表过一篇短文《The Bitter Lesson》，指出**能够充分利用计算能力的通用方法最终会以压倒性优势胜出**，这是过去70年以来在AI研究领域的bitter lesson。
 
-> In computer chess, the methods that defeated the world champion, Kasparov, in 1997, were based on massive, deep search.
+:::quote{author="—— Rich Sutton · The Bitter Lesson"}
+In computer chess, the methods that defeated the world champion, Kasparov, in 1997, were based on massive, deep search.
+:::
 
 1997年击败卡斯帕罗夫的“深蓝”依靠的是大规模深度搜索，而非当时主流的人工知识方法。短期内的“harness”对模型的补强，长期来看都会被模型一点点内化为原生能力。比如工具调用策略，GPT5.6 和Kimi K3都能借助 API 内置工具，在服务端完成reAct编排循环；前者还支持“**自由格式工具调用**”，指GPT-5.6 被训练成在声明了 type: "custom" 的工具上，直接输出原始文本作为参数，而不是硬塞进 JSON字符串（从而不用处理 \\"、\\\n 这类转义），让Harness少了一层 JSON.parse。
 
