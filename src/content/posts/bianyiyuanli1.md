@@ -8,6 +8,7 @@ tags:
   - 学习笔记
 category: 学无止境
 draft: false
+image: /images/covers/lr.png
 ---
 题型比较好理解，但是考得好难好复杂，算不过来了要。闲下来翻翻ppt和网课，倒点垃圾，希望期末能过：
 

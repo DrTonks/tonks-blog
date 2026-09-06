@@ -6,6 +6,7 @@ tags:
   - 学习笔记
 category: 学无止境
 draft: false
+image: /images/covers/es6.png
 ---
 
 只是备忘录（当然根本记不住这么多特性......）。偶尔拿出来看一眼。

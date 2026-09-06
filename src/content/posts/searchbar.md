@@ -3,7 +3,7 @@ title: 前端笔记(二) · 动态搜索框和搜索逻辑
 published: 2024-10-01
 updated: 2024-11-29
 description: 二编增加搜索逻辑的实现
-image: ""
+image: /images/covers/search.png
 tags:
   - 学习笔记
 category: 学无止境

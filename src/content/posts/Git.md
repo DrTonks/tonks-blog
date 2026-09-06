@@ -6,6 +6,7 @@ tags:
   - 踩坑避雷
 category: 答疑解惑
 draft: false
+image: /images/covers/gitaction.png
 ---
 
 说是常见问题，其实只有一个。**在2020年，GitHub 开始将默认主分支的名称从 master 更改为 main。** 对于某些功能，这两者似乎能够自动识别替换，但在手写的yml文件中，出现master将导致Github Action无法正常识别其作用的分支，不能自动将其部署在指定域名。

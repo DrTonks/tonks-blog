@@ -1,14 +1,21 @@
 ---
 title: 文章样式备忘录
-published: 2024-01-01
-draft: true
+published: 2026-03-01
+draft: false
 category: 答疑解惑
 tags:
   - 学习笔记
+  - Markdown
 description: 文章内容的编辑与样式参考备忘录
+image: /images/projects/myblog.png
 ---
+最近更新了一下网站的md呈现格式，姑且先写在这里；后续如果有新增的内容，也直接补充在这里。
 
-这是一份样式备忘录。以下代码框可以直接复制，部分代码后附有实际效果。
+:::quote{author="2026-09-06 Tonks 四编"}
+为什么分类写的是“答疑解惑”呢，因为写出来是用来给我自己答疑的，绝不是为了凑标签数量
+:::
+
+这实际上是一份样式备忘录。
 
 # 基础 Markdown
 

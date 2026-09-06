@@ -2,7 +2,7 @@
 title: 前端笔记(四) · Tailwind CSS初步
 published: 2025-10-10
 description: tailwindcss学习笔记1
-image: ""
+image: /images/covers/tailwindcss.png
 tags:
   - 学习笔记
 category: 学无止境

@@ -1,5 +1,5 @@
 ---
-title: “Harness”会被淘汰吗？
+title: AGENT(三) · “Harness”会被淘汰吗？
 published: 2026-09-07
 description: 对“模型即 Agent”的新范式的理解与对harness本身的讨论
 tags:
@@ -25,11 +25,19 @@ In computer chess, the methods that defeated the world champion, Kasparov, in 19
 
 1997年击败卡斯帕罗夫的“深蓝”依靠的是大规模深度搜索，而非当时主流的人工知识方法。短期内的“harness”对模型的补强，长期来看都会被模型一点点内化为原生能力。比如工具调用策略，GPT5.6 和Kimi K3都能借助 API 内置工具，在服务端完成reAct编排循环；前者还支持“**自由格式工具调用**”，指GPT-5.6 被训练成在声明了 type: "custom" 的工具上，直接输出原始文本作为参数，而不是硬塞进 JSON字符串（从而不用处理 \\"、\\\n 这类转义），让Harness少了一层 JSON.parse。
 
+一个乍一看很吓人的案例是最近刚出的GPT 6 Astra的视觉理解能力：
+
+![](gpt6.jpg "各模型视觉结构理解对比（使用SVG复刻成图）")
+
+很多人说这是“画师”的末日（虽然每年都有人说），尽管看起来很厉害，不过这并不是多模态模型本身的能力，而是它编写了能将图片转为曲线的脚本来绘图的结果；就算没有Astra，让其他AI（如GLM-5.3 ，已经成功复现）使用该作图工具一样可以提取出这些信息；但是这个案例也确实可以体现出Astra确实很聪明，在寻找解决方案和调用工具这一块很厉害。
+
+就我个人的使用情况而言（改改网站做做题），GPT 6 Astra与之前未降智的GPT5.6 sol差距不大；
+
 还有个我印象很深刻的例子，前两个月在使用Claude Code时，我在没有安装grill-me skill的情况下（虽然matt的grill-me的skill本身就很描述就很简短），模型就会以相同的形式开始发起问卷、质疑我的观点等；这也许跟用户偏好（比如我的某些行为被写进system prompt）有关，但是它展示了一个未来Agent弱skill的可能性——好用的skill会自己集成进大模型里。
 
 ![](wenjuan.png "依旧是整个A/ 公司里最像人的")
 
-Anthropic联合创始人Boris Cherny认为，随着模型能力跃迁，许多外部的Harness能力（如工作流编排、治理控制）会被模型原生吸收，Harness会越来越薄。
+Anthropic联合创始人Boris Cherny认为，随着模型能力跃迁，许多外部的Harness能力（如工作流编排、治理控制）会被模型原生吸收，Harness会越来越薄。Fable 5 发布的时候也说过[Superpower](https://zhida.zhihu.com/search?content_id=796737094&content_type=Answer&match_order=1&q=Superpower&zhida_source=entity) 这样的skill在现在的强模型下就变成负优化，除了浪费 Token 毫无用处。
 
 油管上还有类似的观点（虽然我找的是B站搬运）：【Fable 5 和 GPT-5.6 不需要更好提示词，需要干净的系统配置】
 
@@ -71,11 +79,9 @@ Harness工程的原则适用于任何具备推理和工具调用能力的模型�
 
 Pi Agent 也是高度插件化的，两者的真正差别不在插件数量的多少，而在一个问题：扩展坐标由核心预定义，还是可以由插件通过 service/inject 关系持续生成？
 
-> 引用自B站视频【可逆不是逆向运行：DeepSeekHarness的架构分析和论文讲解】
-> 
-> "Pi Agent本质上是先规定“系统是一个 Agent”，并由核心 Agent Loop 定义主要控制流，然后在 Loop 的生命周期和数据通路上开放扩展点。也就是说，Pi 的扩展空间是 Ext(AgentLoop)：tools、hooks、providers、context 都是 Agent Loop 预先定义好的槽位，插件只能往槽里填。
-> 
-> 反观DSH，它的扩展空间是 Compose(Plugin₁, …, Pluginₙ)：插件可以 provide 任意服务，其他插件 inject 它——于是新的扩展点不是被核心”设计”出来的，而是被插件生态”涌现”出来的。"
+:::quote{author="—— 可逆不是逆向运行：DeepSeekHarness的架构分析和论文讲解"}
+Pi Agent本质上是先规定“系统是一个 Agent”，并由核心 Agent Loop 定义主要控制流，然后在 Loop 的生命周期和数据通路上开放扩展点。也就是说，Pi 的扩展空间是 Ext(AgentLoop)：tools、hooks、providers、context 都是 Agent Loop 预先定义好的槽位，插件只能往槽里填。反观DSH，它的扩展空间是 Compose(Plugin₁, …, Pluginₙ)：插件可以 provide 任意服务，其他插件 inject 它——于是新的扩展点不是被核心”设计”出来的，而是被插件生态”涌现”出来的。
+:::
 
 自由度更高是好事还是坏事，可能需要交给时间，这里就不讨论了。
 

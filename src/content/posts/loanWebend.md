@@ -9,6 +9,7 @@ tags:
   - 开发笔记
 category: 电科生涯
 draft: false
+image: /images/projects/loanriskctl.png
 ---
 
 管理端面向内部运维/风控。
