@@ -11,16 +11,19 @@ import { profileConfig } from '../config';
 
 <style>
   profile-signature {
+    --signature-max-width: 15rem;
     display: block;
     position: relative;
     z-index: 1;
     width: 78%;
-    max-width: 15rem;
+    max-width: var(--signature-max-width);
     aspect-ratio: 221 / 98;
-    margin: -2.65rem auto 0.5rem;
+    /* 40% of the responsive height: width × (98 / 221) × 0.4. */
+    margin: calc(min(78%, var(--signature-max-width)) * -0.1773755656) auto 0.5rem;
     pointer-events: none;
-    /* A narrow card-colored edge keeps the ink legible over the avatar. */
-    filter: drop-shadow(0 1px 1px var(--card-bg)) drop-shadow(0 0 0.7px var(--card-bg));
+    /* A crisp, narrow edge separates the ink without a soft glow. */
+    filter: drop-shadow(0 1px 0 var(--card-bg)) drop-shadow(0 -1px 0 var(--card-bg))
+      drop-shadow(1px 0 0 var(--card-bg)) drop-shadow(-1px 0 0 var(--card-bg));
   }
   .signature-reveal, .signature-ink {
     display: block;
@@ -40,7 +43,7 @@ import { profileConfig } from '../config';
     mask-repeat: no-repeat;
   }
   @media (max-width: 1023px) {
-    profile-signature { max-width: 10rem; margin-top: -2.2rem; }
+    profile-signature { --signature-max-width: 10rem; }
   }
   @media (prefers-reduced-motion: reduce) {
     [data-state="pending"] .signature-ink { visibility: visible; }
