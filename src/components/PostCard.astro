@@ -46,7 +46,9 @@ const coverWidth = "28%";
 const { remarkPluginFrontmatter } = await entry.render();
 ---
 
-<div class:list={["post-card card-base group/post flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} data-has-cover={String(hasCover)} style={style}>
+<!-- Links, cover images and selected text must not start a native drag session
+     when a reader presses inside the card and moves outside it. -->
+<div class:list={["post-card card-base group/post flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} data-has-cover={String(hasCover)} style={style} ondragstart="event.preventDefault()">
     <a
         href={url}
         class="post-card__hit"

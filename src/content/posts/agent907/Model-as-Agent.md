@@ -1,11 +1,11 @@
 ---
-title: AGENT(三) · “Harness”会被淘汰吗？
+title: “Harness”会被淘汰吗？
 published: 2026-09-07
 description: 对“模型即 Agent”的新范式的理解与对harness本身的讨论
 tags:
   - 学习笔记
   - 问题探讨
-category: 学无止境
+category: 勘惑求索
 draft: true
 pinned: false
 image: ./cover.jpg

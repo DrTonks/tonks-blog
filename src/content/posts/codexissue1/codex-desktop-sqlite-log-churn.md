@@ -5,7 +5,7 @@ description: 记录 Codex Desktop 的 logs_2.sqlite/WAL 高频写入问题，提
 tags:
   - 偶尔捉虫
   - 踩坑避雷
-category: 答疑解惑
+category: 勘惑求索
 draft: false
 pinned: false
 image: ./1.png
