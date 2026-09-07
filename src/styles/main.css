@@ -272,14 +272,8 @@ html {
         @apply relative;
     }
 
-    .dropdown-menu {
-        @apply absolute top-full left-0 pt-2 opacity-0 invisible pointer-events-none transition-all duration-200 ease-out transform translate-y-[-8px] z-50;
-    }
-
-    .dropdown-container:hover .dropdown-menu,
-    .dropdown-container:focus-within .dropdown-menu {
-        @apply opacity-100 visible pointer-events-auto translate-y-0;
-    }
+    /* DropdownMenu owns its visibility and motion; fading its outer wrapper
+       here would isolate the inner glass from the page backdrop. */
 
     .dropdown-container:hover .dropdown-arrow,
     .dropdown-container:focus-within .dropdown-arrow {
@@ -323,9 +317,6 @@ html {
     }
 
     /* 无障碍支持 */
-    .dropdown-container:focus-within .dropdown-menu {
-        @apply opacity-100 visible pointer-events-auto translate-y-0;
-    }
 
     .dropdown-item:focus {
         @apply outline-none;

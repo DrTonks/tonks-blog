@@ -83,7 +83,8 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 	}
 
 	.dropdown-menu {
-		@apply absolute top-full left-0 pt-4 opacity-0 invisible pointer-events-none transition-all duration-200 ease-out transform translate-y-[-8px] z-50;
+		@apply absolute top-full left-0 pt-4 invisible pointer-events-none transform translate-y-[-8px] z-50;
+		transition: transform 200ms ease-out, visibility 0s linear 200ms;
 		width: max-content;
 		min-width: 100%;
 		max-width: 12rem;
@@ -91,7 +92,9 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 
 	.dropdown-container:hover .dropdown-menu,
 	.dropdown-container:focus-within .dropdown-menu {
-		@apply opacity-100 visible pointer-events-auto translate-y-0;
+		@apply pointer-events-auto translate-y-0;
+		visibility: visible;
+		transition-delay: 0s;
 	}
 
 	.dropdown-container:hover .dropdown-arrow,
@@ -105,6 +108,22 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 		min-width: 0;
 		background: var(--industrial-surface);
 		border: 1px solid var(--signal-line);
+		/* Fade the glass itself: opacity on its parent changes the backdrop root
+		   midway through the animation and makes blur snap on at opacity: 1. */
+		opacity: 0;
+		transition: opacity 200ms ease-out;
+	}
+
+	.dropdown-container:hover .dropdown-content,
+	.dropdown-container:focus-within .dropdown-content,
+	.dropdown-menu.visible .dropdown-content {
+		opacity: 1;
+	}
+
+	.dropdown-menu.visible { transition-delay: 0s; }
+
+	@media (prefers-reduced-motion: reduce) {
+		.dropdown-menu, .dropdown-content { transition: none; }
 	}
 
 	.dropdown-item {
@@ -237,13 +256,13 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 	
 	function openDropdown(dropdown: HTMLElement, trigger: HTMLButtonElement, menu: HTMLElement) {
 		trigger.setAttribute('aria-expanded', 'true');
-		menu.classList.remove('opacity-0', 'invisible', 'pointer-events-none', 'translate-y-[-8px]');
-		menu.classList.add('opacity-100', 'visible', 'pointer-events-auto', 'translate-y-0');
+		menu.classList.remove('invisible', 'pointer-events-none', 'translate-y-[-8px]');
+		menu.classList.add('visible', 'pointer-events-auto', 'translate-y-0');
 	}
 	
 	function closeDropdown(dropdown: HTMLElement, trigger: HTMLButtonElement, menu: HTMLElement) {
 		trigger.setAttribute('aria-expanded', 'false');
-		menu.classList.add('opacity-0', 'invisible', 'pointer-events-none', 'translate-y-[-8px]');
-		menu.classList.remove('opacity-100', 'visible', 'pointer-events-auto', 'translate-y-0');
+		menu.classList.add('invisible', 'pointer-events-none', 'translate-y-[-8px]');
+		menu.classList.remove('visible', 'pointer-events-auto', 'translate-y-0');
 	}
 </script>

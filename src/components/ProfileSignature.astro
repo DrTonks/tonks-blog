@@ -1,0 +1,128 @@
+---
+import frames from '../assets/signature/frames.webp?url';
+import still from '../assets/signature/still.webp?url';
+import { profileConfig } from '../config';
+---
+
+<profile-signature data-frames={frames} data-still={still} style={`--signature-still: url("${still}")`}>
+  <span class="sr-only">{profileConfig.name}</span>
+  <span class="signature-reveal" aria-hidden="true"><span class="signature-ink"></span></span>
+</profile-signature>
+
+<style>
+  profile-signature {
+    display: block;
+    position: relative;
+    z-index: 1;
+    width: 78%;
+    max-width: 15rem;
+    aspect-ratio: 221 / 98;
+    margin: -2.65rem auto 0.5rem;
+    pointer-events: none;
+    /* A narrow card-colored edge keeps the ink legible over the avatar. */
+    filter: drop-shadow(0 1px 1px var(--card-bg)) drop-shadow(0 0 0.7px var(--card-bg));
+  }
+  .signature-reveal, .signature-ink {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .signature-ink {
+    background: var(--text-accent);
+    mask-image: var(--signature-still);
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+  }
+  [data-state="pending"] .signature-ink { visibility: hidden; }
+  [data-state="playing"] .signature-reveal {
+    mask-image: var(--signature-frames);
+    mask-size: 3600% 100%;
+    mask-repeat: no-repeat;
+  }
+  @media (max-width: 1023px) {
+    profile-signature { max-width: 10rem; margin-top: -2.2rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-state="pending"] .signature-ink { visibility: visible; }
+  }
+</style>
+
+<script>
+  import { delays } from '../assets/signature/timing.json';
+
+  // One entrance per document, including when Swup replaces or reconnects the card.
+  let played = false;
+  class ProfileSignature extends HTMLElement {
+    private observer?: IntersectionObserver;
+    private animation?: Animation;
+    private lifecycle?: AbortController;
+
+    connectedCallback() {
+      this.lifecycle = new AbortController();
+      this.dataset.state = 'complete';
+      if (played || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      this.dataset.state = 'pending';
+      const ready = () => {
+        this.observer = new IntersectionObserver((entries) => {
+          if (entries.some(entry => entry.isIntersecting)) {
+            this.observer?.disconnect();
+            void this.play(this.lifecycle!.signal);
+          }
+        }, { threshold: 0.5 });
+        this.observer.observe(this);
+      };
+      const loader = document.getElementById('initial-loading-screen');
+      if (loader && loader.dataset.complete !== 'true') {
+        window.addEventListener('tonks:initial-loader:done', ready, {
+          once: true, signal: this.lifecycle.signal,
+        });
+      } else ready();
+    }
+
+    private async play(signal: AbortSignal) {
+      const ink = this.querySelector<HTMLElement>('.signature-reveal');
+      if (!ink) return;
+      try {
+        const image = new Image();
+        image.src = this.dataset.frames!;
+        const stillImage = new Image();
+        stillImage.src = this.dataset.still!;
+        await Promise.all([image.decode(), stillImage.decode()]);
+        if (signal.aborted) return;
+        if (played || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          this.dataset.state = 'complete';
+          return;
+        }
+        played = true;
+        this.style.setProperty('--signature-frames', `url("${image.src}")`);
+        this.dataset.state = 'playing';
+        const duration = delays.reduce((sum, delay) => sum + delay, 0);
+        let elapsed = 0;
+        const keyframes = delays.map((delay, index) => {
+          const frame = { maskPosition: `${index / (delays.length - 1) * 100}% 0%`, offset: elapsed / duration, easing: 'steps(1, end)' };
+          elapsed += delay;
+          return frame;
+        });
+        keyframes.push({ maskPosition: '100% 0%', offset: 1, easing: 'steps(1, end)' });
+        this.animation = ink.animate(keyframes, { duration, fill: 'forwards' });
+        await this.animation.finished;
+      } catch {
+        // A missing animation asset still leaves a readable static signature.
+      } finally {
+        if (!signal.aborted) {
+          this.dataset.state = 'complete';
+          this.animation?.cancel();
+          this.animation = undefined;
+          this.style.removeProperty('--signature-frames');
+        }
+      }
+    }
+
+    disconnectedCallback() {
+      this.lifecycle?.abort();
+      this.observer?.disconnect();
+      this.animation?.cancel();
+    }
+  }
+  if (!customElements.get('profile-signature')) customElements.define('profile-signature', ProfileSignature);
+</script>

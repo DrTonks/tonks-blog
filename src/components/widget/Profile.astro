@@ -4,10 +4,11 @@ import { profileConfig } from "../../config";
 import { profileLinkAttributes, url } from "../../utils/url-utils";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
+import ProfileSignature from "../ProfileSignature.astro";
 ---
 
 <div class="card-base p-3 font-hanalei">
-	<div class="mb-3">
+	<div>
 		<a
 			aria-label="Go to About Page"
 			href={url("/about/")}
@@ -25,10 +26,9 @@ import TypewriterText from "../TypewriterText.astro";
 				fetchpriority="auto"
 			/>
 		</a>
+		<ProfileSignature />
 	</div>
 	<div class="px-2">
-		<div class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition">{profileConfig.name}</div>
-		<div class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"></div>
 		<div class="text-center text-neutral-400 mb-2.5 transition">
 			{profileConfig.typewriter?.enable ? (
 				<TypewriterText
