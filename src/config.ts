@@ -327,13 +327,13 @@ export const commentConfig: CommentConfig = {
 };
 
 export const announcementConfig: AnnouncementConfig = {
-	title: "公告2.0", // 公告标题
-	content: "大学生职业规划智能体项目——可预览", // 公告内容
+	title: "最近更新", // 公告标题
+	content: "“关于本站”页面翻新！", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
 		text: "Learn More", // 链接文本
-		url: "https://career-planner.tonks.top", // 链接 URL
+		url: "/about/", // 链接 URL
 		external: false, // 内部链接
 	},
 };

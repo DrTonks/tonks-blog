@@ -43,6 +43,8 @@ const style = Astro.props.style;
                         href={config.link.url} 
                         target={config.link.external ? "_blank" : "_self"}
                         rel={config.link.external ? "noopener noreferrer" : undefined}
+                        onclick="closeAnnouncement()"
+                        onauxclick="if (event.button === 1) closeAnnouncement()"
                         class="btn-regular rounded-lg px-3 py-1.5 text-sm font-medium active:scale-95 transition-transform"
                     >
                         {config.link.text}
@@ -81,18 +83,22 @@ const style = Astro.props.style;
         if (item && version) {
             // Hide the complete flex item so it no longer contributes a gap.
             item.hidden = true;
-            localStorage.setItem(CLOSED_VERSION_KEY, version);
-            localStorage.removeItem('announcementClosed');
+            try {
+                localStorage.setItem(CLOSED_VERSION_KEY, version);
+                localStorage.removeItem('announcementClosed');
+            } catch { /* Closing and following the link still work without storage. */ }
         }
     }
 
     function syncAnnouncementVisibility() {
         const { item, version } = getAnnouncementElements();
         if (!item || !version) return;
+        try {
         item.hidden = localStorage.getItem(CLOSED_VERSION_KEY) === version;
         // The legacy boolean cannot identify which announcement was closed.
         // Discard it so the current version is shown once and can be recorded.
         localStorage.removeItem('announcementClosed');
+        } catch { /* Storage is optional; keep the announcement available. */ }
     }
 
     // The script can run both on first load and after a Swup replacement.

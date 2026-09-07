@@ -1,0 +1,55 @@
+<!-- Independent of bundled modules: diagnostics must work when hydration fails. -->
+<script is:inline>
+(() => {
+  if (window.__tonksNavDiagnostics) return;
+  const key = 'tonks:navbar-load-diagnostic';
+  const errors = [];
+  const path = value => {
+    try { const u = new URL(value, location.href); return u.origin === location.origin ? u.pathname : '(external)'; }
+    catch { return '(unknown)'; }
+  };
+  const snapshot = () => ({
+    time: new Date().toISOString(),
+    page: location.pathname,
+    online: navigator.onLine,
+    readyState: document.readyState,
+    islands: [...document.querySelectorAll('#navbar astro-island')].map(e => ({
+      component: path(e.getAttribute('component-url')),
+      renderer: path(e.getAttribute('renderer-url')),
+      pending: e.hasAttribute('ssr'),
+    })),
+    controls: {
+      search: !!document.getElementById('search-switch'),
+      theme: !!document.getElementById('scheme-switch'),
+      settingsPanel: !!document.getElementById('display-setting'),
+    },
+    // No query strings, user inputs, cookies or external reporting.
+    failedResources: performance.getEntriesByType('resource')
+      .filter(e => path(e.name).startsWith('/_astro/') && e.responseStatus >= 400)
+      .slice(-12).map(e => ({ path: path(e.name), status: e.responseStatus })),
+    errors: errors.slice(),
+  });
+  window.__tonksNavDiagnostics = () => {
+    let previous = null;
+    try { previous = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch {}
+    return { current: snapshot(), previous };
+  };
+  window.addEventListener('error', event => {
+    const source = event.filename || event.target?.src;
+    if (!source || !path(source).startsWith('/_astro/') || errors.length >= 12) return;
+    errors.push({ path: path(source), type: event.message ? 'execution-error' : 'resource-error', line: event.lineno || null });
+  }, true);
+  const check = () => {
+    const report = snapshot();
+    if (!report.islands.some(e => e.pending)) return;
+    try { sessionStorage.setItem(key, JSON.stringify(report)); } catch {}
+    console.warn('[Tonks] 导航组件尚未初始化；可能是慢网络或脚本加载/执行失败。诊断：', report);
+  };
+  let timer;
+  const schedule = () => { clearTimeout(timer); timer = setTimeout(check, 15000); };
+  if (document.readyState === 'complete') schedule();
+  else window.addEventListener('load', schedule, { once: true });
+  window.addEventListener('pageshow', event => { if (event.persisted) schedule(); });
+  window.addEventListener('pagehide', () => { clearTimeout(timer); check(); });
+})();
+</script>
