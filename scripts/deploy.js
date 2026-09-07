@@ -3,7 +3,7 @@
   - Sync dist/* to remote /var/www/blog (or DEPLOY_REMOTE_DIR)
   - Uses SFTP via ssh2-sftp-client
   - Reads connection info from env vars to avoid hardcoding secrets
-  - Publishes resources, HTML, then root version.json; retains old assets/pages
+  - SFTP clears the target directory, then publishes resources, HTML, and version.json
   - SFTP requires OpenSSH posix-rename; individual files are atomic, the site is not
   - SFTP HTTP cache headers must be configured on the web server; S3 sets them here
   - S3 requires @aws-sdk/client-s3 installed in the deployment environment
@@ -13,7 +13,7 @@
     DEPLOY_USER   = root
     DEPLOY_PASS   = ********        (or use DEPLOY_KEY_FILE for SSH key)
     DEPLOY_REMOTE_DIR = /var/www/blog
-    CLEAN_REMOTE  = deprecated; ignored (old assets are retained)
+    CLEAN_REMOTE  = obsolete; SFTP always clears the target directory
     SSH_PORT      = 22              (optional)
     DEPLOY_KEY_FILE = C:\\Users\\<you>\\.ssh\\id_rsa (optional, prefer key over password)
 */
@@ -22,7 +22,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import SftpClient from "ssh2-sftp-client";
-import { cacheControlFor, collectDeploymentFiles, contentTypeFor, publishInOrder } from "./deploy-plan.mjs";
+import { cacheControlFor, collectDeploymentFiles, contentTypeFor, publishInOrder, resetRemoteDirectory } from "./deploy-plan.mjs";
 import { randomUUID } from "node:crypto";
 
 const log = (...args) => console.log("[deploy]", ...args);
@@ -110,11 +110,7 @@ function assertPreconditions() {
 async function main() {
 	assertPreconditions();
 	const files = collectDeploymentFiles(LOCAL_DIR, EXCLUDES);
-	if (fileCfg.cleanRemote !== undefined || process.env.CLEAN_REMOTE !== undefined) {
-		log("cleanRemote/CLEAN_REMOTE is deprecated and ignored; existing remote assets will be retained.");
-	}
 	log("Publishing resources, then HTML, then version.json. This is not an atomic whole-site directory switch.");
-	log("Old assets and removed pages are retained; mutable same-name resources may be replaced. Prune separately after old clients expire.");
 
 	if (PROVIDER === "sftp") {
 		const sftp = new SftpClient();
@@ -149,15 +145,8 @@ async function main() {
 		log(`Connecting to ${USER}@${HOST}:${PORT} ...`);
 		try {
 			await sftp.connect(connectConfig);
-			log("Connected. Ensuring remote directory exists:", REMOTE_DIR);
-			const exists = await sftp.exists(REMOTE_DIR);
-			if (!exists) {
-				await sftp.mkdir(REMOTE_DIR, true);
-			} else if (exists !== "d") {
-				throw new Error(
-					`Remote path exists but is not a directory: ${REMOTE_DIR}`,
-				);
-			}
+			log("Connected. Clearing and recreating remote directory:", REMOTE_DIR);
+			await resetRemoteDirectory(sftp, REMOTE_DIR);
 
 			log("Uploading files from", LOCAL_DIR, "to", REMOTE_DIR);
 			const directories = new Set([REMOTE_DIR]);
@@ -169,8 +158,7 @@ async function main() {
 					directories.add(directory);
 				}
 				// OpenSSH's atomic rename extension prevents readers seeing a partial
-				// file. Failure leaves the previous file/version intact; do not fall
-				// back to deleting live files on servers without this extension.
+				// file. Servers without this extension fail the deployment.
 				const temporary = `${destination}.deploy-${randomUUID()}.tmp`;
 				try {
 					await sftp.put(localPath, temporary);

@@ -3,7 +3,33 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { collectDeploymentFiles, publishInOrder, cacheControlFor, contentTypeFor } from "./deploy-plan.mjs";
+import { collectDeploymentFiles, publishInOrder, cacheControlFor, contentTypeFor, resetRemoteDirectory } from "./deploy-plan.mjs";
+
+test("remote reset deletes an existing directory before recreating it, or creates a missing one", async () => {
+	for (const exists of ["d", false]) {
+		const calls = [];
+		await resetRemoteDirectory({
+			exists: async () => exists,
+			rmdir: async (...args) => calls.push(["remove", ...args]),
+			mkdir: async (...args) => calls.push(["create", ...args]),
+		}, "/var/www/blog");
+		assert.deepEqual(calls, [...(exists ? [["remove", "/var/www/blog", true]] : []), ["create", "/var/www/blog", true]]);
+	}
+});
+
+test("remote reset rejects unsafe paths and stops on deletion failure", async () => {
+	for (const directory of ["/", "//", "relative", "/var/../", "/var\\www"]) {
+		await assert.rejects(resetRemoteDirectory({}, directory), /absolute non-root/);
+	}
+	await assert.rejects(resetRemoteDirectory({exists: async () => "l"}, "/var/www/blog"), /not a directory/);
+	let created = false;
+	await assert.rejects(resetRemoteDirectory({
+		exists: async () => "d",
+		rmdir: async () => { throw new Error("delete failed"); },
+		mkdir: async () => { created = true; },
+	}, "/var/www/blog"), /delete failed/);
+	assert.equal(created, false);
+});
 
 test("publishes every resource before HTML, and root version last", async () => {
 	const keys = ["version.json", "index.html", "posts/a/index.html", "_astro/a.js", "nested/version.json", "feed.xml"];
