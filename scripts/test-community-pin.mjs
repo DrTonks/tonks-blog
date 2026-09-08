@@ -1,6 +1,7 @@
 // Local browser regression: real comment UI, native fetch, isolated mock data.
 // PLAYWRIGHT_MODULE_PATH may point to a host-provided Playwright installation.
 import assert from 'node:assert/strict';
+import { checkEmojiPreview } from './check-emoji-preview.mjs';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
@@ -12,7 +13,7 @@ const { transform: transformAstro } = astroRequire('@astrojs/compiler');
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE_PATH ? pathToFileURL(process.env.PLAYWRIGHT_MODULE_PATH).href : 'playwright');
 const sourcePath = new URL('../src/utils/blog-community.ts', import.meta.url);
 const source = await readFile(sourcePath, 'utf8');
-const compiled = await build({stdin:{contents:source, resolveDir:fileURLToPath(new URL('../src/utils/', import.meta.url)),loader:'ts'}, bundle:true,write:false,format:'esm',loader:{'.css':'empty'},define:{'import.meta.env':'{}'}});
+const compiled = await build({stdin:{contents:source, resolveDir:fileURLToPath(new URL('../src/utils/', import.meta.url)),loader:'ts'}, bundle:true,write:false,format:'esm',outfile:'app.js',define:{'import.meta.env':'{}'}});
 const layout = await readFile(new URL('../src/layouts/Layout.astro', import.meta.url), 'utf8');
 const astro = await transformAstro(layout, {filename:'Layout.astro'});
 const clarity = astro.scripts.find(script => script.code?.includes('type ClarityApi'));
@@ -22,14 +23,16 @@ const base = {page:'about',website:'',created_at:'2026-09-08T00:00:00Z',status:'
 const comments = [
   {...base,id:1,root_id:1,parent_id:null,nickname:'Root',content:'Older root'},
   {...base,id:2,root_id:1,parent_id:1,nickname:'Reply',content:'A reply'},
-  {...base,id:19,root_id:19,parent_id:null,nickname:'Recent',content:'Recent root'},
+  {...base,id:19,root_id:19,parent_id:null,nickname:'Recent',content:'Recent root :laopu:happy-1:'},
 ];
 const patches = [];
-const fixture = '<!doctype html><html><head><meta charset="utf-8"></head><body><section data-community-comments="about"><form data-comment-form><input name="nickname"><input name="email"><input name="website"><textarea name="content"></textarea><button type="submit">发送</button></form><div data-comment-list></div></section><script type="module" src="/app.js"></script></body></html>';
+const fixture = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/app.css"></head><body><section data-community-comments="about"><form data-comment-form><input name="nickname"><input name="email"><input name="website"><textarea name="content"></textarea><button type="submit">发送</button></form><div data-comment-list></div></section><script type="module" src="/app.js"></script></body></html>';
 const server = createServer(async (req,res) => {
   const url = new URL(req.url,'http://localhost');
   const json = (status,body) => {res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body));};
-  if (url.pathname === '/app.js') {res.setHeader('Content-Type','text/javascript');return res.end(compiled.outputFiles[0].text);}
+  if (url.pathname === '/app.js') {res.setHeader('Content-Type','text/javascript');return res.end(compiled.outputFiles.find(f=>f.path.endsWith('app.js')).text);}
+  if (url.pathname === '/app.css') {res.setHeader('Content-Type','text/css');return res.end(compiled.outputFiles.find(f=>f.path.endsWith('app.css')).text);}
+  if (url.pathname === '/emojis/v1/laopu/happy-1.jpg') {res.setHeader('Content-Type','image/jpeg');return res.end(await readFile(new URL('../public/emojis/v1/laopu/happy-1.jpg',import.meta.url)));}
   if (url.pathname === '/clarity.js') {res.setHeader('Content-Type','text/javascript');return res.end(clarityJs);}
   if (url.pathname === '/api/calendar/events') return json(200,{success:true});
   if (url.pathname === '/api/blog/community/comments/about') return json(200,{success:true,comments,count:comments.length});
@@ -81,6 +84,13 @@ try {
   assert.equal(patches.length,5);
   assert.deepEqual(patches.slice(1).map(p=>p.payload.is_pinned),[true,false,true,false]);
   for(const patch of patches.slice(1)){assert.equal(patch.type,'application/json');assert.equal(patch.secret,'local-test-secret');}
+  await checkEmojiPreview(page,comment(19).locator('.community-inline-emoji'));
+  await page.setViewportSize({width:390,height:650});
+  await page.evaluate(()=>document.documentElement.classList.add('dark'));
+  await checkEmojiPreview(page,comment(19).locator('.community-inline-emoji'));
+  await comment(19).locator('.community-inline-emoji').click();
+  await page.locator('[data-community-comments]').evaluate(el=>el.remove());
+  await page.locator('.community-image-preview').waitFor({state:'detached'});
   await page.addScriptTag({url:origin+'/clarity.js',type:'module'});
   await page.waitForFunction(()=>typeof window.clarity==='function');
   await page.evaluate(()=>window.clarity('event','local-regression'));

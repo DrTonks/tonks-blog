@@ -1,17 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export async function resetRemoteDirectory(sftp, directory) {
-	const normalized = path.posix.normalize(directory);
-	if (!path.posix.isAbsolute(directory) || normalized === "/" || directory.includes("\\") || directory.split("/").includes("..")) {
-		throw new Error("Remote deployment directory must be an absolute non-root path without '..'");
-	}
-	const exists = await sftp.exists(normalized);
-	if (exists && exists !== "d") throw new Error(`Remote path exists but is not a directory: ${normalized}`);
-	if (exists) await sftp.rmdir(normalized, true);
-	await sftp.mkdir(normalized, true);
-}
-
 export function deploymentPhase(key) {
 	if (key === "version.json") return 2;
 	return /\.html?$/i.test(key) ? 1 : 0;

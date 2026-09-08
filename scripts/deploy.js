@@ -1,10 +1,10 @@
 /*
   Post-build deployment script
-  - Sync dist/* to remote /var/www/blog (or DEPLOY_REMOTE_DIR)
+  - Package dist and publish via an isolated, verified directory exchange
   - Uses SFTP via ssh2-sftp-client
   - Reads connection info from env vars to avoid hardcoding secrets
-  - SFTP clears the target directory, then publishes resources, HTML, and version.json
-  - SFTP requires OpenSSH posix-rename; individual files are atomic, the site is not
+  - SFTP uploads one tar.gz; Python verifies content before atomic activation
+  - Requires local Python 3.9+, remote Python 3 + Linux renameat2 on the same filesystem
   - SFTP HTTP cache headers must be configured on the web server; S3 sets them here
   - S3 requires @aws-sdk/client-s3 installed in the deployment environment
 
@@ -13,7 +13,7 @@
     DEPLOY_USER   = root
     DEPLOY_PASS   = ********        (or use DEPLOY_KEY_FILE for SSH key)
     DEPLOY_REMOTE_DIR = /var/www/blog
-    CLEAN_REMOTE  = obsolete; SFTP always clears the target directory
+    CLEAN_REMOTE  = obsolete; SFTP never clears the live site before uploading
     SSH_PORT      = 22              (optional)
     DEPLOY_KEY_FILE = C:\\Users\\<you>\\.ssh\\id_rsa (optional, prefer key over password)
 */
@@ -22,8 +22,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import SftpClient from "ssh2-sftp-client";
-import { cacheControlFor, collectDeploymentFiles, contentTypeFor, publishInOrder, resetRemoteDirectory } from "./deploy-plan.mjs";
-import { randomUUID } from "node:crypto";
+import { cacheControlFor, collectDeploymentFiles, contentTypeFor, publishInOrder } from "./deploy-plan.mjs";
+import { parseDeployArgs, validateSiteDir, createArchive, runRemote, publishArchive } from "./deploy-archive.mjs";
 
 const log = (...args) => console.log("[deploy]", ...args);
 const error = (...args) => console.error("[deploy]", ...args);
@@ -70,13 +70,15 @@ const EXCLUDES = Array.isArray(fileCfg.excludes)
 	? fileCfg.excludes
 	: [".DS_Store"];
 
-function assertPreconditions() {
-	if (!fs.existsSync(LOCAL_DIR)) {
+function assertPreconditions(action) {
+	if (["deploy", "pack"].includes(action) && !fs.existsSync(LOCAL_DIR)) {
 		throw new Error(
 			`Local build directory not found: ${LOCAL_DIR}. Run build first.`,
 		);
 	}
+	if (action === "pack") return;
 	if (PROVIDER === "sftp") {
+		validateSiteDir(REMOTE_DIR);
 		if (!HOST) {
 			throw new Error("DEPLOY_HOST is required for sftp provider");
 		}
@@ -89,6 +91,7 @@ function assertPreconditions() {
 			);
 		}
 	} else if (PROVIDER === "s3") {
+		if (action !== "deploy") throw new Error("This operation is only supported by SFTP");
 		// for s3, bucket and region should be provided via env or config file
 		const S3_BUCKET =
 			fileCfg.s3Bucket || process.env.S3_BUCKET || process.env.DEPLOY_S3_BUCKET;
@@ -108,9 +111,16 @@ function assertPreconditions() {
 }
 
 async function main() {
-	assertPreconditions();
-	const files = collectDeploymentFiles(LOCAL_DIR, EXCLUDES);
-	log("Publishing resources, then HTML, then version.json. This is not an atomic whole-site directory switch.");
+	const started = performance.now();
+	const action = parseDeployArgs(process.argv.slice(2));
+	assertPreconditions(action);
+	const files = ["deploy", "pack"].includes(action) ? collectDeploymentFiles(LOCAL_DIR, EXCLUDES) : [];
+	if (action === "pack") {
+		const archive = await createArchive(LOCAL_DIR, files);
+		log(JSON.stringify({ archivePath: archive.archivePath, sha256: archive.archiveSha256, files: files.length, rawBytes: archive.manifest.totalBytes, archiveBytes: archive.archiveBytes, seconds: archive.seconds }));
+		log("Local archive retained for inspection; remove its temporary directory when finished. No server connection made.");
+		return;
+	}
 
 	if (PROVIDER === "sftp") {
 		const sftp = new SftpClient();
@@ -145,31 +155,19 @@ async function main() {
 		log(`Connecting to ${USER}@${HOST}:${PORT} ...`);
 		try {
 			await sftp.connect(connectConfig);
-			log("Connected. Clearing and recreating remote directory:", REMOTE_DIR);
-			await resetRemoteDirectory(sftp, REMOTE_DIR);
-
-			log("Uploading files from", LOCAL_DIR, "to", REMOTE_DIR);
-			const directories = new Set([REMOTE_DIR]);
-			await publishInOrder(files, async ({ localPath, key }) => {
-				const destination = path.posix.join(REMOTE_DIR, key);
-				const directory = path.posix.dirname(destination);
-				if (!directories.has(directory)) {
-					await sftp.mkdir(directory, true);
-					directories.add(directory);
-				}
-				// OpenSSH's atomic rename extension prevents readers seeing a partial
-				// file. Servers without this extension fail the deployment.
-				const temporary = `${destination}.deploy-${randomUUID()}.tmp`;
-				try {
-					await sftp.put(localPath, temporary);
-					await sftp.posixRename(temporary, destination);
-				} catch (cause) {
-					await sftp.delete(temporary).catch(() => {});
-					throw cause;
-				}
-				log("Uploaded:", key);
-			});
-			log("Upload completed. Configure HTTP cache headers on the SFTP web server separately.");
+			if (action !== "deploy") {
+				log(JSON.stringify(await runRemote(sftp, { action, siteDir: REMOTE_DIR })));
+				return;
+			}
+			log("Preflight:", JSON.stringify(await runRemote(sftp, { action: "check", siteDir: REMOTE_DIR })));
+			const archive = await createArchive(LOCAL_DIR, files);
+			try {
+				log(`Packed ${files.length} files: ${(archive.manifest.totalBytes / 1048576).toFixed(2)} -> ${(archive.archiveBytes / 1048576).toFixed(2)} MiB in ${archive.seconds.toFixed(2)}s`);
+				const result = await publishArchive(sftp, REMOTE_DIR, archive, { log });
+				log("Release:", JSON.stringify(result));
+				log("Current and previous archives retained privately. Apache/PM2 are unchanged.");
+			} finally { try { archive.cleanup(); } catch (cause) { log("Local archive cleanup deferred:", cause.message); } }
+			log(`Deployment total: ${((performance.now() - started) / 1000).toFixed(2)}s`);
 		} finally {
 			await sftp.end();
 			log("Connection closed.");

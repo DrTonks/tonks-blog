@@ -1,4 +1,5 @@
 // Mirrored to blogExample/src/utils/community-emojis.ts by sync-community-emojis.mjs.
+import { attachEmojiPreview } from './community-image-preview'
 export interface EmojiItem { token: string; label: string; src?: string; text?: string }
 export interface EmojiGroup { id: string; label: string; items: EmojiItem[] }
 const basics = ['😀','😄','😊','🥰','🤔','😭','😳','👍','👏','🎉','❤️','✨','🌙','🍀','🐾','☕','📚','💻','🚀','👀']
@@ -64,6 +65,7 @@ export function renderEmojiText(element: HTMLElement, content: string) {
     img.src=part.emoji.src; img.alt=`[${part.emoji.label}]`; img.title=part.emoji.label
     img.className='community-inline-emoji'; img.width=48; img.height=48
     img.loading='lazy'; img.decoding='async'; img.draggable=false
+    attachEmojiPreview(img)
     img.addEventListener('error',()=>img.replaceWith(document.createTextNode(img.alt)),{once:true})
     return img
   })

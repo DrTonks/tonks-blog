@@ -13,7 +13,9 @@ try {
   const id = selectVersion(current, bump);
   const env = { ...process.env, TONKS_BUILD_ID: id };
   const run = (file, args = []) => {
+    const started = performance.now();
     const result = spawnSync(process.execPath, [resolve(root, file), ...args], { cwd: root, env, stdio: 'inherit', windowsHide: true });
+    console.log(`[timing] ${file}: ${((performance.now() - started) / 1000).toFixed(2)}s`);
     if (result.error) throw result.error;
     if (result.status !== 0) throw new Error(`${file} failed (${result.status ?? result.signal})`);
   };

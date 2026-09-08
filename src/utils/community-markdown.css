@@ -30,4 +30,15 @@
 .community-markdown--compact .community-markdown-table { max-height:180px }
 .community-markdown--compact > :first-child { margin-top:0 }
 .community-markdown--compact > :last-child { margin-bottom:0 }
-@media (hover:hover) { .community-markdown .community-inline-emoji:hover { position:relative; z-index:5; transform:scale(1.8) } }
+.community-inline-emoji[role=button] { cursor:zoom-in }
+.community-inline-emoji[role=button]:focus-visible { outline:2px solid currentColor; outline-offset:3px; border-radius:4px }
+.community-image-preview { position:fixed; inset:0; box-sizing:border-box; width:min(400px,calc(100vw - 32px)); max-width:calc(100vw - 32px); max-height:calc(100dvh - 32px); margin:auto; padding:16px; overflow:auto; border:1px solid #cbd5e1; border-radius:16px; background:#fff; color:#1e293b; box-shadow:0 20px 70px #0004; pointer-events:auto; text-align:center }
+.community-image-preview::backdrop { background:rgb(15 23 42 / 60%) }
+.community-image-preview__close { display:block; margin:0 0 12px auto; padding:8px 12px; border:0; border-radius:8px; background:#e2e8f0; color:inherit; cursor:pointer; font:inherit; font-size:14px }
+.community-image-preview__close:hover { background:#cbd5e1 }
+.community-image-preview__close:focus-visible { outline:2px solid #3b82f6; outline-offset:2px }
+.community-image-preview > img { display:block; width:100%; height:min(320px,55dvh); margin:0 auto; object-fit:contain }
+.community-image-preview > p { margin:12px 0 0; font-size:14px; overflow-wrap:anywhere }
+.dark .community-image-preview { background:#1e293b; border-color:#475569; color:#f1f5f9 }
+.dark .community-image-preview__close { background:#334155 }
+.dark .community-image-preview__close:hover { background:#475569 }
