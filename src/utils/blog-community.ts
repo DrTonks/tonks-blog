@@ -1610,7 +1610,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 		pinBusy = true;
 		try {
 			await readJson<{ success: boolean }>(await fetch(`${API_BASE}/blog/community/comments/${comment.id}/pin`, {
-				method: "PATCH", headers: adminHeaders(adminSecret),
+				method: "PATCH", headers: adminHeaders(adminSecret, true),
 				body: JSON.stringify({ is_pinned: !comment.is_pinned }),
 			}));
 			await load();

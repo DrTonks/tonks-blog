@@ -155,18 +155,20 @@ const bannerOffset =
 			gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-KRX3XGVH';
 			firstScript?.parentNode?.insertBefore(gtmScript, firstScript);
 		</script>
-		<script type="text/javascript">
+		<script>
 			type ClarityApi = ((...args: unknown[]) => void) & { q?: unknown[][] };
 			const clarityWindow = window as Window & { clarity?: ClarityApi };
-			const clarity: ClarityApi = (...args) => {
-				(clarity.q ??= []).push(args);
-			};
-			clarityWindow.clarity ??= clarity;
-			const clarityScript = document.createElement('script');
-			clarityScript.async = true;
-			clarityScript.src = 'https://www.clarity.ms/tag/tjr3vkhj8i';
-			const firstClarityScript = document.getElementsByTagName('script')[0];
-			firstClarityScript?.parentNode?.insertBefore(clarityScript, firstClarityScript);
+			if (!clarityWindow.clarity) {
+				const clarity: ClarityApi = (...args) => {
+					(clarity.q ??= []).push(args);
+				};
+				clarityWindow.clarity = clarity;
+				const clarityScript = document.createElement('script');
+				clarityScript.async = true;
+				clarityScript.src = 'https://www.clarity.ms/tag/tjr3vkhj8i';
+				const firstClarityScript = document.getElementsByTagName('script')[0];
+				firstClarityScript?.parentNode?.insertBefore(clarityScript, firstClarityScript);
+			}
 		</script>
 
 		<title>{pageTitle}</title>
