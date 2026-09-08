@@ -1,0 +1,33 @@
+.community-markdown { min-width:0; max-width:100%; white-space:normal; overflow-wrap:anywhere; line-height:1.65; text-align:start }
+.community-markdown p { margin:.5em 0; white-space:pre-wrap }
+.community-markdown > :first-child { margin-top:0 }
+.community-markdown > :last-child { margin-bottom:0 }
+.community-markdown h2,.community-markdown h3,.community-markdown h4,.community-markdown h5,.community-markdown h6 { font-weight:700; line-height:1.45; margin:.8em 0 .35em; font-size:1.12em }
+.community-markdown strong { font-weight:700 }
+.community-markdown em { font-style:italic }
+.community-markdown ul,.community-markdown ol { padding-left:1.5em; margin:.5em 0; list-style:disc }
+.community-markdown ol { list-style:decimal }
+.community-markdown li > p { margin:.15em 0 }
+.community-markdown li > input[type=checkbox] { margin-right:.45em }
+.community-markdown blockquote { border-left:3px solid currentColor; padding:.2em .7em; margin:.5em 0; opacity:.85 }
+.community-markdown code { font-family:ui-monospace,Consolas,monospace; font-size:.9em; background:color-mix(in srgb,currentColor 9%,transparent); border-radius:4px; padding:.1em .3em; white-space:pre-wrap }
+.community-markdown pre { max-width:100%; overflow:auto; margin:.6em 0; padding:.65em .8em; border-radius:6px; background:color-mix(in srgb,currentColor 7%,transparent); white-space:pre }
+.community-markdown pre code { background:none; padding:0; white-space:pre; overflow-wrap:normal }
+.community-markdown a { color:inherit; text-decoration:underline; text-underline-offset:3px }
+.community-markdown a.community-article-mention { display:inline; padding:.1em .35em; border-radius:4px; background:color-mix(in srgb,currentColor 10%,transparent); font-weight:600; box-decoration-break:clone; -webkit-box-decoration-break:clone }
+.community-article-mention::before { content:'@'; margin-right:.2em; opacity:.65 }
+.community-markdown-table { max-width:100%; overflow-x:auto; margin:.6em 0 }
+.community-markdown table { border-collapse:collapse; font-size:.92em; width:max-content; min-width:100% }
+.community-markdown td,.community-markdown th { border:1px solid color-mix(in srgb,currentColor 25%,transparent); padding:.35em .6em; white-space:normal }
+.community-markdown hr { margin:.75em 0; border:0; border-top:1px solid color-mix(in srgb,currentColor 25%,transparent) }
+.community-markdown .community-inline-emoji { display:inline-block!important; width:48px!important; height:48px!important; object-fit:contain; vertical-align:middle; margin:2px }
+.community-markdown .community-markdown-image { display:inline-block; max-width:100%; max-height:320px; object-fit:contain; border-radius:6px; vertical-align:middle }
+.community-markdown--compact .community-markdown-image { max-height:180px }
+.community-markdown--compact { line-height:1.5 }
+.community-markdown--compact p { margin:.3em 0 }
+.community-markdown--compact h2,.community-markdown--compact h3,.community-markdown--compact h4,.community-markdown--compact h5,.community-markdown--compact h6 { font-size:1em; margin:.45em 0 .2em }
+.community-markdown--compact pre { max-height:180px; font-size:.9em }
+.community-markdown--compact .community-markdown-table { max-height:180px }
+.community-markdown--compact > :first-child { margin-top:0 }
+.community-markdown--compact > :last-child { margin-bottom:0 }
+@media (hover:hover) { .community-markdown .community-inline-emoji:hover { position:relative; z-index:5; transform:scale(1.8) } }

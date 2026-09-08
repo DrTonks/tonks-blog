@@ -1,0 +1,17 @@
+.community-article-control { position:relative; display:inline-flex; align-items:center; font-size:13px; font-weight:400; line-height:1.5; white-space:normal }
+.community-article-toggle { padding:4px 8px; border-radius:6px; cursor:pointer; color:inherit }
+.community-article-toggle:hover { background:color-mix(in srgb,currentColor 9%,transparent) }
+.community-article-picker { position:fixed; z-index:9999; box-sizing:border-box; font:13px/1.5 system-ui,sans-serif; width:min(380px,calc(100vw - 24px)); max-height:min(420px,65vh); overflow:auto; border:1px solid #d8dee8; border-radius:10px; padding:12px; background:#fff; color:#243044; box-shadow:0 12px 36px #0003; text-align:left }
+.community-article-picker[hidden] { display:none }
+.dark .community-article-picker { background:#202631; color:#e5eaf2; border-color:#475163 }
+.community-article-picker input { display:block; width:100%; padding:8px; margin-bottom:8px; border:1px solid #8b95a666; border-radius:6px; background:transparent; color:inherit; font:inherit }
+.community-article-results { max-height:260px; overflow-y:auto; overscroll-behavior:contain }
+.community-article-row { display:flex; gap:6px; border-bottom:1px solid #8b95a633; align-items:center }
+.community-article-title { flex:1; min-width:0; text-align:left; padding:9px 4px; overflow-wrap:anywhere }
+.community-article-headings { flex:none; font-size:11px; padding:6px; opacity:.75 }
+.community-article-heading { display:block; text-align:left; width:100%; padding:8px 10px; border-left:2px solid #8b95a655; overflow-wrap:anywhere }
+.community-article-picker button { font-family:inherit; color:inherit; cursor:pointer }
+.community-article-picker button:hover { background:color-mix(in srgb,currentColor 8%,transparent) }
+.community-article-picker button:focus-visible,.community-article-picker input:focus-visible { outline:2px solid #568bde; outline-offset:2px }
+.community-article-picker p { margin:8px 0 0; font-size:11px; opacity:.7 }
+.community-article-close { display:block; margin:5px 0 0 auto; padding:4px 8px }

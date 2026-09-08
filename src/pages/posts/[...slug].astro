@@ -19,6 +19,7 @@ import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import BlogLike from "../../components/community/BlogLike.astro";
 import { profileConfig, siteConfig } from "../../config";
+import {findAuthoredSummary} from "../../utils/ai-summary";
 import manualSummaries from "../../content/ai-summaries.json";
 import {
 	formatDateToISOString,
@@ -34,7 +35,7 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const MAX_AI_SUMMARY_LENGTH = 180;
-const authoredSummary = (manualSummaries as Record<string, string>)[entry.slug]?.trim();
+const authoredSummary = findAuthoredSummary(manualSummaries, entry.slug, entry.id);
 const summarySource = authoredSummary || entry.data.description || entry.data.title;
 const summaryCharacters = Array.from(summarySource.trim());
 const aiSummary = {

@@ -1,3 +1,8 @@
+import {renderCommunityMarkdown} from "./community-markdown";
+import {attachArticlePicker} from "./community-articles";
+import "./community-markdown.css";
+import "./community-articles.css";
+import { getEmojiGroups, loadEmojiManifest, subscribeEmojis, renderEmojiText, recentEmojis, rememberEmoji } from "./community-emojis";
 import {
 	getCommunityIdentityToken,
 	getCommunityProfile,
@@ -12,72 +17,245 @@ const API_BASE = (import.meta.env.PUBLIC_SLEEPY_API_BASE || "/api").replace(
 const ADMIN_KEY = "admin_secret";
 const FRIEND_APPLICATION_STORAGE_KEY = "tonks_friend_application_tokens";
 const FRIEND_APPLICATION_TOKEN_LIMIT = 20;
-const COMMUNITY_EMOJIS = [
-	"😀",
-	"😄",
-	"😊",
-	"🥰",
-	"🤔",
-	"😭",
-	"😳",
-	"👍",
-	"👏",
-	"🎉",
-	"❤️",
-	"✨",
-	"🌙",
-	"🍀",
-	"🐾",
-	"☕",
-	"📚",
-	"💻",
-	"🚀",
-	"👀",
-] as const;
+let emojiPickerId = 0;
+const commentEmojiContents = new WeakMap<HTMLElement, string>();
+
+function subscribeCommentEmojis(section: HTMLElement, list: HTMLElement): void {
+	const unsubscribe = subscribeEmojis(() => {
+		if (!section.isConnected) return;
+		for (const element of list.querySelectorAll<HTMLElement>(".community-comment__content")) {
+			const content = commentEmojiContents.get(element);
+			if (content !== undefined) renderCommunityMarkdown(element, content);
+		}
+	});
+	const observer = new MutationObserver(() => {
+		if (!section.isConnected) {
+			unsubscribe();
+			observer.disconnect();
+		}
+	});
+	observer.observe(document.body, { childList: true, subtree: true });
+}
 
 function attachCommunityEmojiPicker(
 	textarea: HTMLTextAreaElement,
 	host: HTMLElement,
 ): void {
 	if (host.querySelector("[data-community-emoji-toggle]")) return;
+	textarea.maxLength = 800;
+	const controller = new AbortController();
+	const { signal } = controller;
+	const toolbar = document.createElement("div");
+	toolbar.className = "community-emoji-toolbar";
 	const toggle = document.createElement("button");
 	toggle.type = "button";
 	toggle.className = "community-emoji-toggle";
 	toggle.dataset.communityEmojiToggle = "true";
 	toggle.setAttribute("aria-label", "选择表情");
 	toggle.setAttribute("aria-expanded", "false");
-	toggle.textContent = "☺";
-
+	toggle.textContent = "☺ 表情";
 	const picker = document.createElement("div");
+	picker.id = `community-emoji-picker-${++emojiPickerId}`;
 	picker.className = "community-emoji-picker";
 	picker.hidden = true;
-	picker.setAttribute("role", "listbox");
-	picker.setAttribute("aria-label", "表情");
-	for (const emoji of COMMUNITY_EMOJIS) {
-		const button = document.createElement("button");
-		button.type = "button";
-		button.setAttribute("role", "option");
-		button.textContent = emoji;
-		button.addEventListener("click", () => {
-			const start = textarea.selectionStart ?? textarea.value.length;
-			const end = textarea.selectionEnd ?? start;
-			const next = `${textarea.value.slice(0, start)}${emoji}${textarea.value.slice(end)}`;
-			if (next.length > textarea.maxLength) return;
-			textarea.value = next;
-			textarea.dispatchEvent(new Event("input", { bubbles: true }));
-			picker.hidden = true;
-			toggle.setAttribute("aria-expanded", "false");
-			textarea.focus();
-			const caret = start + emoji.length;
-			textarea.setSelectionRange(caret, caret);
-		});
-		picker.append(button);
-	}
-	toggle.addEventListener("click", () => {
-		picker.hidden = !picker.hidden;
-		toggle.setAttribute("aria-expanded", String(!picker.hidden));
+	picker.setAttribute("role", "region");
+	picker.setAttribute("aria-label", "选择表情");
+	toggle.setAttribute("aria-controls", picker.id);
+	const header = document.createElement("div");
+	header.className = "community-emoji-header";
+	const searchToggle = document.createElement("button");
+	searchToggle.type = "button";
+	searchToggle.className = "community-emoji-search-toggle";
+	searchToggle.setAttribute("aria-label", "搜索表情");
+	searchToggle.title = "搜索表情";
+	searchToggle.setAttribute("aria-expanded", "false");
+	searchToggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>';
+	const searchRow = document.createElement("div");
+	searchRow.id = `${picker.id}-search`;
+	searchRow.className = "community-emoji-search";
+	searchRow.hidden = true;
+	searchToggle.setAttribute("aria-controls", searchRow.id);
+	const search = document.createElement("input");
+	search.className = "community-emoji-search-input";
+	search.type = "search";
+	search.placeholder = "搜索全部表情";
+	search.setAttribute("aria-label", "搜索全部表情");
+	const searchClose = document.createElement("button");
+	searchClose.type = "button";
+	searchClose.className = "community-emoji-search-close";
+	searchClose.setAttribute("aria-label", "关闭搜索");
+	searchClose.title = "关闭搜索";
+	searchClose.textContent = "×";
+	searchRow.append(search, searchClose);
+	const groups = document.createElement("div");
+	groups.className = "community-emoji-groups";
+	groups.setAttribute("role", "group");
+	groups.setAttribute("aria-label", "表情分组");
+	const grid = document.createElement("div");
+	grid.className = "community-emoji-grid";
+	grid.id = `${picker.id}-results`;
+	search.setAttribute("aria-controls", grid.id);
+	const more = document.createElement("button");
+	more.type = "button";
+	more.className = "community-emoji-more";
+	more.textContent = "加载更多";
+	more.setAttribute("aria-controls", grid.id);
+	more.hidden = true;
+	const message = document.createElement("p");
+	message.className = "community-emoji-message";
+	message.setAttribute("role", "status");
+	const close = document.createElement("button");
+	close.type = "button";
+	close.textContent = "关闭表情";
+	close.className = "community-emoji-close";
+	header.append(groups, searchToggle);
+	picker.append(header, searchRow, grid, message, more, close);
+	const preview = document.createElement("div");
+	preview.className = "community-comment-preview";
+	preview.setAttribute("role", "region");
+	preview.setAttribute("aria-label", "留言预览");
+	const caption = document.createElement("strong");
+	caption.textContent = "预览";
+	const previewBody = document.createElement("div");
+	preview.append(caption, previewBody);
+	toolbar.append(toggle);
+	const detachArticles = attachArticlePicker(textarea, toolbar);
+	host.append(toolbar, picker, preview);
+	let activeGroup = getEmojiGroups()[0]?.id || "";
+	let visibleLimit = 80;
+	const requestManifest = () => {
+		if (signal.aborted) return;
+		// The shared loader deduplicates pending requests and caches successful loads.
+		void loadEmojiManifest().catch(() => { /* Basic groups remain usable offline. */ });
+	};
+	const setSearchOpen = (open: boolean, restoreFocus = false) => {
+		searchRow.hidden = !open;
+		searchToggle.setAttribute("aria-expanded", String(open));
+		searchToggle.setAttribute("aria-label", open ? "关闭搜索" : "搜索表情");
+		searchToggle.title = open ? "关闭搜索" : "搜索表情";
+		if (open) search.focus();
+		else {
+			search.value = "";
+			visibleLimit = 80;
+			refresh();
+			if (restoreFocus) searchToggle.focus();
+		}
+	};
+	const setOpen = (open: boolean, restoreFocus = false) => {
+		picker.hidden = !open;
+		toggle.setAttribute("aria-expanded", String(open));
+		if (open) {
+			refresh();
+			requestManifest();
+			groups.querySelector<HTMLButtonElement>('[aria-pressed="true"]')?.focus();
+		} else {
+			if (!searchRow.hidden || search.value) setSearchOpen(false);
+			if (restoreFocus) toggle.focus();
+		}
+	};
+	const updatePreview = () => {
+		preview.hidden = !textarea.value;
+		renderCommunityMarkdown(previewBody, textarea.value);
+	};
+	const refresh = () => {
+		const available = [{ id: "__recent", label: "最近使用", items: recentEmojis() }, ...getEmojiGroups()];
+		if (!available.some((group) => group.id === activeGroup)) activeGroup = available[1]?.id || "__recent";
+		const focusedGroup = groups.contains(document.activeElement)
+			? (document.activeElement as HTMLElement).dataset.emojiGroup : undefined;
+		groups.replaceChildren();
+		for (const group of available) {
+			const button = document.createElement("button");
+			button.type = "button";
+			button.textContent = group.label;
+			button.dataset.emojiGroup = group.id;
+			button.setAttribute("aria-pressed", String(group.id === activeGroup));
+			button.addEventListener("click", () => { activeGroup = group.id; setSearchOpen(false); });
+			groups.append(button);
+			if (focusedGroup === group.id) button.focus();
+		}
+		const query = search.value.trim().toLocaleLowerCase();
+		const items = query
+			? getEmojiGroups().flatMap((group) => group.items.filter((item) =>
+				`${group.label} ${item.label} ${item.token} ${item.text ?? ""}`.toLocaleLowerCase().includes(query)))
+			: available.find((group) => group.id === activeGroup)?.items || [];
+		grid.replaceChildren();
+		const seen = new Set<string>();
+		for (const item of items) {
+			if (seen.has(item.token)) continue;
+			seen.add(item.token);
+			if (seen.size > visibleLimit) continue;
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = "community-emoji-item";
+			button.title = item.label;
+			button.setAttribute("aria-label", item.label);
+			renderEmojiText(button, item.text ?? item.token);
+			button.addEventListener("click", () => {
+				const start = textarea.selectionStart;
+				const end = textarea.selectionEnd;
+				const insertion = item.text ?? item.token;
+				if (textarea.value.length - (end - start) + insertion.length > 800) {
+					message.textContent = "最多 800 字，剩余空间不足以插入这个表情。";
+					return;
+				}
+				textarea.setRangeText(insertion, start, end, "end");
+				textarea.dispatchEvent(new Event("input", { bubbles: true }));
+				rememberEmoji(item);
+				setOpen(false);
+				textarea.focus();
+			});
+			grid.append(button);
+		}
+		const displayed = Math.min(visibleLimit, seen.size);
+		more.hidden = displayed >= seen.size;
+		more.setAttribute("aria-label", `加载更多表情，下一批 ${Math.min(80, seen.size - displayed)} 个`);
+		message.textContent = seen.size ? `已显示 ${displayed} / ${seen.size} 个表情` : query ? "没有匹配的表情" : "暂无表情";
+	};
+	toggle.addEventListener("click", () => setOpen(picker.hidden), { signal });
+	close.addEventListener("click", () => setOpen(false, true), { signal });
+	searchToggle.addEventListener("click", () => setSearchOpen(searchRow.hidden, true), { signal });
+	searchClose.addEventListener("click", () => setSearchOpen(false, true), { signal });
+	search.addEventListener("keydown", (event) => {
+		// Searching must never submit the surrounding comment form.
+		if (event.key === "Enter") event.preventDefault();
+	}, { signal });
+	search.addEventListener("input", () => { visibleLimit = 80; refresh(); }, { signal });
+	more.addEventListener("click", () => {
+		const previousCount = grid.childElementCount;
+		visibleLimit += 80;
+		refresh();
+		// Continue keyboard navigation at the first newly revealed result.
+		(grid.children[previousCount] as HTMLElement | undefined)?.focus();
+	}, { signal });
+	textarea.addEventListener("input", updatePreview, { signal });
+	host.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && !picker.hidden) {
+			event.preventDefault();
+			event.stopPropagation();
+			if (!searchRow.hidden) setSearchOpen(false, true);
+			else setOpen(false, true);
+		}
+	}, { signal });
+	document.addEventListener("pointerdown", (event) => {
+		if (event.target instanceof Node && !host.contains(event.target)) setOpen(false);
+	}, { signal });
+	document.addEventListener("focusin", (event) => {
+		if (event.target instanceof Node && !host.contains(event.target)) setOpen(false);
+	}, { signal });
+	const unsubscribe = subscribeEmojis(() => {
+		if (signal.aborted || !host.isConnected) return;
+		if (!picker.hidden) refresh();
+		updatePreview();
 	});
-	host.append(toggle, picker);
+	// Reply composers are created detached; observe their later removal and Swup replacements.
+	const observer = new MutationObserver(() => {
+		if (!host.isConnected) {
+			controller.abort(); unsubscribe(); detachArticles(); observer.disconnect();
+		}
+	});
+	observer.observe(document.body, { childList: true, subtree: true });
+	updatePreview();
+	requestManifest();
 }
 
 type LikeState = { count: number; liked: boolean };
@@ -91,6 +269,7 @@ type ToggleLikeResponse = {
 };
 
 type PublicComment = {
+	is_pinned?: boolean;
 	id: number;
 	page: "about" | "friends";
 	parent_id: number | null;
@@ -804,6 +983,7 @@ function buildComment(
 	onReply: (comment: PublicComment) => void,
 	isAdmin: boolean,
 	onDelete: (comment: PublicComment) => void,
+	onPin: (comment: PublicComment) => void,
 ): HTMLElement {
 	const article = document.createElement("article");
 	article.className = "community-comment";
@@ -863,6 +1043,12 @@ function buildComment(
 	time.dateTime = comment.created_at;
 	time.textContent = formatCommentTime(comment.created_at);
 	meta.append(time);
+	if (comment.is_pinned) {
+		const badge = document.createElement("span");
+		badge.className = "community-comment__owner-badge";
+		badge.textContent = "置顶";
+		meta.append(badge);
+	}
 	if (isAdmin && comment.status && comment.status !== "published") {
 		const status = document.createElement("span");
 		status.className = "community-comment__status";
@@ -870,9 +1056,10 @@ function buildComment(
 		meta.append(status);
 	}
 
-	const content = document.createElement("p");
+	const content = document.createElement("div");
 	content.className = "community-comment__content";
-	content.textContent = comment.content;
+	commentEmojiContents.set(content, comment.content);
+	renderCommunityMarkdown(content, comment.content);
 	const reply = document.createElement("button");
 	reply.type = "button";
 	reply.className = "community-comment__reply-button";
@@ -888,6 +1075,14 @@ function buildComment(
 		remove.textContent = "删除";
 		remove.addEventListener("click", () => onDelete(comment));
 		tools.append(remove);
+		if (comment.status === "published") {
+			const pin = document.createElement("button");
+			pin.type = "button";
+			pin.className = "community-comment__delete";
+			pin.textContent = comment.is_pinned ? "取消置顶" : "置顶";
+			pin.addEventListener("click", () => onPin(comment));
+			tools.append(pin);
+		}
 	}
 	meta.append(tools);
 	body.append(meta, content, reply);
@@ -902,6 +1097,7 @@ function renderComments(
 	onReply: (comment: PublicComment) => void,
 	isAdmin: boolean,
 	onDelete: (comment: PublicComment) => void,
+	onPin: (comment: PublicComment) => void,
 ): void {
 	const list = section.querySelector<HTMLElement>("[data-comment-list]");
 	const count = section.querySelector<HTMLElement>("[data-comment-count]");
@@ -916,22 +1112,25 @@ function renderComments(
 		return;
 	}
 
-	const roots = comments.filter((comment) => comment.id === comment.root_id);
+	// Pinned replies become top-level entries without duplicating their original entry.
+	const pinned = comments.filter((comment) => comment.is_pinned).reverse();
+	const roots = [...pinned, ...comments.filter((comment) => !comment.is_pinned &&
+		(comment.id === comment.root_id || !comments.some((root) => root.id === comment.root_id)))];
 	const replies = new Map<number, PublicComment[]>();
 	for (const comment of comments) {
-		if (comment.id === comment.root_id) continue;
+		if (roots.some((root) => root.id === comment.id)) continue;
 		const group = replies.get(comment.root_id) || [];
 		group.push(comment);
 		replies.set(comment.root_id, group);
 	}
 	for (const root of roots) {
-		const rootElement = buildComment(root, onReply, isAdmin, onDelete);
+		const rootElement = buildComment(root, onReply, isAdmin, onDelete, onPin);
 		const children = replies.get(root.id) || [];
 		if (children.length > 0) {
 			const replyList = document.createElement("div");
 			replyList.className = "community-comment__replies";
 			for (const child of children)
-				replyList.append(buildComment(child, onReply, isAdmin, onDelete));
+				replyList.append(buildComment(child, onReply, isAdmin, onDelete, onPin));
 			rootElement.append(replyList);
 		}
 		list.append(rootElement);
@@ -1004,6 +1203,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 	const form = section.querySelector<HTMLFormElement>("[data-comment-form]");
 	const list = section.querySelector<HTMLElement>("[data-comment-list]");
 	if (!page || !form || !list) return;
+	subscribeCommentEmojis(section, list);
 	const description = section.querySelector<HTMLElement>(
 		"[data-comment-description]",
 	);
@@ -1273,7 +1473,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 			replyForm.append(identity);
 		}
 
-		const contentLabel = document.createElement("label");
+		const contentLabel = document.createElement("div");
 		contentLabel.className = "community-inline-reply__content";
 		const contentCaption = document.createElement("span");
 		contentCaption.textContent = "回复内容";
@@ -1283,6 +1483,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 		contentCaption.append(contentMark);
 		const replyContent = document.createElement("textarea");
 		replyContent.name = "content";
+		replyContent.setAttribute("aria-label", "回复内容");
 		replyContent.required = true;
 		replyContent.maxLength = 800;
 		replyContent.rows = compact ? 3 : 4;
@@ -1342,6 +1543,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 					website: payload.website,
 				});
 				replyContent.value = "";
+				replyContent.dispatchEvent(new Event("input", { bubbles: true }));
 				counter.textContent = "0 / 800";
 				status.dataset.state = "success";
 				status.textContent = result.message || "回复已提交";
@@ -1393,6 +1595,7 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 					openInlineReply,
 					adminMode,
 					onDelete,
+					onPin,
 				);
 			}
 		} catch (error) {
@@ -1400,6 +1603,20 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 			if (section.isConnected)
 				list.textContent = "留言暂时没有接通，稍后再来看看。";
 		}
+	};
+	let pinBusy = false;
+	const onPin = async (comment: PublicComment) => {
+		if (!adminMode || !adminSecret || pinBusy) return;
+		pinBusy = true;
+		try {
+			await readJson<{ success: boolean }>(await fetch(`${API_BASE}/blog/community/comments/${comment.id}/pin`, {
+				method: "PATCH", headers: adminHeaders(adminSecret),
+				body: JSON.stringify({ is_pinned: !comment.is_pinned }),
+			}));
+			await load();
+		} catch (error) {
+			window.alert(error instanceof Error ? error.message : "置顶失败");
+		} finally { pinBusy = false; }
 	};
 	const onDelete = async (comment: PublicComment) => {
 		if (
@@ -1481,7 +1698,10 @@ async function initializeCommentSection(section: HTMLElement): Promise<void> {
 				email: payload.email,
 				website: payload.website,
 			});
-			if (content instanceof HTMLTextAreaElement) content.value = "";
+			if (content instanceof HTMLTextAreaElement) {
+				content.value = "";
+				content.dispatchEvent(new Event("input", { bubbles: true }));
+			}
 			if (contentCount) contentCount.textContent = "0";
 			if (status) {
 				status.dataset.state = "success";

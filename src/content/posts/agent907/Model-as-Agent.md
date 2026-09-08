@@ -5,8 +5,8 @@ description: 对“模型即 Agent”的新范式的理解与对harness本身的
 tags:
   - 学习笔记
   - 问题探讨
-category: 勘惑求索
-draft: true
+category: 遇惑求索
+draft: false
 pinned: false
 image: ./cover.jpg
 ---

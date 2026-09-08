@@ -4,7 +4,7 @@ published: 2024-09-21
 description: 初步使用GitHub工作流部署网站可能遭遇的问题
 tags:
   - 踩坑避雷
-category: 勘惑求索
+category: 遇惑求索
 draft: false
 image: /images/covers/gitaction.png
 ---

@@ -1,6 +1,6 @@
 ---
-title: 主页开发日志(一) · LRC与音频可视化联动
-published: 2026-07-13
+title: 开发日志(一) · LRC与音频可视化联动
+published: 2026-06-13
 description: tonks-home 音乐系统的技术实现：LRC 歌词解析原理、Canvas 环形频谱可视化、桌宠唱歌状态机、背景与音频联动等
 tags:
   - 开发笔记
