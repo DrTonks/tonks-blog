@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {validateArtifacts,sourceFingerprint,fingerprint,assertBuildProvenance} from './production-validation.mjs';
+const project=fileURLToPath(new URL('../',import.meta.url));
+const result=validateArtifacts(path.join(project,'dist'));
+assertBuildProvenance(project,result);
+fs.mkdirSync(path.join(project,'.cache'),{recursive:true});
+fs.writeFileSync(path.join(project,'.cache/production-validation.json'),JSON.stringify({schema:1,artifacts:fingerprint(result.files),source:sourceFingerprint(project),checkedAt:new Date().toISOString(),mode:'static'}));
+console.log(`[production-check] PASS ${result.files.length} files; ${result.references} resource references; critical CSS and build provenance verified. Visual review is manual.`);

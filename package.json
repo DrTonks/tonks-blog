@@ -15,7 +15,9 @@
 		"new-post": "node scripts/new-post.js",
 		"format": "biome format --write ./src",
 		"lint": "biome check --write ./src",
-		"preinstall": "npx only-allow pnpm"
+		"preinstall": "npx only-allow pnpm",
+		"check:production": "node scripts/validate-production.mjs",
+		"test:production": "node --test scripts/production-validation.test.mjs"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.5",
@@ -43,6 +45,7 @@
 		"bcryptjs": "^3.0.2",
 		"crypto-js": "^4.2.0",
 		"dayjs": "^1.11.18",
+		"entities": "6.0.1",
 		"hastscript": "^9.0.1",
 		"katex": "^0.16.25",
 		"markdown-it": "^14.1.0",
@@ -65,13 +68,12 @@
 		"sanitize-html": "^2.17.0",
 		"satori": "^0.18.3",
 		"sharp": "^0.34.4",
+		"ssh2-sftp-client": "^9.0.0",
 		"stylus": "^0.64.0",
 		"svelte": "^5.42.2",
 		"tailwindcss": "^3.4.18",
 		"typescript": "^5.9.3",
-		"unist-util-visit": "^5.0.0",
-		"ssh2-sftp-client": "^9.0.0",
-		"entities": "6.0.1"
+		"unist-util-visit": "^5.0.0"
 	},
 	"devDependencies": {
 		"@astrojs/ts-plugin": "^1.10.5",

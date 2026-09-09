@@ -7,6 +7,12 @@ import { onMount } from "svelte";
 import { DARK_MODE, LIGHT_MODE } from "@constants/constants";
 import type { AccentPreset } from "@/types/config";
 import {
+	AVATAR_MOBILE_QUERY,
+	AVATAR_PARTICLES_CHANGE,
+	REDUCED_MOTION_QUERY,
+	getAvatarParticlesEnabled,
+	isAvatarParticlesSupported,
+	setAvatarParticlesEnabled,
 	getAccent,
 	getWavesEnabled,
 	setAccent,
@@ -33,6 +39,15 @@ function toggleGrid() {
 let lightAccent = getAccent("light");
 let darkAccent = getAccent("dark");
 let wavesEnabled = getWavesEnabled();
+let avatarParticlesEnabled = getAvatarParticlesEnabled();
+let avatarSupported = isAvatarParticlesSupported();
+let avatarMobile = window.matchMedia(AVATAR_MOBILE_QUERY).matches;
+let avatarReducedMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
+
+function toggleAvatarParticles() {
+	if (avatarMobile || avatarReducedMotion || !avatarSupported) return;
+	setAvatarParticlesEnabled(!avatarParticlesEnabled);
+}
 let activeThemeMode: "light" | "dark" = document.documentElement.classList.contains("dark") ? "dark" : "light";
 
 function chooseAccent(mode: "light" | "dark", preset: AccentPreset) {
@@ -72,6 +87,19 @@ function handleThemeModeKeydown(mode: "light" | "dark", event: KeyboardEvent) {
 }
 
 onMount(() => {
+	const mobileQuery = window.matchMedia(AVATAR_MOBILE_QUERY);
+	const motionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+	const syncAvatarParticles = () => {
+		avatarParticlesEnabled = getAvatarParticlesEnabled();
+		avatarSupported = isAvatarParticlesSupported();
+		avatarMobile = mobileQuery.matches;
+		avatarReducedMotion = motionQuery.matches;
+	};
+	mobileQuery.addEventListener("change", syncAvatarParticles);
+	motionQuery.addEventListener("change", syncAvatarParticles);
+	window.addEventListener(AVATAR_PARTICLES_CHANGE, syncAvatarParticles);
+	document.addEventListener("astro:page-load", syncAvatarParticles);
+	syncAvatarParticles();
  syncLayout();
  window.addEventListener("layoutChange", syncLayout);
  window.addEventListener("storage", syncLayout);
@@ -80,6 +108,10 @@ onMount(() => {
 	document.addEventListener("astro:page-load", handleThemeChange);
 	handleThemeChange();
 	return () => {
+		mobileQuery.removeEventListener("change", syncAvatarParticles);
+		motionQuery.removeEventListener("change", syncAvatarParticles);
+		window.removeEventListener(AVATAR_PARTICLES_CHANGE, syncAvatarParticles);
+		document.removeEventListener("astro:page-load", syncAvatarParticles);
  window.removeEventListener("layoutChange", syncLayout);
  window.removeEventListener("storage", syncLayout);
 		window.removeEventListener("theme-change", handleThemeChange);
@@ -204,6 +236,27 @@ onMount(() => {
 			水波纹动画
 		</span>
 		<span class:enabled={wavesEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
+	</button>
+	<button
+		type="button"
+		role="switch"
+		aria-checked={avatarParticlesEnabled && avatarSupported && !avatarMobile && !avatarReducedMotion}
+		aria-label="头像粒子化主题过渡"
+		aria-describedby="avatar-particles-hint"
+		disabled={avatarMobile || avatarReducedMotion || !avatarSupported}
+		on:click={toggleAvatarParticles}
+		class="wave-setting-row avatar-particles-setting flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[var(--primary)] transition-colors hover:bg-[var(--btn-plain-bg-hover)]"
+	>
+		<span class="flex flex-col gap-0.5">
+			<span class="flex items-center gap-2 font-medium">
+				<Icon icon="material-symbols:blur-on-rounded" class="text-[1.25rem]"></Icon>
+				头像粒子化主题过渡
+			</span>
+			<span id="avatar-particles-hint" class="text-xs text-[var(--content-meta)]">
+				{avatarMobile ? "当前设备不启用" : avatarReducedMotion ? "已遵循减少动态效果" : !avatarSupported ? "当前浏览器无法启用" : "仅桌面 · 主题切换时生效"}
+			</span>
+		</span>
+		<span class:enabled={avatarParticlesEnabled && avatarSupported && !avatarMobile && !avatarReducedMotion} class="wave-switch" aria-hidden="true"><span></span></span>
 	</button>
     {#if siteConfig.postListLayout.allowSwitch}
     <button type="button" role="switch" aria-checked={gridEnabled} aria-label="网格卡片" on:click={toggleGrid}
@@ -350,6 +403,14 @@ onMount(() => {
 
         span
           transform translateX(1.25rem)
+
+    .avatar-particles-setting:disabled
+      cursor not-allowed
+      opacity 0.65
+
+    .avatar-particles-setting:focus-visible
+      outline 2px solid var(--primary)
+      outline-offset 2px
 
     @media (prefers-reduced-motion: reduce)
       .accent-option,

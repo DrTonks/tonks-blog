@@ -1,12 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-// Only exercise pure curve helpers; no browser methods are called in Node.
-const previous = globalThis.HTMLElement;
-globalThis.HTMLElement = class {};
-const { revealArrival, revealProgress } = await import('../src/utils/theme-avatar.ts');
-if (previous === undefined) delete globalThis.HTMLElement;
-else globalThis.HTMLElement = previous;
+import { loadAvatarModules } from './theme-avatar-test-utils.mjs';
+const { revealArrival, revealProgress } = loadAvatarModules();
 
 test('wave radius has exact clamped endpoints', () => {
   assert.equal(revealProgress(-1), 0);

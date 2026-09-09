@@ -18,6 +18,7 @@
     DEPLOY_KEY_FILE = C:\\Users\\<you>\\.ssh\\id_rsa (optional, prefer key over password)
 */
 
+import { assertDeploymentValidated, assertArchiveValidated } from "./production-validation.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -91,6 +92,7 @@ function assertPreconditions(action) {
 			);
 		}
 	} else if (PROVIDER === "s3") {
+		throw new Error("Production validation currently supports SFTP archive deployment only");
 		if (action !== "deploy") throw new Error("This operation is only supported by SFTP");
 		// for s3, bucket and region should be provided via env or config file
 		const S3_BUCKET =
@@ -115,6 +117,7 @@ async function main() {
 	const action = parseDeployArgs(process.argv.slice(2));
 	assertPreconditions(action);
 	const files = ["deploy", "pack"].includes(action) ? collectDeploymentFiles(LOCAL_DIR, EXCLUDES) : [];
+	const validated = action === "deploy" ? assertDeploymentValidated(process.cwd(), files) : null;
 	if (action === "pack") {
 		const archive = await createArchive(LOCAL_DIR, files);
 		log(JSON.stringify({ archivePath: archive.archivePath, sha256: archive.archiveSha256, files: files.length, rawBytes: archive.manifest.totalBytes, archiveBytes: archive.archiveBytes, seconds: archive.seconds }));
@@ -162,6 +165,7 @@ async function main() {
 			log("Preflight:", JSON.stringify(await runRemote(sftp, { action: "check", siteDir: REMOTE_DIR })));
 			const archive = await createArchive(LOCAL_DIR, files);
 			try {
+				assertArchiveValidated(archive.manifest, validated);
 				log(`Packed ${files.length} files: ${(archive.manifest.totalBytes / 1048576).toFixed(2)} -> ${(archive.archiveBytes / 1048576).toFixed(2)} MiB in ${archive.seconds.toFixed(2)}s`);
 				const result = await publishArchive(sftp, REMOTE_DIR, archive, { log });
 				log("Release:", JSON.stringify(result));

@@ -105,7 +105,7 @@ export const siteConfig: SiteConfig = {
 
 		waves: {
 			enable: true, // 保留水波纹能力；访客可在显示设置中开启
-			defaultEnabled: true, // 默认开启；仍尊重访客此前保存在本地的显式选择
+			defaultEnabled: false, // 默认使用静态消融；仍尊重访客此前保存在本地的显式选择
 			allowUserToggle: true,
 			performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
 			mobileDisable: false, // 移动端禁用

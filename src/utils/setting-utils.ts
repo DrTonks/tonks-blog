@@ -8,6 +8,51 @@ import type { AccentPreset, LIGHT_DARK_MODE } from "@/types/config";
 import type { ThemeAvatarElement } from "./theme-avatar";
 
 const WAVES_STORAGE_KEY = "bannerWavesEnabled";
+export const AVATAR_PARTICLES_STORAGE_KEY = "avatarParticlesEnabled";
+export const AVATAR_PARTICLES_CHANGE = "avatar-particles-change";
+export const AVATAR_MOBILE_QUERY = "(max-width: 767px), (hover: none) and (pointer: coarse)";
+export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+// Keep this tab usable when storage is blocked or full.
+let avatarParticlesFallback: boolean | undefined;
+// Session-only failure state: do not overwrite the user's saved preference.
+// The renderer reports its real initialization result; no probe context is made.
+let avatarParticlesUnavailable = false;
+
+export function isAvatarParticlesSupported(): boolean {
+	return !avatarParticlesUnavailable &&
+		typeof document.startViewTransition === "function";
+}
+
+export function reportAvatarParticlesUnavailable(): void {
+	if (avatarParticlesUnavailable) return;
+	avatarParticlesUnavailable = true;
+	window.dispatchEvent(new Event(AVATAR_PARTICLES_CHANGE));
+}
+
+export function getAvatarParticlesEnabled(): boolean {
+	if (avatarParticlesFallback !== undefined) return avatarParticlesFallback;
+	try {
+		return localStorage.getItem(AVATAR_PARTICLES_STORAGE_KEY) !== "false";
+	} catch {
+		return true;
+	}
+}
+
+export function setAvatarParticlesEnabled(enabled: boolean): void {
+	avatarParticlesFallback = enabled;
+	try {
+		localStorage.setItem(AVATAR_PARTICLES_STORAGE_KEY, String(enabled));
+		avatarParticlesFallback = undefined;
+	} catch { /* The current tab still honors the choice. */ }
+	window.dispatchEvent(new Event(AVATAR_PARTICLES_CHANGE));
+}
+
+export function canUseAvatarParticles(): boolean {
+	return getAvatarParticlesEnabled() &&
+		!window.matchMedia(AVATAR_MOBILE_QUERY).matches &&
+		!window.matchMedia(REDUCED_MOTION_QUERY).matches &&
+		isAvatarParticlesSupported();
+}
 const SHARED_THEME_COOKIE = "tonks_theme";
 const ACCENT_STORAGE_KEYS = {
 	light: "accentLight",
@@ -162,6 +207,10 @@ function freezeNavbarThemeSurfaces(): () => void {
 
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 	const root = document.documentElement;
+	if (root.classList.contains("dark") === isThemeDark(theme)) {
+		announceThemeChange(commitTheme(theme));
+		return;
+	}
 	const restoreSurfaces = freezeNavbarThemeSurfaces();
 	root.classList.add("is-theme-transitioning");
 	const changed = commitTheme(theme);
@@ -188,17 +237,21 @@ export function setThemeFromPoint(
 	if (themeRevealRunning) return false;
 	persistTheme(theme);
 	const root = document.documentElement;
-	const reducedMotion = window.matchMedia(
-		"(prefers-reduced-motion: reduce)",
-	).matches;
+	if (root.classList.contains("dark") === isThemeDark(theme)) {
+		// Keep system/manual preference changes without a snapshot, particles or lock.
+		announceThemeChange(commitTheme(theme));
+		return true;
+	}
+	const motionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
 	const viewTransitionDocument = document as Document & {
 		startViewTransition?: (update: () => void) => {
 			ready: Promise<void>;
 			finished: Promise<void>;
+			skipTransition: () => void;
 		};
 	};
 
-	if (!viewTransitionDocument.startViewTransition || reducedMotion) {
+	if (!viewTransitionDocument.startViewTransition || motionQuery.matches) {
 		applyThemeToDocument(theme);
 		return true;
 	}
@@ -208,13 +261,14 @@ export function setThemeFromPoint(
 		Math.max(y, innerHeight - y),
 	);
 	const avatar = document.querySelector<ThemeAvatarElement>("theme-avatar");
-	const avatarTransition = root.classList.contains("dark") !== isThemeDark(theme)
+	const avatarTransition = canUseAvatarParticles() && root.classList.contains("dark") !== isThemeDark(theme)
 		? avatar?.begin?.(isThemeDark(theme), x, y, radius, 560) : null;
 	root.classList.add("is-theme-revealing");
 	const restoreSurfaces = freezeNavbarThemeSurfaces();
 	themeRevealRunning = true;
 	let changed = false;
 	let rootReveal: Animation | undefined;
+	let stopForReducedMotion: (() => void) | undefined;
 	let surfacesReleased = false;
 	const releaseReveal = () => {
 		if (surfacesReleased) return;
@@ -223,6 +277,7 @@ export function setThemeFromPoint(
 		root.classList.remove("is-theme-revealing");
 	};
 	const finish = () => {
+		if (stopForReducedMotion) motionQuery.removeEventListener("change", stopForReducedMotion);
 		rootReveal?.cancel();
 		avatarTransition?.cancel();
 		avatarTransition?.cleanup();
@@ -236,7 +291,22 @@ export function setThemeFromPoint(
 			changed = commitTheme(theme);
 			avatarTransition?.capture();
 		});
+		let motionStopped = false;
+		stopForReducedMotion = () => {
+			if (!motionQuery.matches || motionStopped) return;
+			motionStopped = true;
+			rootReveal?.cancel();
+			avatarTransition?.cancel();
+			avatarTransition?.cleanup();
+			// Skipping still runs the update callback. Keep ownership until finished
+			// settles; cancelling only the particle promise must never unlock it.
+			transition.skipTransition();
+		};
+		motionQuery.addEventListener("change", stopForReducedMotion);
+		stopForReducedMotion();
 		void transition.ready.then(() => {
+			stopForReducedMotion?.();
+			if (motionStopped) return;
 			// Normalize both clips to their snapshot boxes, sharing one timeline.
 			const startTime = Number(document.timeline.currentTime ?? performance.now());
 			const px = x / innerWidth * 100, py = y / innerHeight * 100;
@@ -286,6 +356,14 @@ export function isThemeDark(theme: LIGHT_DARK_MODE): boolean {
 }
 
 if (typeof window !== "undefined") {
+	window.addEventListener("storage", (event) => {
+		if (event.key !== null && event.key !== AVATAR_PARTICLES_STORAGE_KEY) return;
+		try {
+			if (event.storageArea && event.storageArea !== localStorage) return;
+		} catch { return; }
+		avatarParticlesFallback = undefined;
+		window.dispatchEvent(new Event(AVATAR_PARTICLES_CHANGE));
+	});
 	const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
 	systemThemeQuery.addEventListener("change", () => {
 		if (getStoredTheme() === SYSTEM_MODE) {

@@ -1,47 +1,53 @@
-import { readdir, readFile, mkdir, writeFile, copyFile, stat, rename } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { readFile, mkdir, writeFile, copyFile, stat, rename } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import sharp from 'sharp';
+import { walk, fileKey, encodePath, frontmatter, localImagePath, isWithin } from './image-pipeline-utils.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex').slice(0, 20);
-async function walk(dir) {
-  let entries;
-  try { entries = await readdir(dir, { withFileTypes: true }); }
-  catch (e) { if (e.code === 'ENOENT') return []; throw e; }
-  const result = [];
-  for (const e of entries) {
-    const path = join(dir, e.name);
-    if (e.isDirectory()) result.push(...await walk(path));
-    else if (e.isFile()) result.push(path);
-  }
-  return result.sort();
-}
+const virtualId = '\0optimized-images';
 
-export async function generateImages(root) {
+export async function generateImages(root, { strict = true } = {}) {
+  const warnings = [];
+  const failedSources = new Set();
+  const attempt = async (action, onError) => {
+    try { return await action(); }
+    catch (error) {
+      if (strict) throw error;
+      warnings.push(error.message);
+      await onError?.();
+    }
+  };
   const checkReference = async value => {
-    if (typeof value !== 'string' || !value.startsWith('/images/')) return;
-    const path = decodeURI(value.split(/[?#]/)[0]);
-    if (path.split('/').includes('..') || path.includes('\\')) throw new Error(`Invalid image reference: ${value}`);
-    try { await stat(join(root, 'public', path)); }
-    catch { throw new Error(`Image source not found: ${value}`); }
+    const path = localImagePath(value);
+    if (!path) return;
+    let info;
+    try { info = await stat(join(root, 'public', path)); }
+    catch (error) {
+      if (error.code !== 'ENOENT' && error.code !== 'ENOTDIR') throw error;
+    }
+    if (!info?.isFile()) throw new Error(`Image source not found: ${value}`);
   };
   for (const name of ['projects', 'timeline']) {
-    let data;
-    try { data = await readFile(join(root, 'public/data', name + '.json'), 'utf8'); }
-    catch (e) { if (e.code === 'ENOENT') continue; throw e; }
-    for (const entry of JSON.parse(data)) {
-      for (const src of Array.isArray(entry.image) ? entry.image : [entry.image]) await checkReference(src);
-    }
+    await attempt(async () => {
+      let data;
+      try { data = await readFile(join(root, 'public/data', name + '.json'), 'utf8'); }
+      catch (error) { if (error.code === 'ENOENT') return; throw error; }
+      for (const entry of JSON.parse(data)) {
+        for (const value of [entry.image, entry.images].flat()) await checkReference(value);
+      }
+    });
   }
   for (const post of await walk(join(root, 'src/content/posts'))) {
-    if (!/\.mdx?$/.test(post)) continue;
-    const text = await readFile(post, 'utf8');
-    const frontmatter = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    const cover = frontmatter?.[1].match(/^image:\s*(.*?)\s*$/m)?.[1];
-    if (cover) await checkReference(cover.replace(/^['"]|['"]$/g, ''));
+    if (!/\.mdx?$/i.test(post)) continue;
+    await attempt(async () => {
+      const data = frontmatter(await readFile(post, 'utf8'), post);
+      if (typeof data.image === 'string') await checkReference(data.image.trim());
+    });
   }
-  const cache = join(root, 'node_modules/.cache/blog-images');
+  // Do not write into node_modules: it can be a shared junction in review copies.
+  const cache = join(root, '.cache/blog-images');
   await mkdir(cache, { recursive: true });
   const manifest = {}, outputs = new Map();
   const started = performance.now();
@@ -49,59 +55,165 @@ export async function generateImages(root) {
   for (const group of ['albums', 'projects', 'covers']) {
     for (const path of await walk(join(root, 'public/images', group))) {
       if (!/\.(png|jpe?g)$/i.test(path)) continue;
-      const input = await readFile(path);
-      const metadata = await sharp(input).metadata();
-      if ((metadata.pages || 1) > 1) continue;
-      const original = '/' + relative(join(root, 'public'), path);
-      const entry = { original, originalBytes: input.length };
-      // Keep full-resolution display for zoom; thumbnail bounds only affect cards.
-      for (const kind of ['thumbnail', 'display']) {
-        const size = kind === 'thumbnail' ? Math.min(800, Math.max(metadata.width, metadata.height)) : Math.max(metadata.width, metadata.height);
-        const quality = group === 'projects' ? 90 : 85;
-        const id = hash(Buffer.concat([input, Buffer.from(`v1:${size}:${quality}:${sharp.versions.sharp}`)]));
-        const name = `${id}.webp`, target = join(cache, name);
-        try { await stat(target); }
-        catch {
-          const data = await sharp(input).rotate().resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true }).webp({ quality }).toBuffer();
-          const temporary = target + '.' + process.pid + '.tmp';
-          await writeFile(temporary, data);
-          await rename(temporary, target); encoded++;
+      await attempt(async () => {
+        const input = await readFile(path);
+        const metadata = await sharp(input).metadata();
+        if ((metadata.pages || 1) > 1) return;
+        const key = fileKey(join(root, 'public'), path);
+        const original = encodePath(key);
+        const entry = { original, originalBytes: input.length };
+        const generated = new Map();
+        // Full-resolution display for zoom; only card thumbnails are bounded.
+        for (const kind of ['thumbnail', 'display']) {
+          const size = kind === 'thumbnail' ? Math.min(800, Math.max(metadata.width, metadata.height)) : Math.max(metadata.width, metadata.height);
+          const quality = group === 'projects' ? 90 : 85;
+          const id = hash(Buffer.concat([input, Buffer.from(`v1:${size}:${quality}:${sharp.versions.sharp}`)]));
+          const name = `${id}.webp`, target = join(cache, name);
+          try { await stat(target); }
+          catch (error) {
+            if (error.code !== 'ENOENT') throw error;
+            const data = await sharp(input).rotate().resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true }).webp({ quality }).toBuffer();
+            const temporary = target + '.' + randomUUID() + '.tmp';
+            await writeFile(temporary, data);
+            await rename(temporary, target); encoded++;
+          }
+          const bytes = (await stat(target)).size;
+          entry[kind] = bytes < input.length ? `/_images/${name}` : original;
+          entry[`${kind}Bytes`] = Math.min(bytes, input.length);
+          if (bytes < input.length) generated.set(name, target);
         }
-        const bytes = (await stat(target)).size;
-        entry[kind] = bytes < input.length ? `/_images/${name}` : original;
-        entry[`${kind}Bytes`] = Math.min(bytes, input.length);
-        if (bytes < input.length) outputs.set(name, target);
-      }
-      manifest[original] = entry;
+        manifest[key] = entry;
+        for (const [name, target] of generated) outputs.set(name, target);
+      }, async () => {
+        // A partial write/temporary read failure is not an unlink. Let dev keep
+        // the last successful entry until this existing file becomes readable.
+        const exists = await stat(path).then(info => info.isFile(), error => {
+          return error.code !== 'ENOENT' && error.code !== 'ENOTDIR';
+        });
+        if (exists) failedSources.add(fileKey(join(root, 'public'), path));
+      });
     }
   }
-  return { manifest, outputs, encoded, ms: performance.now() - started };
+  return { manifest, outputs, encoded, ms: performance.now() - started, warnings, failedSources };
 }
 
 export default function optimizedImages() {
   let result;
   return { name: 'optimized-public-images', hooks: {
-    'astro:config:setup': async ({ config, updateConfig, logger }) => {
-      result = await generateImages(fileURLToPath(config.root));
-      logger.info(`${Object.keys(result.manifest).length} sources, ${result.encoded} encodes, ${Math.round(result.ms)}ms`);
+    'astro:config:setup': async ({ config, updateConfig, logger, command }) => {
+      const root = fileURLToPath(config.root);
+      const strict = command !== 'dev';
+      result = await generateImages(root, { strict });
+      const report = current => {
+        logger.info(`${Object.keys(current.manifest).length} sources, ${current.encoded} encodes, ${Math.round(current.ms)}ms`);
+        for (const warning of current.warnings) logger.warn(warning);
+      };
+      report(result);
+      let pending = Promise.resolve();
+      let cleanup = () => {};
       updateConfig({ vite: { plugins: [{
         name: 'optimized-image-manifest',
-        resolveId(id) { if (id === 'virtual:optimized-images') return '\0optimized-images'; },
-        load(id) {
-          if (id === '\0optimized-images') {
+        resolveId(id) { if (id === 'virtual:optimized-images') return virtualId; },
+        async load(id) {
+          if (id === virtualId) {
+            await pending;
             const urls = Object.fromEntries(Object.entries(result.manifest).map(([key, value]) => [key, { thumbnail: value.thumbnail, display: value.display }]));
             return `export default ${JSON.stringify(urls)}`;
           }
         },
         configureServer(server) {
+          let revision = 0, running = false, closed = false;
+          // Keep at most the previous and current URLs for each live source. A
+          // deleted source loses ALL its hashes; identical surviving sources
+          // can still own the same content-addressed asset.
+          let histories = new Map();
+          let served = new Map();
+          const publish = next => {
+            for (const key of next.failedSources) {
+              const previous = result.manifest[key];
+              if (!previous) continue;
+              next.manifest[key] = previous;
+              for (const kind of ['thumbnail', 'display']) {
+                const name = previous[kind].slice('/_images/'.length);
+                if (result.outputs.has(name)) next.outputs.set(name, result.outputs.get(name));
+              }
+            }
+            const nextHistories = new Map(), nextServed = new Map();
+            for (const [key, entry] of Object.entries(next.manifest)) {
+              const current = new Map();
+              for (const kind of ['thumbnail', 'display']) {
+                const name = entry[kind].slice('/_images/'.length);
+                if (next.outputs.has(name)) current.set(name, next.outputs.get(name));
+              }
+              const previous = histories.get(key)?.at(-1);
+              const versions = previous
+                ? ([...previous.keys()].join() !== [...current.keys()].join() ? [previous, current] : histories.get(key))
+                : [current];
+              nextHistories.set(key, versions);
+              for (const version of versions) for (const [name, path] of version) nextServed.set(name, path);
+            }
+            histories = nextHistories;
+            served = nextServed;
+            result = next;
+          };
+          publish(result);
+          const relevant = path => {
+            const absolute = resolve(path);
+            return isWithin(join(root, 'public/images'), absolute)
+              || (isWithin(join(root, 'public/data'), absolute) && /\.json$/i.test(path))
+              || isWithin(join(root, 'src/content/posts'), absolute);
+          };
+          const changed = (event, path) => {
+            if (closed || !['add', 'change', 'unlink', 'addDir', 'unlinkDir'].includes(event) || !relevant(path)) return;
+            revision++;
+            if (running) return;
+            running = true;
+            pending = (async () => {
+              try {
+                let completed;
+                do {
+                  completed = revision;
+                  const next = await generateImages(root, { strict: false });
+                  if (closed) return;
+                  if (completed !== revision) continue; // Never publish a stale scan.
+                  publish(next);
+                  report(next);
+                  // Album scanners and runtime JSON fetches aren't module imports.
+                  // Invalidate SSR importers too, then reload clients AFTER commit.
+                  server.moduleGraph.invalidateAll();
+                  server.ws.send({ type: 'full-reload', path: '*' });
+                } while (completed !== revision);
+              } catch (error) {
+                logger.error(`Image refresh failed: ${error.message}`);
+                server.ws.send({ type: 'error', err: { message: error.message, stack: error.stack } });
+              } finally { running = false; }
+            })();
+          };
+          server.watcher.add([join(root, 'public/images'), join(root, 'public/data'), join(root, 'src/content/posts')]);
+          server.watcher.on('all', changed);
+          const rescan = () => changed('change', join(root, 'public/images'));
+          // config:setup can precede watcher registration by seconds. Close that
+          // gap before the first virtual load; rescan again when initial watcher
+          // discovery finishes, covering changes made while it was discovering.
+          server.watcher.once('ready', rescan);
+          rescan();
+          // Vite closes the plugin container in both HTTP and middleware mode.
+          cleanup = () => { closed = true; server.watcher.off('all', changed); server.watcher.off('ready', rescan); };
           server.middlewares.use(async (req, res, next) => {
-            const pathname = (req.url || '').split('?')[0];
-            const name = pathname.slice('/_images/'.length);
-            if (!pathname.startsWith('/_images/') || !result.outputs.has(name)) return next();
-            res.setHeader('Content-Type', 'image/webp');
-            res.end(await readFile(result.outputs.get(name)));
+            const pathname = (req.url || '').split(/[?#]/)[0];
+            if (!pathname.startsWith('/_images/')) return next();
+            await pending;
+            const source = served.get(pathname.slice('/_images/'.length));
+            if (!source) { res.statusCode = 404; res.end('Image not found'); return; }
+            try {
+              const bytes = await readFile(source);
+              res.setHeader('Content-Type', 'image/webp');
+              res.setHeader('Cache-Control', 'no-store');
+              res.end(bytes);
+            } catch (error) { next(error); }
           });
         },
+        closeBundle() { cleanup(); },
       }] } });
     },
     'astro:build:done': async ({ dir }) => {

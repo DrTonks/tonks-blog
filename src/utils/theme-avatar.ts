@@ -1,3 +1,8 @@
+import {
+	AVATAR_MOBILE_QUERY, AVATAR_PARTICLES_CHANGE, REDUCED_MOTION_QUERY,
+	canUseAvatarParticles, reportAvatarParticlesUnavailable,
+} from "./setting-utils";
+
 // Immutable particle paths + image textures. Only shared motion changes per frame.
 const VERTEX = `
 precision highp float;
@@ -94,29 +99,62 @@ export class ThemeAvatarElement extends HTMLElement {
 	private ready = false;
 	private complete: (() => void) | null = null;
 	private generation = 0;
+	private preparing = false;
+	private mobileQuery: MediaQueryList | null = null;
+	private motionQuery: MediaQueryList | null = null;
+	private snapshotComposite: HTMLElement | null = null;
 
 	connectedCallback() {
+		this.mobileQuery = window.matchMedia(AVATAR_MOBILE_QUERY);
+		this.motionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+		this.mobileQuery.addEventListener("change", this.syncAvailability);
+		this.motionQuery.addEventListener("change", this.syncAvailability);
+		window.addEventListener(AVATAR_PARTICLES_CHANGE, this.syncAvailability);
 		document.addEventListener("visibilitychange", this.onVisibility);
 		window.addEventListener("theme-change", this.cancel);
 		window.addEventListener("resize", this.cancel);
 		window.addEventListener("scroll", this.cancel, { passive: true });
+		this.syncAvailability();
+	}
+
+	private syncAvailability = () => {
+		if (!this.isConnected || !canUseAvatarParticles()) {
+			this.stopPreparing();
+			this.cancel();
+			this.dispose();
+			return;
+		}
+		if (this.ready || this.preparing || this.idleTimer || this.idleCallback) return;
 		// Keep shader compilation and texture upload outside the theme-click frame.
-		if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 		this.idleTimer = window.setTimeout(() => {
+			this.idleTimer = 0;
 			if ("requestIdleCallback" in window)
 				this.idleCallback = window.requestIdleCallback(() => {
+					this.idleCallback = 0;
 					void this.prepare();
 				});
 			else void this.prepare();
 		}, 1200);
+	};
+
+	private stopPreparing() {
+		++this.generation;
+		if (this.idleCallback) window.cancelIdleCallback(this.idleCallback);
+		clearTimeout(this.idleTimer);
+		this.idleTimer = this.idleCallback = 0;
+		this.preparing = false;
 	}
 
 	private async prepare() {
+		if (!this.isConnected || !canUseAvatarParticles() || this.ready || this.preparing) return;
 		const generation = ++this.generation;
+		this.preparing = true;
+		const shaders: WebGLShader[] = [];
+		let context: WebGLRenderingContext | null = null;
 		try {
 			const images = [...this.querySelectorAll("img")];
 			await Promise.all(images.map((image) => image.decode()));
-			if (!this.isConnected || generation !== this.generation) return;
+			if (!this.isConnected || generation !== this.generation || !canUseAvatarParticles()) return;
 			const canvas = this.querySelector("canvas")!;
 			const gl = canvas.getContext("webgl", {
 				alpha: true,
@@ -126,32 +164,32 @@ export class ThemeAvatarElement extends HTMLElement {
 				powerPreference: "low-power",
 				failIfMajorPerformanceCaveat: true,
 			});
-			if (!gl) return;
+			if (!gl) throw new Error("Avatar WebGL unavailable");
 			this.gl = gl;
+			context = gl;
 			canvas.addEventListener("webglcontextlost", this.onContextLost);
 			const compile = (type: number, source: string) => {
-				const shader = gl.createShader(type)!;
+				const shader = gl.createShader(type);
+				if (!shader) throw new Error("Avatar shader allocation failed");
+				shaders.push(shader);
 				gl.shaderSource(shader, source);
 				gl.compileShader(shader);
 				if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-					gl.deleteShader(shader);
 					throw new Error("Avatar shader unavailable");
 				}
 				return shader;
 			};
 			const vertex = compile(gl.VERTEX_SHADER, VERTEX);
 			const fragment = compile(gl.FRAGMENT_SHADER, FRAGMENT);
-			const program = gl.createProgram()!;
+			const program = gl.createProgram();
+			if (!program) throw new Error("Avatar program allocation failed");
 			this.program = program;
 			gl.attachShader(program, vertex);
 			gl.attachShader(program, fragment);
 			gl.linkProgram(program);
-			gl.deleteShader(vertex);
-			gl.deleteShader(fragment);
 			if (!gl.getProgramParameter(program, gl.LINK_STATUS))
 				throw new Error("Avatar shader link failed");
 			gl.useProgram(program);
-			this.grid = matchMedia("(max-width: 767px)").matches ? 96 : 128;
 			const precomputeStart = import.meta.env.DEV ? performance.now() : 0;
 			// Compute image-independent paths once, not once per particle per frame.
 			// sin(a+b) = sin(a)cos(b) + cos(a)sin(b) keeps the motion analytic.
@@ -174,6 +212,7 @@ export class ThemeAvatarElement extends HTMLElement {
 				this.dataset.particleBytes = String(particles.byteLength);
 			}
 			this.buffer = gl.createBuffer();
+			if (!this.buffer) throw new Error("Avatar buffer allocation failed");
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
 			gl.bufferData(gl.ARRAY_BUFFER, particles, gl.STATIC_DRAW);
 			for (const [index, name] of ["aUV", "aOffset", "aPhase"].entries()) {
@@ -190,7 +229,8 @@ export class ThemeAvatarElement extends HTMLElement {
 				const w = image.naturalWidth * scale,
 					h = image.naturalHeight * scale;
 				context.drawImage(image, (256 - w) / 2, (256 - h) / 2, w, h);
-				const texture = gl.createTexture()!;
+				const texture = gl.createTexture();
+				if (!texture) throw new Error("Avatar texture allocation failed");
 				this.textures.push(texture);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -213,10 +253,19 @@ export class ThemeAvatarElement extends HTMLElement {
 			this.waveGain = gl.getUniformLocation(program, "uWaveGain");
 			gl.enable(gl.BLEND);
 			gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+			if (gl.isContextLost() || gl.getError() !== gl.NO_ERROR)
+				throw new Error("Avatar GPU initialization failed");
 			this.ready = true;
 			if (import.meta.env.DEV) this.dataset.gpuReady = "true";
 		} catch {
-			this.dispose();
+			// A stale decode rejection must not destroy a newer preparation.
+			if (generation === this.generation) {
+				this.dispose();
+				reportAvatarParticlesUnavailable();
+			}
+		} finally {
+			for (const shader of shaders) context?.deleteShader(shader);
+			if (generation === this.generation) this.preparing = false;
 		}
 	}
 
@@ -229,6 +278,7 @@ export class ThemeAvatarElement extends HTMLElement {
 	) {
 		const rect = this.getBoundingClientRect();
 		if (
+			!this.isConnected || !canUseAvatarParticles() ||
 			!this.ready ||
 			!this.gl ||
 			!this.program ||
@@ -237,10 +287,10 @@ export class ThemeAvatarElement extends HTMLElement {
 			rect.top >= innerHeight ||
 			rect.right <= 0 ||
 			rect.left >= innerWidth ||
-			rect.width === 0 ||
-			matchMedia("(prefers-reduced-motion: reduce)").matches
+			rect.width === 0
 		)
 			return null;
+		this.cancel();
 		const gl = this.gl;
 		const canvas = this.querySelector("canvas")!;
 		const size = Math.round(rect.width * Math.min(devicePixelRatio, 2));
@@ -279,22 +329,25 @@ export class ThemeAvatarElement extends HTMLElement {
 		const cx = (x - box.left) / box.width * 100, cy = (y - box.top) / box.height * 100;
 		const percentRadius = radius * Math.SQRT2 / Math.hypot(box.width, box.height) * 100;
 		const clips: Animation[] = [];
+		let active = true;
 		const done = new Promise<void>((resolve) => {
-			this.complete = resolve;
+			this.complete = () => { active = false; resolve(); };
 		});
 		return {
 			done,
 			// Called INSIDE the view transition update. The old ROOT snapshot must
 			// capture the untouched img, signature and mask, not a cleared GL buffer.
 			capture: () => {
-				if (!this.complete) return;
+				if (!active) return;
+				if (!canUseAvatarParticles()) { this.syncAvailability(); return; }
+				this.snapshotComposite = composite;
 				composite.style.viewTransitionName = "theme-avatar";
 				this.dataset.state = "particles";
 				this.draw(0);
 			},
 			cleanup: () => { for (const animation of clips) animation.cancel(); },
 			start: (startTime: number) => {
-				if (!this.complete) return;
+				if (!active) return;
 				const root = document.documentElement;
 				for (const [pseudoElement, clipPath] of [
 					["::view-transition-new(theme-avatar)", [`circle(0% at ${cx}% ${cy}%)`, `circle(${percentRadius}% at ${cx}% ${cy}%)`]],
@@ -312,6 +365,7 @@ export class ThemeAvatarElement extends HTMLElement {
 					draws = 0,
 					frames = 0;
 				const tick = (now: number) => {
+					if (!active) return;
 					if (import.meta.env.DEV && previous) intervals.push(now - previous);
 					previous = now;
 					const before = import.meta.env.DEV ? performance.now() : 0;
@@ -343,7 +397,7 @@ export class ThemeAvatarElement extends HTMLElement {
 				};
 				this.frame = requestAnimationFrame(tick);
 			},
-			cancel: this.cancel,
+			cancel: () => { if (active) this.cancel(); },
 		};
 	}
 
@@ -370,6 +424,8 @@ export class ThemeAvatarElement extends HTMLElement {
 		cancelAnimationFrame(this.frame);
 		this.frame = 0;
 		this.dataset.state = "static";
+		this.snapshotComposite?.style.removeProperty("view-transition-name");
+		this.snapshotComposite = null;
 		this.complete?.();
 		this.complete = null;
 	};
@@ -377,28 +433,46 @@ export class ThemeAvatarElement extends HTMLElement {
 		if (document.hidden) this.cancel();
 	};
 	private onContextLost = () => {
-		this.ready = false;
+		this.stopPreparing();
 		this.cancel();
+		this.dispose();
+		reportAvatarParticlesUnavailable();
 	};
 	private dispose() {
 		this.ready = false;
+		const canvas = this.querySelector("canvas");
+		canvas?.removeEventListener("webglcontextlost", this.onContextLost);
 		for (const texture of this.textures) this.gl?.deleteTexture(texture);
 		this.gl?.deleteBuffer(this.buffer);
 		this.gl?.deleteProgram(this.program);
 		this.gl?.getExtension("WEBGL_lose_context")?.loseContext();
 		this.textures = [];
+		this.buffer = this.program = null;
+		this.motion = this.wave = this.waveGain = null;
+		if (this.gl && canvas) {
+			// A deliberately lost context cannot be reused. A fresh empty canvas
+			// permits re-enabling and drops the old drawing buffer on mobile/off.
+			const replacement = canvas.cloneNode(false) as HTMLCanvasElement;
+			replacement.width = replacement.height = 0;
+			canvas.replaceWith(replacement);
+		}
 		this.gl = null;
+		delete this.dataset.gpuReady;
+		delete this.dataset.particleBytes;
+		delete this.dataset.precomputeMs;
 	}
 	disconnectedCallback() {
-		++this.generation;
-		if (this.idleCallback) window.cancelIdleCallback(this.idleCallback);
-		clearTimeout(this.idleTimer);
+		this.stopPreparing();
 		this.cancel();
 		this.dispose();
 		document.removeEventListener("visibilitychange", this.onVisibility);
 		window.removeEventListener("theme-change", this.cancel);
 		window.removeEventListener("resize", this.cancel);
 		window.removeEventListener("scroll", this.cancel);
+		window.removeEventListener(AVATAR_PARTICLES_CHANGE, this.syncAvailability);
+		this.mobileQuery?.removeEventListener("change", this.syncAvailability);
+		this.motionQuery?.removeEventListener("change", this.syncAvailability);
+		this.mobileQuery = this.motionQuery = null;
 		this.querySelector("canvas")?.removeEventListener(
 			"webglcontextlost",
 			this.onContextLost,

@@ -24,7 +24,7 @@ const [light, dark] = await Promise.all([avatarSource(images.light), avatarSourc
 <theme-avatar data-state="static">
   <img data-mode="light" src={light} alt="Profile Image of the Author" width="256" height="256" decoding="async" loading="eager" />
   <img data-mode="dark" src={dark} alt="Profile Image of the Author" width="256" height="256" decoding="async" loading="eager" />
-  <canvas aria-hidden="true"></canvas>
+  <canvas width="0" height="0" aria-hidden="true"></canvas>
 </theme-avatar>
 <style is:global>
   theme-avatar { display: block; position: relative; width: 100%; aspect-ratio: 1; contain: layout paint; }
