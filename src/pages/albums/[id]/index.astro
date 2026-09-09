@@ -1,5 +1,6 @@
 ---
 import I18nKey from "../../../i18n/i18nKey";
+import { optimizedImage } from '../../../utils/optimized-image';
 import { i18n } from "../../../i18n/translation";
 import MainGridLayout from "../../../layouts/MainGridLayout.astro";
 import type { AlbumGroup } from "../../../types/album";
@@ -244,13 +245,13 @@ if (useSurroundLayout) {
           >
             <a 
               href="javascript:void(0)"
-              data-src={photo.src}
+              data-src={optimizedImage(photo.src, 'display')}
               data-fancybox="gallery"
               data-caption={photo.title || photo.alt}
               class="block"
             >
               <img 
-                src={photo.src}
+                src={photo.thumbnail || optimizedImage(photo.src)}
                 alt={photo.alt}
                 class="photo-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
                 loading="lazy"

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { optimizedImage } from '../utils/optimized-image';
   import { onMount } from "svelte";
   import Icon from "@iconify/svelte";
   import type { Project } from "../data/projects";
@@ -129,7 +130,7 @@
             {/if}
             {#if project.image}
               <div class="project-media">
-                <img src={project.image} alt={project.title} class="project-image" loading="lazy" />
+                <img src={optimizedImage(project.image)} alt={project.title} class="project-image" loading="lazy" />
                 <span class="project-index">PRJ-{String(index + 1).padStart(2, "0")}</span>
               </div>
             {/if}
@@ -177,7 +178,7 @@
             {/if}
             {#if project.image}
               <div class="project-media">
-                <img src={project.image} alt={project.title} class="project-image" loading="lazy" />
+                <img src={optimizedImage(project.image)} alt={project.title} class="project-image" loading="lazy" />
                 <span class="project-index">{String(index + 1).padStart(2, "0")}</span>
                 {#if sourceUrl}
                   <a class="project-source" href={sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`查看 ${project.title} 的源码`}>

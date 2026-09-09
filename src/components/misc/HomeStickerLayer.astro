@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import { optimizedImage } from "../../utils/optimized-image";
 import { homeStickerDefinitions } from "../../data/home-stickers";
 import { getProjectsByCategory } from "../../data/projects";
 
@@ -26,7 +27,7 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 				: configuredImages
 			: configuredImages;
 
-	return { ...sticker, images };
+	return { ...sticker, images: images.map(image => optimizedImage(image)) };
 });
 ---
 

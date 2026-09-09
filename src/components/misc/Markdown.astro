@@ -2,6 +2,7 @@
 // 只加载基础的等宽字体，减少加载时间
 import "@fontsource-variable/jetbrains-mono";
 import { getCollection } from "astro:content";
+import { optimizedImage } from "../../utils/optimized-image";
 import { getImage } from "astro:assets";
 import { parse } from "node-html-parser";
 import { getPostUrlBySlug } from "../../utils/url-utils";
@@ -22,7 +23,7 @@ if (references.length) {
     const post = posts.find((entry) => entry.slug === slug);
     if (!post) throw new Error(`Unknown post reference: ${slug}`);
     if (import.meta.env.PROD && post.data.draft) throw new Error(`Cannot reference draft post: ${slug}`);
-    let cover = post.data.image || "";
+    let cover = optimizedImage(post.data.image || "");
     if (cover && !/^(https?:\/\/|\/)/.test(cover)) {
       const directory = post.id.slice(0, post.id.lastIndexOf("/") + 1);
       const imagePath = `/src/content/posts/${directory}${cover.replace(/^\.\//, "")}`;

@@ -306,16 +306,7 @@ const bannerOffset =
 			}
 
 			.is-theme-revealing::view-transition-new(root) {
-				animation: theme-circular-reveal 560ms cubic-bezier(0.22, 0.75, 0.18, 1) both;
-			}
-
-			@keyframes theme-circular-reveal {
-				from {
-					clip-path: circle(0% at var(--theme-reveal-x) var(--theme-reveal-y));
-				}
-				to {
-					clip-path: circle(var(--theme-reveal-radius) at var(--theme-reveal-x) var(--theme-reveal-y));
-				}
+				clip-path: circle(0px);
 			}
 
 			@media (prefers-reduced-motion: reduce) {
@@ -1845,4 +1836,3 @@ if (window.swup) {
   document.addEventListener("astro:after-swap", initializeArticle);
   document.addEventListener("tonks:article-ready", initializeArticle);
 </script>
-

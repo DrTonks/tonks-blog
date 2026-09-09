@@ -271,6 +271,8 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
+	// Local paths relative to src; build emits optimized WebP, not the PNG sources.
+	themeAvatars: { light: "assets/images/theme-avatar/light.png", dark: "assets/images/theme-avatar/dark.png" },
 	avatar: "assets/images/avatar.png", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	name: "Dr.Tonks",
 	bio: "春风若有怜花意,可否许我再少年",

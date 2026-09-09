@@ -5,6 +5,7 @@ import {
 	SYSTEM_MODE,
 } from "@constants/constants";
 import type { AccentPreset, LIGHT_DARK_MODE } from "@/types/config";
+import type { ThemeAvatarElement } from "./theme-avatar";
 
 const WAVES_STORAGE_KEY = "bannerWavesEnabled";
 const SHARED_THEME_COOKIE = "tonks_theme";
@@ -206,31 +207,54 @@ export function setThemeFromPoint(
 		Math.max(x, innerWidth - x),
 		Math.max(y, innerHeight - y),
 	);
-	// Chrome 的 ::view-transition-new(root) 渲染盒可能不等于 100vw×100vh，
-	// 改用百分比坐标/半径，circle() 百分比以元素自身盒为准，各浏览器行为一致。
-	const px = (x / innerWidth) * 100;
-	const py = (y / innerHeight) * 100;
-	const pr =
-		((radius * Math.SQRT2) / Math.hypot(innerWidth, innerHeight)) * 100;
-	root.style.setProperty("--theme-reveal-x", `${px}%`);
-	root.style.setProperty("--theme-reveal-y", `${py}%`);
-	root.style.setProperty("--theme-reveal-radius", `${pr}%`);
+	const avatar = document.querySelector<ThemeAvatarElement>("theme-avatar");
+	const avatarTransition = root.classList.contains("dark") !== isThemeDark(theme)
+		? avatar?.begin?.(isThemeDark(theme), x, y, radius, 560) : null;
 	root.classList.add("is-theme-revealing");
 	const restoreSurfaces = freezeNavbarThemeSurfaces();
 	themeRevealRunning = true;
 	let changed = false;
-	const finish = () => {
+	let rootReveal: Animation | undefined;
+	let surfacesReleased = false;
+	const releaseReveal = () => {
+		if (surfacesReleased) return;
+		surfacesReleased = true;
 		restoreSurfaces();
 		root.classList.remove("is-theme-revealing");
+	};
+	const finish = () => {
+		rootReveal?.cancel();
+		avatarTransition?.cancel();
+		avatarTransition?.cleanup();
+		(avatar?.closest<HTMLElement>("[data-avatar-composite]") ?? avatar)?.style.removeProperty("view-transition-name");
+		releaseReveal();
 		themeRevealRunning = false;
 		announceThemeChange(changed);
 	};
 	try {
 		const transition = viewTransitionDocument.startViewTransition(() => {
 			changed = commitTheme(theme);
+			avatarTransition?.capture();
 		});
-		void transition.ready.catch(() => {});
-		void transition.finished.then(finish, finish);
+		void transition.ready.then(() => {
+			// Normalize both clips to their snapshot boxes, sharing one timeline.
+			const startTime = Number(document.timeline.currentTime ?? performance.now());
+			const px = x / innerWidth * 100, py = y / innerHeight * 100;
+			const percentRadius = radius * Math.SQRT2 / Math.hypot(innerWidth, innerHeight) * 100;
+			rootReveal = root.animate({clipPath: [
+				`circle(0% at ${px}% ${py}%)`, `circle(${percentRadius}% at ${px}% ${py}%)`,
+			]}, {duration: 560, easing: "cubic-bezier(.22,.75,.18,1)", fill: "both", pseudoElement: "::view-transition-new(root)"});
+			rootReveal.startTime = startTime;
+			avatarTransition?.start(startTime);
+		}).catch(() => {
+			avatarTransition?.cancel();
+			avatarTransition?.cleanup();
+		});
+		const revealDone = transition.finished.then(releaseReveal, () => {
+			avatarTransition?.cancel();
+			releaseReveal();
+		});
+		void Promise.all([revealDone, avatarTransition?.done]).then(finish, finish);
 	} catch {
 		changed = commitTheme(theme);
 		finish();

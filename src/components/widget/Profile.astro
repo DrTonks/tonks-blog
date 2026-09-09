@@ -5,10 +5,11 @@ import { profileLinkAttributes, url } from "../../utils/url-utils";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
 import ProfileSignature from "../ProfileSignature.astro";
+import ThemeAvatar from "./ThemeAvatar.astro";
 ---
 
 <div class="card-base p-3 font-hanalei">
-	<div>
+	<div data-avatar-composite>
 		<a
 			aria-label="Go to About Page"
 			href={url("/about/")}
@@ -17,14 +18,14 @@ import ProfileSignature from "../ProfileSignature.astro";
 			<div class="absolute transition pointer-events-none group-hover:bg-black/30 group-active:bg-black/50 w-full h-full z-50 flex items-center justify-center">
 				<Icon name="fa6-regular:address-card" class="transition opacity-0 scale-90 group-hover:scale-100 group-hover:opacity-100 text-white text-5xl" />
 			</div>
-			<ImageWrapper
+			{profileConfig.themeAvatars ? <ThemeAvatar images={profileConfig.themeAvatars} /> : <ImageWrapper
 				src={profileConfig.avatar || ""}
 				alt="Profile Image of the Author"
 				class="mx-auto lg:w-full h-full lg:mt-0"
 				loading="eager"
 				decoding="async"
 				fetchpriority="auto"
-			/>
+			/>}
 		</a>
 		<ProfileSignature />
 	</div>
@@ -72,4 +73,3 @@ import ProfileSignature from "../ProfileSignature.astro";
 		background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--card-bg) 55%, transparent) 55%, var(--card-bg));
 	}
 </style>
-

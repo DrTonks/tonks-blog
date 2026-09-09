@@ -1,5 +1,7 @@
 import sitemap from "@astrojs/sitemap";
+import optimizedImages from "./scripts/optimized-images.mjs";
 import buildVersion from "./scripts/build-version.mjs";
+import pruneThemeAvatarOriginals from "./scripts/prune-theme-avatar-originals.mjs";
 import { readFileSync } from "node:fs";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
@@ -147,6 +149,7 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 	integrations: [
+		optimizedImages(),
 		buildVersion(),
 		tailwind({
 			nesting: true,
@@ -241,6 +244,7 @@ export default defineConfig({
 		}),
 		svelte(),
 		sitemap(),
+		pruneThemeAvatarOriginals(),
 	],
 	markdown: {
 		remarkPlugins: [

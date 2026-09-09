@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { optimizedImage } from '../utils/optimized-image';
   import { onDestroy, onMount, tick } from 'svelte';
   import Icon from '@iconify/svelte';
   import { i18n } from '../i18n/translation';
@@ -354,7 +355,7 @@
                     <div class="timeline-gallery" use:fitGalleryOnOneLine>
                       {#each item.image as imageSource}
                         <div class="timeline-gallery__frame">
-                          <img src={imageSource} alt={item.title} loading="lazy" decoding="async" />
+                          <img src={optimizedImage(imageSource, 'display')} alt={item.title} loading="lazy" decoding="async" />
                         </div>
                       {/each}
                     </div>

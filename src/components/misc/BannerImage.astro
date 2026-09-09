@@ -1,6 +1,7 @@
 ---
 import { url } from "../../utils/url-utils";
 import { getCdnUrl } from "@/config/cdn";
+import { optimizedImage } from '../../utils/optimized-image';
 
 interface Props {
 	id?: string;
@@ -21,7 +22,7 @@ const {
 	index,
 } = Astro.props;
 const className = Astro.props.class;
-const resolvedSrc = src.startsWith("/") ? url(src) : src;
+const resolvedSrc = src.startsWith("/") ? url(optimizedImage(src, 'display')) : src;
 const cdnSrc = src.startsWith("/") ? (getCdnUrl(src) ?? resolvedSrc) : resolvedSrc;
 const imageClass = "w-full h-full object-cover";
 const imageStyle = `object-position: ${position}`;

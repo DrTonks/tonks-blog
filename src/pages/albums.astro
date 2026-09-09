@@ -1,5 +1,6 @@
 ---
 import { siteConfig } from "../config";
+import { optimizedImage } from '../utils/optimized-image';
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -40,7 +41,7 @@ const albumsData = await scanAlbums();
               <!-- 封面图片 -->
               <div class="aspect-[4/3] overflow-hidden bg-neutral-100 dark:bg-neutral-700">
                 <img 
-                  src={album.cover} 
+                  src={optimizedImage(album.cover)}
                   alt={album.title}
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"

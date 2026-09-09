@@ -13,19 +13,19 @@ export const CDN_BASE = 'https://img.tonks.top/blog'
  */
 const LOCAL_TO_CDN: Record<string, string> = {
   // home 装饰图
-  '/assets/home/left.png': `${CDN_BASE}/left.png`,
-  '/assets/home/right.png': `${CDN_BASE}/right.png`,
-  '/images/projects/personalWebsite2.png': `${CDN_BASE}/personalWebsite2.png`,
+  '/assets/home/left.png': `${CDN_BASE}/left.webp`,
+  '/assets/home/right.png': `${CDN_BASE}/right.webp`,
+  '/images/projects/personalWebsite2.png': `${CDN_BASE}/personalWebsite2.webp`,
   // 桌面 banner
-  '/assets/desktop-banner/d1.png': `${CDN_BASE}/banner/d1.png`,
-  '/assets/desktop-banner/d2.png': `${CDN_BASE}/banner/d2.png`,
-  '/assets/desktop-banner/d5.png': `${CDN_BASE}/banner/d5.png`,
-  '/assets/desktop-banner/d6.png': `${CDN_BASE}/banner/d6.png`,
+  '/assets/desktop-banner/d1.png': `${CDN_BASE}/banner/d1.webp`,
+  '/assets/desktop-banner/d2.png': `${CDN_BASE}/banner/d2.webp`,
+  '/assets/desktop-banner/d5.png': `${CDN_BASE}/banner/d5.webp`,
+  '/assets/desktop-banner/d6.png': `${CDN_BASE}/banner/d6.webp`,
   // 移动 banner
-  '/assets/mobile-banner/m1.png': `${CDN_BASE}/banner/m1.png`,
-  '/assets/mobile-banner/m2.png': `${CDN_BASE}/banner/m2.png`,
-  '/assets/mobile-banner/m3.png': `${CDN_BASE}/banner/m3.png`,
-  '/assets/mobile-banner/m4.png': `${CDN_BASE}/banner/m4.png`,
+  '/assets/mobile-banner/m1.png': `${CDN_BASE}/banner/m1.webp`,
+  '/assets/mobile-banner/m2.png': `${CDN_BASE}/banner/m2.webp`,
+  '/assets/mobile-banner/m3.png': `${CDN_BASE}/banner/m3.webp`,
+  '/assets/mobile-banner/m4.png': `${CDN_BASE}/banner/m4.webp`,
 }
 
 /** CDN → 本地回退路径（由 LOCAL_TO_CDN 自动生成） */
