@@ -1,6 +1,8 @@
 ---
 import { getEntry, render } from "astro:content";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { scanFriendAvatars, resolveFriendAvatar } from "../../scripts/friend-avatars.mjs";
 import Markdown from "@components/misc/Markdown.astro";
 import { Icon } from "astro-icon/components";
 import BlogLike from "../components/community/BlogLike.astro";
@@ -30,6 +32,8 @@ const friendsData: FriendLink[] = JSON.parse(
 if (!siteConfig.featurePages.friends) {
 	return Astro.redirect("/404/");
 }
+
+const localAvatars = await scanFriendAvatars(fileURLToPath(new URL("../../", import.meta.url)));
 
 const friendsPost = await getEntry("spec", "friends");
 
@@ -102,7 +106,7 @@ const cardAngles = [
 						)}
 						<span class:list={["friend-sticker__fastener", `friend-sticker__fastener--${friend.fastener ?? "pin"}`]} aria-hidden="true"></span>
 						<div class="friend-sticker__avatar">
-							<img src={friend.avatar} alt="" loading="lazy" decoding="async" />
+							<img src={resolveFriendAvatar(friend, localAvatars)} alt="" loading="lazy" decoding="async" />
 							<span aria-hidden="true"></span>
 						</div>
 						<div class="friend-sticker__body">

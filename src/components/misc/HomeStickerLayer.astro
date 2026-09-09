@@ -147,6 +147,9 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			if (!images.length) return;
 			const current = image.getAttribute("src");
 			const candidates = images.length > 1 ? images.filter((item) => item !== current) : images;
+			// Only selected cards receive a URL; start their cover requests under the loader.
+			image.loading = "eager";
+			image.fetchPriority = "high";
 			image.src = shuffle(candidates.length ? candidates : images)[0];
 		};
 

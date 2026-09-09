@@ -195,6 +195,47 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 			});
 		}
 
+		function preloadInitialStickerImages() {
+			return whenDomReady().then(() => {
+				if (!root.isConnected || root.dataset.complete === "true" || !document.body.classList.contains("lg:is-home")) return;
+				const layer = document.getElementById("home-sticker-layer");
+				if (!layer?.querySelector("[data-home-sticker]")) return;
+				return new Promise((resolve) => {
+					let observer;
+					let timer;
+					let generation = 0;
+					let finished = false;
+					const finish = () => {
+						if (finished) return;
+						finished = true;
+						observer?.disconnect();
+						clearTimeout(timer);
+						window.removeEventListener("tonks:initial-loader:done", finish);
+						resolve();
+					};
+					const collect = () => {
+						if (finished) return;
+						const currentGeneration = ++generation;
+						// Selection runs in a module/animation frame and may change again
+						// at a responsive breakpoint while the covers are still loading.
+						const images = Array.from(layer.querySelectorAll(
+							'[data-home-sticker]:not([hidden]) img[src]',
+						));
+						if (!images.length) return;
+						Promise.all(images.map((img) => img.decode().catch(() => {}))).then(() => {
+							if (currentGeneration === generation) finish();
+						});
+					};
+					observer = new MutationObserver(collect);
+					observer.observe(layer, { subtree: true, attributes: true, attributeFilter: ["src", "hidden"] });
+					// Bound decoding too; the loader's existing timeout also releases
+					// this observer if DOM/module initialization was unusually late.
+					window.addEventListener("tonks:initial-loader:done", finish, { once: true });
+					timer = setTimeout(finish, 20000);
+					collect();
+				});
+			});
+		}
 		function preloadExplicitImages() {
 			return Promise.all(
 				explicitPreloadImageUrls.map((localSrc) => {
@@ -326,11 +367,13 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 		}
 
 		async function run() {
+			const preloadDeadline = performance.now() + 20000;
 			const preloadPromise = withMaximumWait(Promise.all([
 				preloadCriticalFonts(),
 				preloadExplicitImages(),
 				whenDomReady().then(() => waitForVisibleCriticalImages()),
 				preloadInitialBannerImages(),
+				preloadInitialStickerImages(),
 			]), 20000);
 
 			await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -393,6 +436,12 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 			}
 
 			await preloadPromise;
+			// Other resources may outlast the first sticker batch. Recheck the current
+			// selection before revealing, without extending the shared loading budget.
+			const remainingWait = preloadDeadline - performance.now();
+			if (remainingWait > 0) {
+				await withMaximumWait(preloadInitialStickerImages(), remainingWait);
+			}
 			if (spinnerTimer) clearInterval(spinnerTimer);
 
 			const doneColor = isDark ? "hsl(45, 100%, 62%)" : "hsl(145, 50%, 55%)";

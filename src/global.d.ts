@@ -4,6 +4,11 @@ interface SwupHookRegistry {
 }
 
 interface SwupRuntime {
+	findPlugin(name: 'SwupHeadPlugin'): {
+		options: {
+			persistTags: boolean | string | ((tag: Element) => boolean);
+		};
+	} | undefined;
     scrollTo?: (target: number, animate?: boolean) => void;
 	hooks: SwupHookRegistry;
 	options: {

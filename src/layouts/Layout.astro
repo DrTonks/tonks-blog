@@ -1296,6 +1296,19 @@ const setup = () => {
 	if (window.__tonksLayoutSwupHooksReady) return;
 	window.__tonksLayoutSwupHooksReady = true;
 
+	// Vite owns injected styles and their HMR lifecycle. Swup must not remove
+	// them: retained islands and cached modules will not inject them again.
+	if (import.meta.env.DEV) {
+		const headPlugin = window.swup.findPlugin('SwupHeadPlugin');
+		if (headPlugin) {
+			const previous = headPlugin.options.persistTags;
+			headPlugin.options.persistTags = (tag: Element) =>
+				tag.matches('style[data-vite-dev-id]') ||
+				(typeof previous === 'function' ? previous(tag) :
+					typeof previous === 'string' ? tag.matches(previous) : previous === true);
+		}
+	}
+
 	// @swup/astro 1.x 没有透传该核心选项；运行时启用后，鼠标侧键、
 	// 浏览器前进/后退也会使用页面过渡。ScrollPlugin 负责恢复原滚动位置。
 	window.swup.options.animateHistoryBrowsing = true;

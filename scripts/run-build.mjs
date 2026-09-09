@@ -1,3 +1,4 @@
+import { reportFriendAvatars } from './friend-avatars.mjs';
 import {sourceFingerprint,sourceInventory,inventory,fingerprint} from './production-validation.mjs';
 import {createHash} from 'node:crypto';
 import {mkdirSync} from 'node:fs';
@@ -43,6 +44,7 @@ try {
   mkdirSync(resolve(root,'.cache'),{recursive:true});
   writeFileSync(resolve(root,'.cache/build-provenance.json'),JSON.stringify({schema:1,source:validatedSource,artifacts:fingerprint(inventory(resolve(root,'dist'))),builtAt:new Date().toISOString()}));
   run('scripts/validate-production.mjs');
+  await reportFriendAvatars(root);
   if (deploy) run('scripts/deploy.js');
 } catch (error) {
   console.error('[build]', error.message);
