@@ -1589,11 +1589,21 @@ function scrollFunction() {
 				navbar.classList.remove('navbar-hidden')
 			}
 		}
+        const homeButton = document.getElementById('back-to-home-btn');
+        const homeLink = homeButton?.querySelector<HTMLAnchorElement>('a');
+        const isHomeRoute = homeLink && location.pathname.replace(/\/$/, '') === new URL(homeLink.href).pathname.replace(/\/$/, '');
+        const navigationHidden = navbar && (navbar.classList.contains('navbar-hidden') || navbar.getBoundingClientRect().bottom <= 0);
+        homeButton?.classList.toggle('hide', Boolean(isHomeRoute) || !navigationHidden);
+        for (const button of [backToTopBtn, bottomButton, homeButton]) {
+            if (button) button.inert = button.classList.contains('hide');
+        }
 	});
 }
 
 // 使用节流优化滚动性能
 window.addEventListener("scroll", scrollFunction, {passive: true});
+document.addEventListener("astro:page-load", scrollFunction);
+new ResizeObserver(scrollFunction).observe(document.body);
 scrollFunction(); // 约60fps
 
 window.onresize = () => {

@@ -1,6 +1,6 @@
 .archive-shell {
   padding: 1.5rem 1.25rem 2rem;
-  overflow: hidden;
+  overflow: visible;
   color: rgba(0, 0, 0, 0.9);
 }
 
@@ -12,7 +12,8 @@ html.dark .archive-shell {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
   padding: 0.25rem 0.25rem 1.5rem;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--signal-line);
@@ -123,6 +124,49 @@ html.dark .archive-shell {
 .archive-results-view {
   animation: archive-results-enter 360ms var(--ease-signal) both;
 }
+
+.archive-heading { flex: 1 1 14rem; min-width: 0; }
+.archive-search { position: relative; display: flex; align-items: center; gap: 0.35rem; flex: 0 0 auto; width: 2.5rem; max-width: min(18rem, 45%); min-width: 2.5rem; margin-left: auto; z-index: 5; }
+.archive-search.has-filters { width: max-content; }
+.archive-search.expanded { width: 18rem; }
+.archive-search-bar { display: flex; align-items: center; gap: 0.3rem; min-width: 0; flex: 1; height: 2.5rem; padding-right: 0.4rem; border: 1px solid transparent; border-radius: 0.85rem; color: var(--text-accent); transition: background-color 200ms ease, border-color 200ms ease; }
+.archive-search.has-filters .archive-search-bar { border-color: var(--line-divider); background: var(--btn-regular-bg); }
+.archive-search-bar:has(:focus-visible) { outline: 2px solid color-mix(in srgb, var(--primary) 45%, transparent); outline-offset: 2px; }
+.archive-search-toggle, .archive-search-reset { flex: 0 0 2.1rem; display: grid; place-items: center; height: 2.3rem; border-radius: 0.75rem; color: var(--text-accent); }
+.archive-search-toggle:hover, .archive-search-reset:hover { background: var(--btn-regular-bg-hover); }
+.archive-search-toggle svg, .archive-search-reset svg { width: 1.2rem; height: 1.2rem; }
+.archive-search-content { display: flex; align-items: center; gap: 0.3rem; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+.archive-search-content::-webkit-scrollbar { display: none; }
+.archive-search-input { width: 5rem; min-width: 5rem; flex: 1 0 5rem; background: transparent; outline: none; color: var(--text-primary); font-size: 0.75rem; }
+.archive-search-input::placeholder { color: var(--text-secondary); opacity: 0.65; }
+.archive-search-chip { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 0.15rem; min-width: 0; padding: 0.12rem 0.3rem; border-radius: 0.4rem; background: var(--signal); color: var(--signal-ink); font-size: 0.7rem; }
+.archive-search-chip > button:last-child { flex-shrink: 0; width: 1.15rem; height: 1.4rem; border-radius: 0.3rem; font-size: 1rem; }
+.archive-search-chip > button:last-child:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+.archive-chip-label { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.archive-search-preview { display: flex; align-items: center; gap: 0.35rem; min-width: 0; overflow: hidden; white-space: nowrap; font-size: 0.75rem; }
+.archive-search-preview > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.archive-search-preview .archive-preview-tag { flex: 0 1 auto; padding: 0.25rem 0.4rem; border-radius: 0.4rem; background: var(--signal); color: var(--signal-ink); }
+.archive-preview-text { flex: 0 1 auto; }
+.archive-filter-editor { position: fixed; z-index: 100; box-sizing: border-box; width: max-content; max-width: calc(100vw - 24px); margin: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1rem; border: 1px solid var(--line-divider); border-radius: 1rem; background: var(--card-bg); box-shadow: 0 0.8rem 2.5rem rgb(0 0 0 / 15%); color: var(--text-primary); font-size: 0.75rem; }
+.archive-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.65rem; }
+html.dark .archive-filter-editor { color: rgba(255, 255, 255, 0.9); }
+.archive-editor-heading button { color: var(--text-accent); padding: 0.2rem 0.4rem; border-radius: 0.4rem; }
+.archive-editor-heading button:hover { background: var(--btn-regular-bg); }
+.archive-tag-options { display: grid; grid-template-columns: repeat(3, minmax(0, max-content)); gap: 0.4rem; }
+.archive-tag-options label { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.45rem; border: 1px solid var(--line-divider); border-radius: 0.5rem; cursor: pointer; }
+.archive-tag-options label.selected { background: var(--signal); color: var(--signal-ink); border-color: var(--signal-line); }
+.archive-tag-options input { flex-shrink: 0; accent-color: var(--primary); cursor: pointer; }
+.archive-tag-options label span { overflow-wrap: anywhere; min-width: 0; }
+@media (max-width: 420px) { .archive-tag-options { grid-template-columns: repeat(2, minmax(0, max-content)); } }
+.archive-search button:focus-visible, .archive-filter-editor button:focus-visible, .archive-filter-editor input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+#index-tags a { transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+#index-tags a.archive-tag-selected { background: var(--signal); color: var(--signal-ink); box-shadow: inset 0 0 0 1px var(--signal-line); }
+html:not(.dark) #index-tags a.archive-tag-selected {
+  background: var(--signal);
+  color: var(--signal-ink);
+  box-shadow: inset 0 0 0 1px var(--text-accent);
+}
+@media (prefers-reduced-motion: reduce) { #index-tags a { transition: none; } }
 
 .archive-results-view .archive-year {
   animation: archive-year-enter 420ms var(--ease-signal) both;
@@ -365,8 +409,12 @@ html.dark .archive-shell {
 
   .archive-header {
     align-items: flex-start;
-    flex-direction: column;
+    gap: 0.8rem;
   }
+  .archive-heading { flex-basis: 100%; }
+  .archive-search { order: 3; margin-left: auto; max-width: min(18rem, 100%); }
+  .archive-search.expanded { width: min(18rem, 100%); }
+  .archive-summary { order: 2; }
 
   .archive-category-bar {
     align-items: flex-start;
@@ -407,6 +455,8 @@ html.dark .archive-shell {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .archive-search,
+  .archive-filter-editor,
   .archive-category-bar button,
   .archive-category-bar button::after,
   .archive-results-view,
@@ -417,6 +467,7 @@ html.dark .archive-shell {
   .entry-title,
   .entry-arrow {
     transition: none;
+    animation: none;
   }
 }
 
@@ -426,4 +477,14 @@ html.dark .archive-shell {
 html.dark .archive-entry:is(:hover, :focus-visible) .entry-category-icon {
   color: inherit;
   opacity: 1;
+}
+
+/* The reset control stays outside the animated width and never changes the input space. */
+.archive-search-reset { position: absolute; right: calc(100% + 0.4rem); top: 50%; width: 2.1rem; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-50%) translateX(0.25rem); transition: opacity 160ms ease, transform 160ms ease, visibility 0s 160ms; }
+.archive-search-reset.is-visible { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(-50%) translateX(0); transition-delay: 0s; }
+.archive-search-content, .archive-search-preview { transition: opacity 120ms ease; }
+.archive-search.resetting .archive-search-content, .archive-search.resetting .archive-search-preview { opacity: 0; pointer-events: none; }
+.archive-search.resetting .archive-search-bar { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .archive-search-reset, .archive-search-bar, .archive-search-content, .archive-search-preview { transition: none; }
 }

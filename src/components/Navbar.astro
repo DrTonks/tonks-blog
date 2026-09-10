@@ -35,7 +35,7 @@ let links: NavBarLink[] = navBarConfig.links.map(
 <NavbarDiagnostics />
 <div id="navbar" class="z-50 onload-animation font-hanalei" data-transparent-mode={navbarTransparentMode} data-is-home={isHomePage}>
     <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
-    <div class:list={[className, "!overflow-visible max-w-[var(--page-width)] h-[4.5rem] mx-auto flex items-center justify-between px-4"]}>
+    <div class:list={[className, "navbar-surface !overflow-visible max-w-[var(--page-width)] h-[4.5rem] mx-auto flex items-center justify-between px-4"]}>
         <a
             href={navbarTitleExternal ? navbarTitleHref : url(navbarTitleHref)}
             target={navbarTitleExternal ? "_blank" : null}
@@ -86,6 +86,22 @@ let links: NavBarLink[] = navBarConfig.links.map(
         <DisplaySettings client:only="svelte"></DisplaySettings>
     </div>
 </div>
+
+<style>
+    /* Keep the navbar glass out of the menus' ancestor chain so their blur
+       can sample the page in both transparent and translucent navbar modes. */
+    .navbar-surface { position: relative; z-index: 0; }
+    .navbar-surface::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: inherit;
+        pointer-events: none;
+        -webkit-backdrop-filter: var(--navbar-backdrop, none);
+        backdrop-filter: var(--navbar-backdrop, none);
+    }
+</style>
 
 <script>
 function switchTheme() {

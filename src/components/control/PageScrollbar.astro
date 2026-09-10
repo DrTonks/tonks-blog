@@ -9,10 +9,11 @@
  :global(html::-webkit-scrollbar), :global(body::-webkit-scrollbar) { width: 0; height: 0; }
  #page-scrollbar { position: fixed; inset: 4px 0 4px auto; width: 12px; z-index: 60; touch-action: none; user-select: none; cursor: pointer; }
  #page-scrollbar[hidden] { display: none; }
- .page-scrollbar-thumb { position: absolute; top: 0; right: 3px; width: 4px; background: var(--primary); opacity: .42; border-radius: 2px; transition: width 150ms ease, opacity 150ms ease; }
+ .page-scrollbar-thumb { position: absolute; top: 0; right: 3px; width: 4px; height: 1px; transform-origin: top; background: var(--primary); opacity: .42; border-radius: 2px; transition: transform 160ms ease-out, width 150ms ease, opacity 150ms ease; }
+ #page-scrollbar.dragging .page-scrollbar-thumb { transition: width 150ms ease, opacity 150ms ease; }
  #page-scrollbar:hover .page-scrollbar-thumb, #page-scrollbar:focus-visible .page-scrollbar-thumb, #page-scrollbar.dragging .page-scrollbar-thumb { width: 8px; opacity: .95; }
  #page-scrollbar:focus-visible { outline: 1px solid var(--primary); outline-offset: -1px; }
- @media (prefers-reduced-motion: reduce) { .page-scrollbar-thumb { transition: none; } }
+ @media (prefers-reduced-motion: reduce) { #page-scrollbar .page-scrollbar-thumb, #page-scrollbar.dragging .page-scrollbar-thumb { transition: none; } }
 </style>
 <script>
 const rail = document.querySelector<HTMLElement>("#page-scrollbar")!;
@@ -31,8 +32,7 @@ function paint() {
  const m = metrics();
  const progress = m.max ? Math.min(1, Math.max(0, scrollY / m.max)) : 0;
  rail.hidden = m.max <= 1;
- thumb.style.height = `${m.size}px`;
- thumb.style.transform = `translateY(${m.travel * progress}px)`;
+ thumb.style.transform = `translateY(${m.travel * progress}px) scaleY(${m.size})`;
  rail.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
 }
 function schedule() { if (!frame) frame = requestAnimationFrame(paint); }

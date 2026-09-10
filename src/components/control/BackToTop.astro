@@ -1,9 +1,15 @@
 ---
 import {Icon} from "astro-icon/components";
+import { url } from "../../utils/url-utils";
 ---
 
 <!-- There can't be a filter on parent element, or it will break `fixed` -->
 <div class="back-to-top-wrapper block">
+    <div id="back-to-home-btn" class="back-to-top-btn back-to-home-btn hide flex items-center rounded-2xl overflow-hidden" inert>
+        <a href={url("/")} aria-label="返回首页" title="返回首页" class="btn-card flex items-center justify-center h-[3.75rem] w-[3.75rem]">
+            <Icon name="material-symbols:home-outline-rounded" class="mx-auto" />
+        </a>
+    </div>
     <div id="back-to-top-btn" class="back-to-top-btn hide flex items-center rounded-2xl overflow-hidden transition"
          onclick="backToTop()">
         <svg class="reading-progress" viewBox="0 0 60 60" aria-hidden="true">
@@ -56,7 +62,8 @@ import {Icon} from "astro-icon/components";
     cursor: pointer
     transform: translateX(5rem)
     pointer-events: auto
-    transition: box-shadow 1s ease-in-out
+    visibility: visible
+    transition: opacity 180ms ease, transform 180ms ease, visibility 0s, box-shadow 1s ease-in-out
 
     i
       font-size: 1.75rem
@@ -66,12 +73,20 @@ import {Icon} from "astro-icon/components";
       transform: translateX(5rem) scale(0.9)
       opacity: 0
       pointer-events: none
+      transition: opacity 180ms ease, transform 180ms ease, visibility 0s 180ms, box-shadow 1s ease-in-out
 
     &:active
       transform: translateX(5rem) scale(0.9)
 
   .back-to-bottom-btn
     bottom: 5.5rem
+
+  .back-to-home-btn
+    bottom: 14.5rem
+
+  @media (prefers-reduced-motion: reduce)
+    .back-to-top-btn, .back-to-top-btn.hide
+      transition: none
 
   @media (max-width: 1560px)
     .back-to-top-btn

@@ -16,7 +16,7 @@
 @media (min-width: 1024px) {
     #banner-wrapper ~ * #navbar[data-transparent-mode="semi"] > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="semi"] > div {
-        backdrop-filter: blur(2px) !important;
+        --navbar-backdrop: blur(2px) !important;
         background: rgba(255, 255, 255, 0.55) !important;
         border: 1px solid rgba(255, 255, 255, 0.55) !important;
         border-radius: 0.75rem !important;
@@ -29,7 +29,7 @@
 @media (max-width: 1023px) {
     #banner-wrapper ~ * #navbar[data-transparent-mode="semi"][data-is-home="true"] > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="semi"][data-is-home="true"] > div {
-    backdrop-filter: blur(2px) !important;
+    --navbar-backdrop: blur(2px) !important;
     background: rgba(255, 255, 255, 0.55) !important;
     border: 1px solid rgba(255, 255, 255, 0.55) !important;
     border-radius: 0.75rem !important;
@@ -66,7 +66,7 @@
 @media (min-width: 1024px) {
     #banner-wrapper ~ * #navbar[data-transparent-mode="full"] > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="full"] > div {
-        backdrop-filter: none !important;
+        --navbar-backdrop: none !important;
         background: transparent !important;
         border: none !important;
         border-radius: 0 !important;
@@ -80,7 +80,7 @@
     /* 默认状态：页面顶部时完全透明 */
     #banner-wrapper ~ * #navbar[data-transparent-mode="semifull"] > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="semifull"] > div {
-        backdrop-filter: none !important;
+        --navbar-backdrop: none !important;
         background: transparent !important;
         border: none !important;
         border-radius: 0 !important;
@@ -91,7 +91,7 @@
     /* 滚动状态：下滑后变为半透明圆角 */
     #banner-wrapper ~ * #navbar[data-transparent-mode="semifull"].scrolled > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="semifull"].scrolled > div {
-        backdrop-filter: blur(2px) !important;
+        --navbar-backdrop: blur(2px) !important;
         background: rgba(255, 255, 255, 0.55) !important;
         border: 1px solid rgba(255, 255, 255, 0.55) !important;
         border-radius: 0.75rem !important;
@@ -104,7 +104,7 @@
 @media (max-width: 1023px) {
     #banner-wrapper ~ * #navbar[data-transparent-mode="full"][data-is-home="true"] > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="full"][data-is-home="true"] > div {
-    backdrop-filter: none !important;
+    --navbar-backdrop: none !important;
     background: transparent !important;
     border: none !important;
     border-radius: 0 !important;
@@ -119,7 +119,7 @@
     /* 默认状态：页面顶部时完全透明 */
     #banner-wrapper ~ * #navbar[data-transparent-mode="semifull"][data-is-home="true"] > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"] > div {
-        backdrop-filter: none !important;
+        --navbar-backdrop: none !important;
         background: transparent !important;
         border: none !important;
         border-radius: 0 !important;
@@ -130,7 +130,7 @@
     /* 滚动状态：下滑后变为半透明圆角 */
     #banner-wrapper ~ * #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled > div,
     body:has(#banner-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled > div {
-        backdrop-filter: blur(2px) !important;
+        --navbar-backdrop: blur(2px) !important;
         background: rgba(255, 255, 255, 0.55) !important;
         border: 1px solid rgba(255, 255, 255, 0.55) !important;
         border-radius: 0.75rem !important;
