@@ -5,7 +5,7 @@ description: 搭建一个后端评论系统，把评论区变成群聊并引入�
 tags:
   - 开发笔记
   - 主页更新
-category: 数字习作
+category: 代码习作
 image: ./cover.png
 draft: true
 pinned: false

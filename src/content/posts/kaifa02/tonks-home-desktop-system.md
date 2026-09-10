@@ -5,7 +5,7 @@ description: 给桌宠的状态机接入大语言模型的输出，同时让它�
 tags:
   - 开发笔记
   - 主页更新
-category: 数字习作
+category: 代码习作
 image: ./cover.png
 draft: false
 pinned: false

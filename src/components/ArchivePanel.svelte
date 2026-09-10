@@ -26,7 +26,6 @@ let resetting = false;
 let resetTimer: ReturnType<typeof setTimeout>;
 let widthAnimation: Animation | undefined;
 let widthRevision = 0;
-const storageKey = `archive-filters:${url("/archive/")}`;
 const filterKeys = ["tag", "category", "uncategorized", "q", "filters"];
 
 async function changeEditor(open: boolean) {
@@ -151,7 +150,6 @@ function commitFilters() {
 	clearTimeout(searchTimer);
 	appliedSearch = searchText.trim();
 	filterRevision += 1;
-	persistFilters();
 }
 
 function scheduleSearch(event: Event) {
@@ -180,16 +178,12 @@ interface Group {
 onMount(() => {
 	const incoming = new URLSearchParams(window.location.search);
 	const explicitFilters = filterKeys.some((key) => incoming.has(key));
-	let params = incoming;
-	if (!explicitFilters) {
-		try { params = new URLSearchParams(sessionStorage.getItem(storageKey) || ""); } catch { /* Storage may be disabled. */ }
-	}
+	const params = incoming;
 	tags = params.has("tag") ? params.getAll("tag") : [];
 	categories = params.has("category") ? params.getAll("category") : [];
 	uncategorized = params.has("uncategorized");
 	searchText = params.get("q") || "";
 	appliedSearch = searchText.trim();
-	persistFilters();
 	if (explicitFilters) {
 		const clean = new URL(window.location.href);
 		for (const key of filterKeys) clean.searchParams.delete(key);
@@ -239,9 +233,7 @@ onMount(() => {
 	document.addEventListener("click", handleIndexClick, true);
 	document.addEventListener("pointerdown", outsideClick);
 	document.addEventListener("keydown", escape);
-	window.addEventListener("pagehide", persistFilters);
 	return () => {
-		persistFilters();
 		mounted = false;
 		widthRevision += 1;
 		clearTimeout(searchTimer);
@@ -251,7 +243,6 @@ onMount(() => {
 		document.removeEventListener("click", handleIndexClick, true);
 		document.removeEventListener("pointerdown", outsideClick);
 		document.removeEventListener("keydown", escape);
-		window.removeEventListener("pagehide", persistFilters);
 		for (const link of document.querySelectorAll("#index-tags a")) {
 			link.classList.remove("archive-tag-selected");
 			link.removeAttribute("aria-label");
@@ -308,20 +299,6 @@ $: categoryOptions = Array.from(
 
 $: selectedCategory =
 	categories.length === 1 && !uncategorized ? categories[0] : null;
-
-function filterParams() {
-	const params = new URLSearchParams();
-	for (const tag of tags) params.append("tag", tag);
-	for (const category of categories) params.append("category", category);
-	if (uncategorized) params.set("uncategorized", "");
-	if (searchText.trim()) params.set("q", searchText.trim());
-	return params;
-}
-
-function persistFilters() {
-	try { sessionStorage.setItem(storageKey, filterParams().toString()); } catch { /* Filtering still works without storage. */ }
-}
-
 
 function selectCategory(category: string) {
 	categories = category ? [category] : [];

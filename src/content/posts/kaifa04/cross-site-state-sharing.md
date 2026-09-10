@@ -5,7 +5,7 @@ description: 从 Cookie、匿名身份令牌到跨站主题同步，记录主页
 tags:
   - 开发笔记
   - 主页更新
-category: 数字习作
+category: 代码习作
 draft: true
 pinned: false
 ---

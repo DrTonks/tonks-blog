@@ -5,7 +5,7 @@ description: tonks-home 音乐系统的技术实现：LRC 歌词解析原理、C
 tags:
   - 开发笔记
   - 主页更新
-category: 数字习作
+category: 代码习作
 image: ./cover.png
 draft: false
 pinned: false
