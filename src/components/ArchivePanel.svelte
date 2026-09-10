@@ -28,7 +28,6 @@ let widthAnimation: Animation | undefined;
 let widthRevision = 0;
 const storageKey = `archive-filters:${url("/archive/")}`;
 const filterKeys = ["tag", "category", "uncategorized", "q", "filters"];
-let copyStatus = "";
 
 async function changeEditor(open: boolean) {
 	if (!mounted) return;
@@ -153,7 +152,6 @@ function commitFilters() {
 	appliedSearch = searchText.trim();
 	filterRevision += 1;
 	persistFilters();
-	copyStatus = "";
 }
 
 function scheduleSearch(event: Event) {
@@ -324,19 +322,6 @@ function persistFilters() {
 	try { sessionStorage.setItem(storageKey, filterParams().toString()); } catch { /* Filtering still works without storage. */ }
 }
 
-async function copyFilters() {
-	const target = new URL(url("/archive/"), window.location.origin);
-	const params = filterParams();
-	// Explicit empty filters must override the recipient's saved selection too.
-	params.set("filters", "1");
-	target.search = params.toString();
-	try {
-		await navigator.clipboard.writeText(target.href);
-		copyStatus = "已复制";
-	} catch {
-		copyStatus = "复制失败，请重试";
-	}
-}
 
 function selectCategory(category: string) {
 	categories = category ? [category] : [];
@@ -420,7 +405,6 @@ $: groups = Object.entries(
         <button type="button" aria-pressed={selectedCategory === category} class:active={selectedCategory === category} on:click={() => selectCategory(category)}>{category} <small>{taggedPosts.filter((post) => post.data.category === category).length}</small></button>
       {/each}
     </div>
-    <button type="button" class="archive-share" on:click={copyFilters} aria-live="polite">{copyStatus || "复制筛选链接"}</button>
   </nav>
 
   {#key filterRevision}

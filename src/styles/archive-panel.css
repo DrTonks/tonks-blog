@@ -160,7 +160,6 @@ html.dark .archive-filter-editor { color: rgba(255, 255, 255, 0.9); }
 @media (max-width: 420px) { .archive-tag-options { grid-template-columns: repeat(2, minmax(0, max-content)); } }
 .archive-search button:focus-visible, .archive-filter-editor button:focus-visible, .archive-filter-editor input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 #index-tags a { transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
-.archive-share { flex-shrink: 0; margin-left: auto; color: var(--text-accent); font-size: 0.75rem; white-space: nowrap; }
 #index-tags a.archive-tag-selected { background: var(--signal); color: var(--signal-ink); box-shadow: inset 0 0 0 1px var(--signal-line); }
 html:not(.dark) #index-tags a.archive-tag-selected {
   background: var(--signal);
