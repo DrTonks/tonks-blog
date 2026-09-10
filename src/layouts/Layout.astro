@@ -814,6 +814,8 @@ import {
 	// SizeObserverPlugin,
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
+import { getBannerCarouselEnabled, BANNER_CAROUSEL_CHANGE } from "../utils/banner-carousel-preference";
+import { boundedNavigationScroll } from "../utils/navigation-scroll";
 import {getStoredTheme, isThemeDark} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
@@ -980,8 +982,9 @@ function activateDeferredBanner(wrapper: Element | null | undefined, priority: "
 	if (!deferredSrc) return typeof image.decode === "function" ? image.decode().catch(() => {}) : Promise.resolve();
 	const localFallback = image.dataset.bannerLocal || null;
 	return new Promise<void>((resolve) => {
-		const finish = () => resolve();
+		const finish = () => { void image.decode().catch(() => {}).then(resolve); };
 		image.fetchPriority = priority;
+		image.loading = "eager";
 		image.addEventListener("load", finish, { once: true });
 		image.addEventListener("error", () => {
 			if (localFallback && image.src !== localFallback) {
@@ -1065,6 +1068,7 @@ function initCarousel() {
 	const deviceQuery = window.matchMedia("(max-width: 1023px)");
 	const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 	const carouselEnabled = Boolean(siteConfig.banner.carousel?.enable);
+	let autoplayEnabled = getBannerCarouselEnabled();
 	const interval = siteConfig.banner.carousel?.interval || 6;
 	const intervalMs = Math.max(1, interval * 1000);
 	let validItems: Element[] = [];
@@ -1110,7 +1114,7 @@ function initCarousel() {
 		if (isPageTransitionPaused) return;
 		if (resetRemaining) remainingMs = intervalMs;
 		if (
-			!carouselEnabled ||
+			!carouselEnabled || !autoplayEnabled ||
 			validItems.length < 2 ||
 			disposed ||
 			motionQuery.matches ||
@@ -1166,7 +1170,7 @@ function initCarousel() {
 		currentIndex = nextIndex;
 		nextItem.classList.add("opacity-100", "scale-100");
 		nextItem.classList.remove("opacity-0", "scale-110");
-		if (carouselEnabled && validItems.length > 1) {
+		if (carouselEnabled && autoplayEnabled && validItems.length > 1) {
 			void activateItemImage(validItems[(currentIndex + 1) % validItems.length], "low", device);
 		}
 	}
@@ -1197,6 +1201,17 @@ function initCarousel() {
 		});
 	}
 
+	const handlePreferenceChange = () => {
+		const enabled = getBannerCarouselEnabled();
+		if (enabled === autoplayEnabled) return;
+		autoplayEnabled = enabled;
+		// Cancel an automatic slide still waiting for image decoding.
+		switchGeneration++;
+		stopCarousel();
+		if (enabled) startCarousel(true);
+	};
+	window.addEventListener(BANNER_CAROUSEL_CHANGE, handlePreferenceChange);
+	window.addEventListener("storage", handlePreferenceChange);
 	const handleDeviceChange = () => rebuildForDevice();
 	const handleTouchStart = (event: TouchEvent) => {
 		startX = event.touches[0].clientX;
@@ -1265,6 +1280,8 @@ function initCarousel() {
 
 	const cleanup = () => {
 		disposed = true;
+		window.removeEventListener(BANNER_CAROUSEL_CHANGE, handlePreferenceChange);
+		window.removeEventListener("storage", handlePreferenceChange);
 		switchGeneration++;
 		stopCarousel();
 		deviceQuery.removeEventListener("change", handleDeviceChange);
@@ -1309,6 +1326,27 @@ const setup = () => {
 		}
 	}
 
+	const navigationHead = window.swup.findPlugin('SwupHeadPlugin');
+	if (navigationHead) navigationHead.options.awaitAssets = true;
+	// Fetch styles while the old page is still visible, not in the blank interval.
+	window.swup.hooks.on('page:load', async (_visit, { page }) => {
+		if (!page || import.meta.env.DEV) return;
+		const incoming = new DOMParser().parseFromString(page.html, 'text/html');
+		const existing = new Set(Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(link => link.href));
+		await Promise.all(Array.from(incoming.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href]')).map(link => {
+			const href = new URL(link.getAttribute('href')!, location.href).href;
+			if (existing.has(href)) return;
+			return new Promise<void>(resolve => {
+				const preload = document.createElement('link');
+				preload.rel = 'preload'; preload.as = 'style'; preload.href = href;
+				const done = () => { clearTimeout(timer); preload.remove(); resolve(); };
+				const timer = setTimeout(done, 3000);
+				preload.onload = preload.onerror = done;
+				document.head.append(preload);
+			});
+		}));
+	});
+
 	// @swup/astro 1.x 没有透传该核心选项；运行时启用后，鼠标侧键、
 	// 浏览器前进/后退也会使用页面过渡。ScrollPlugin 负责恢复原滚动位置。
 	window.swup.options.animateHistoryBrowsing = true;
@@ -1321,12 +1359,34 @@ const setup = () => {
 
     // ScrollPlugin owns destinations/cache; native scrolling owns interpolation.
     let navigationScrollCancelled = false;
-    const resetScrollCancellation = () => { navigationScrollCancelled = false; };
+    let pendingPageScroll = false;
+    const resetScrollCancellation = () => { navigationScrollCancelled = false; pendingPageScroll = false; };
     window.swup.hooks.before('link:self', resetScrollCancellation);
     window.swup.hooks.before('link:anchor', resetScrollCancellation);
     window.swup.scrollTo = (target: number, animate = true) => {
         if (navigationScrollCancelled) return;
         const smooth = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (pendingPageScroll) {
+            pendingPageScroll = false;
+            const current = window.scrollY;
+            const grid = document.getElementById('main-grid');
+            if (grid) {
+                // Use layout coordinates, excluding the home's animated transform.
+                // The grid includes the sidebar and footer, even on sparse archives.
+                let bottom = grid.offsetHeight;
+                for (let node: HTMLElement | null = grid; node; node = node.offsetParent as HTMLElement | null) {
+                    bottom += node.offsetTop;
+                }
+                const positions = boundedNavigationScroll(current, target, bottom - innerHeight);
+                // Keep the spacer until the viewport fits the incoming document.
+                // Removing it here would clamp short-page scrolls before they animate.
+                document.body.style.minHeight = `${Math.max(bottom, positions.start + innerHeight)}px`;
+                if (positions.start !== current) {
+                    window.scrollTo({top: positions.start, behavior: 'instant'});
+                }
+                target = positions.target;
+            }
+        }
         window.scrollTo({top: target, behavior: smooth ? 'smooth' : 'instant'});
         scrollFunction();
     };
@@ -1397,11 +1457,41 @@ const setup = () => {
 
     }
     window.swup.hooks.before('content:replace', () => {
-        // Prevent clamping when the incoming document is shorter.
-        document.body.style.minHeight = String(scrollY + innerHeight) + 'px';
-    });
+        pendingPageScroll = true;
+        const panel = document.getElementById('main-panel-wrapper');
+        if (panel) document.body.style.setProperty('--navigation-panel-height', `${Math.max(0, document.documentElement.scrollHeight - (panel.getBoundingClientRect().top + scrollY))}px`);
+        document.body.dataset.navigationReplacing = 'true';
+        // Keep the old position until the new content's destination is known.
+        document.body.style.minHeight = String(document.documentElement.scrollHeight) + 'px';
+    }, { priority: -100 });
+    window.swup.hooks.on('content:replace', async () => {
+        const archive = document.querySelector<HTMLElement>('[data-archive-ready]');
+        if (!archive || archive.dataset.archiveReady === 'true') return;
+        // Static archive HTML contains all posts. Wait for the query filter's
+        // DOM update before measuring the incoming document or revealing it.
+        await new Promise<void>(resolve => {
+            const finish = () => { observer.disconnect(); clearTimeout(timer); resolve(); };
+            const observer = new MutationObserver(() => {
+                if (archive.dataset.archiveReady === 'true') finish();
+            });
+            const timer = setTimeout(finish, 3000);
+            observer.observe(archive, { attributes: true, attributeFilter: ['data-archive-ready'] });
+            if (archive.dataset.archiveReady === 'true') finish();
+        });
+    }, { priority: 100 });
     window.swup.hooks.before('animation:in:start', scrollFunction);
-    window.swup.hooks.on('content:scroll', scrollFunction);
+    window.swup.hooks.on('content:scroll', () => {
+        delete document.body.dataset.navigationReplacing;
+        document.body.style.removeProperty('--navigation-panel-height');
+        // Styles and the persistent sidebar are settled now. Establish the new
+        // container's initial style and start its entrance without Swup's extra
+        // nextTick gap; Swup still awaits and finalizes the running transition.
+        if (window.swup.visit.animation.animate) {
+            document.getElementById('swup-container')?.getBoundingClientRect();
+            window.swup.classes.remove('is-animating');
+        }
+        scrollFunction();
+    });
 	window.swup.hooks.on('content:replace', () => {
 		// 只处理新的katex元素的滚动条，使用原生CSS滚动条
 		initCustomScrollbar();
@@ -1445,9 +1535,11 @@ const setup = () => {
 	})
 	window.swup.hooks.on('visit:start', (visit: {
 		to: {url: string};
+		animation: {wait: boolean};
 		scroll: {reset: boolean; animate?: boolean};
 	}) => {
 		navigationScrollCancelled = false;
+		visit.animation.wait = true;
         window.scrollTo({top: window.scrollY, behavior: 'instant'});
         visit.scroll.animate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
         // 页面过渡期间冻结轮播，避免切页时同时触发图片切换和过渡布局。
@@ -1554,10 +1646,10 @@ function scrollFunction() {
         scrollUIFrame = 0;
         const scrollTop = window.scrollY;
         const endMarker = document.getElementById('main-grid');
-        if (document.body.style.minHeight && endMarker) {
+        if (document.body.style.minHeight && endMarker && !document.body.dataset.navigationReplacing) {
             const naturalBottom = endMarker.getBoundingClientRect().bottom + scrollTop;
             if (scrollTop + innerHeight <= naturalBottom + 1) document.body.style.removeProperty('min-height');
-            else document.body.style.minHeight = String(scrollTop + innerHeight) + 'px';
+
         }
         const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
         const bottomButton = document.getElementById('back-to-bottom-btn');

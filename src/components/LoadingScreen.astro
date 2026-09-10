@@ -116,48 +116,28 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 
 		const hexes = Array.from(svg.querySelectorAll(".ld-hex"));
 
-		function activateBannerImage(img, priority) {
-			return new Promise((resolve) => {
-				const src = img.dataset.bannerSrc;
-				if (!src) {
-					resolve();
-					return;
+		async function activateBannerImage(img, priority) {
+			const src = img.dataset.bannerSrc;
+			img.fetchPriority = priority;
+			img.loading = "eager";
+			if (!src) {
+				await img.decode().catch(() => {});
+				return;
+			}
+			const localFallback = img.dataset.bannerLocal;
+			img.src = src;
+			delete img.dataset.bannerSrc;
+			delete img.dataset.bannerLocal;
+			try {
+				// Decode the displayed element, not a detached cache warmer.
+				await img.decode();
+			} catch {
+				if (localFallback) {
+					window.__tonksCdnFailed = true;
+					img.src = localFallback;
+					await img.decode().catch(() => {});
 				}
-				const localFallback = img.dataset.bannerLocal || null;
-				const preload = new Image();
-				preload.decoding = "async";
-				preload.fetchPriority = priority;
-				preload.onload = () => {
-					img.fetchPriority = priority;
-					img.src = src;
-					delete img.dataset.bannerSrc;
-					delete img.dataset.bannerLocal;
-					resolve();
-				};
-				preload.onerror = () => {
-					if (localFallback) {
-						window.__tonksCdnFailed = true;
-						const retry = new Image();
-						retry.decoding = "async";
-						retry.fetchPriority = priority;
-						retry.onload = retry.onerror = () => {
-							img.fetchPriority = priority;
-							img.src = localFallback;
-							delete img.dataset.bannerSrc;
-							delete img.dataset.bannerLocal;
-							resolve();
-						};
-						retry.src = localFallback;
-					} else {
-						img.fetchPriority = priority;
-						img.src = src;
-						delete img.dataset.bannerSrc;
-						delete img.dataset.bannerLocal;
-						resolve();
-					}
-				};
-				preload.src = src;
-			});
+			}
 		}
 
 		function preloadInitialBannerImages() {

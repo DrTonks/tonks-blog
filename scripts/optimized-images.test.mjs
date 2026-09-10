@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile, realpath, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
@@ -75,7 +75,8 @@ test('YAML frontmatter and encoded image references use the real parser', async 
 });
 
 test('real Vite watcher updates SSR/client manifest, reloads JSON and retires deleted hashes', { timeout: 60000 }, async () => {
-  const root = await mkdtemp(join(tmpdir(), 'blog-image-vite-'));
+  // macOS aliases /var to /private/var; match Vite's canonical module paths.
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'blog-image-vite-')));
   let server, socket;
   try {
     await mkdir(join(root, 'public/images/projects'), { recursive: true });

@@ -10,6 +10,7 @@ export let tags: string[] = [];
 export let categories: string[] = [];
 export let sortedPosts: Post[] = [];
 
+let archiveReady = false;
 let uncategorized = false;
 let filterRevision = 0;
 let searchText = "";
@@ -175,15 +176,21 @@ interface Group {
 	posts: Post[];
 }
 
-onMount(() => {
-	const incoming = new URLSearchParams(window.location.search);
-	const explicitFilters = filterKeys.some((key) => incoming.has(key));
-	const params = incoming;
-	tags = params.has("tag") ? params.getAll("tag") : [];
-	categories = params.has("category") ? params.getAll("category") : [];
+// Initialize filters before the first client render so navigation measures
+// the filtered archive rather than a temporary list of every article.
+if (typeof window !== "undefined") {
+	const params = new URLSearchParams(window.location.search);
+	tags = params.getAll("tag");
+	categories = params.getAll("category");
 	uncategorized = params.has("uncategorized");
 	searchText = params.get("q") || "";
 	appliedSearch = searchText.trim();
+	archiveReady = true;
+}
+
+onMount(() => {
+	const incoming = new URLSearchParams(window.location.search);
+	const explicitFilters = filterKeys.some((key) => incoming.has(key));
 	if (explicitFilters) {
 		const clean = new URL(window.location.href);
 		for (const key of filterKeys) clean.searchParams.delete(key);
@@ -328,7 +335,7 @@ $: groups = Object.entries(
 	.sort((left, right) => right.year - left.year) as Group[];
 </script>
 
-<div class="archive-shell card-base">
+<div class="archive-shell card-base" data-archive-ready={archiveReady ? "true" : "false"}>
   <header class="archive-header">
     <div class="archive-heading">
       <span class="archive-kicker">ARCHIVE / CHRONOLOGICAL INDEX</span>

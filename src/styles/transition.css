@@ -170,3 +170,9 @@ html.swup-enabled #sidebar.onload-animation { animation: none; opacity: 1; trans
 @media (prefers-reduced-motion: reduce) {
     #navbar.onload-animation { animation: none; }
 }
+
+/* Do not expose the unfiltered archive's temporary height while its island mounts. */
+body[data-navigation-replacing] #main-panel-wrapper {
+    max-height: var(--navigation-panel-height);
+    overflow: clip;
+}

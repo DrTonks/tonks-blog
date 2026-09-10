@@ -20,6 +20,9 @@ import {
 	setWavesEnabled,
 } from "@utils/setting-utils";
 
+import { BANNER_CAROUSEL_CHANGE, getBannerCarouselEnabled, setBannerCarouselEnabled } from "@utils/banner-carousel-preference";
+
+let bannerCarouselEnabled = getBannerCarouselEnabled();
 const accentPresets: { id: AccentPreset; label: string }[] = [
 	{ id: "blue", label: "蓝色" },
 	{ id: "gold", label: "金色" },
@@ -87,6 +90,10 @@ function handleThemeModeKeydown(mode: "light" | "dark", event: KeyboardEvent) {
 }
 
 onMount(() => {
+	const syncBannerCarousel = () => { bannerCarouselEnabled = getBannerCarouselEnabled(); };
+	window.addEventListener(BANNER_CAROUSEL_CHANGE, syncBannerCarousel);
+	window.addEventListener("storage", syncBannerCarousel);
+	syncBannerCarousel();
 	const mobileQuery = window.matchMedia(AVATAR_MOBILE_QUERY);
 	const motionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
 	const syncAvatarParticles = () => {
@@ -108,6 +115,8 @@ onMount(() => {
 	document.addEventListener("astro:page-load", handleThemeChange);
 	handleThemeChange();
 	return () => {
+		window.removeEventListener(BANNER_CAROUSEL_CHANGE, syncBannerCarousel);
+		window.removeEventListener("storage", syncBannerCarousel);
 		mobileQuery.removeEventListener("change", syncAvatarParticles);
 		motionQuery.removeEventListener("change", syncAvatarParticles);
 		window.removeEventListener(AVATAR_PARTICLES_CHANGE, syncAvatarParticles);
@@ -223,6 +232,22 @@ onMount(() => {
 		<Icon icon="material-symbols:wallpaper-outline-rounded" class="text-[1.15rem]"></Icon>
 		显示效果
 	</div>
+	{#if siteConfig.banner.enable && siteConfig.banner.carousel?.enable}
+	<button
+		type="button"
+		role="switch"
+		aria-checked={bannerCarouselEnabled}
+		aria-label="壁纸自动轮播"
+		on:click={() => setBannerCarouselEnabled(!bannerCarouselEnabled)}
+		class="wave-setting-row flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[var(--primary)] transition-colors hover:bg-[var(--btn-plain-bg-hover)]"
+	>
+		<span class="flex items-center gap-2 font-medium">
+			<Icon icon="material-symbols:wallpaper-outline-rounded" class="text-[1.25rem]"></Icon>
+			壁纸自动轮播
+		</span>
+		<span class:enabled={bannerCarouselEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
+	</button>
+	{/if}
 	<button
 		type="button"
 		role="switch"
