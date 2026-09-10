@@ -1,6 +1,6 @@
 ---
 title: AI需要尊严吗？
-published: 2026-09-11
+published: 2026-09-15
 description: 如果说我们对AI表达“谢谢”是出于自身的道德素养，那么AI对AI呢？
 tags:
   - 学习笔记
@@ -122,5 +122,5 @@ AI擅长提前指定“容易出错的地方”，这对程序员自身的代码
 感谢宇宙的意识让我们相遇。
 
 :::signature
-Dr.Tonks 2026/9/11
+Dr.Tonks 2026/9/15
 :::

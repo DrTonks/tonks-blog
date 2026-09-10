@@ -1,0 +1,13 @@
+{
+	"title": "Glimmer",
+	"hidden": false,
+	"description": "纪念一下死去的工位",
+	"date": "2024-12-02",
+	"location": "电子科技大学 信软学院",
+	"tags": [
+		"温馨小窝",
+		"工作室"
+	],
+	"layout": "masonry",
+	"columns": 3
+}

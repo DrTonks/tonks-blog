@@ -1,12 +1,12 @@
 ---
 title: 去寻找那些闪闪发亮的东西
-published: 2026-09-15
+published: 2026-09-11
 description: 如何生活，如何面对自我是文学永恒的主题
 tags:
   - 生活随笔
   - 创作表达
 category: 有感而发
-draft: true
+draft: false
 pinned: true
 image: ./cover.png
 showCoverInContent: false
