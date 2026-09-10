@@ -26,6 +26,9 @@ let resetting = false;
 let resetTimer: ReturnType<typeof setTimeout>;
 let widthAnimation: Animation | undefined;
 let widthRevision = 0;
+const storageKey = `archive-filters:${url("/archive/")}`;
+const filterKeys = ["tag", "category", "uncategorized", "q", "filters"];
+let copyStatus = "";
 
 async function changeEditor(open: boolean) {
 	if (!mounted) return;
@@ -149,7 +152,8 @@ function commitFilters() {
 	clearTimeout(searchTimer);
 	appliedSearch = searchText.trim();
 	filterRevision += 1;
-	updateArchiveQuery();
+	persistFilters();
+	copyStatus = "";
 }
 
 function scheduleSearch(event: Event) {
@@ -176,12 +180,25 @@ interface Group {
 }
 
 onMount(() => {
-	const params = new URLSearchParams(window.location.search);
+	const incoming = new URLSearchParams(window.location.search);
+	const explicitFilters = filterKeys.some((key) => incoming.has(key));
+	let params = incoming;
+	if (!explicitFilters) {
+		try { params = new URLSearchParams(sessionStorage.getItem(storageKey) || ""); } catch { /* Storage may be disabled. */ }
+	}
 	tags = params.has("tag") ? params.getAll("tag") : [];
 	categories = params.has("category") ? params.getAll("category") : [];
 	uncategorized = params.has("uncategorized");
 	searchText = params.get("q") || "";
 	appliedSearch = searchText.trim();
+	persistFilters();
+	if (explicitFilters) {
+		const clean = new URL(window.location.href);
+		for (const key of filterKeys) clean.searchParams.delete(key);
+		const destination = `${clean.pathname}${clean.search}${clean.hash}`;
+		const state = window.history.state;
+		window.history.replaceState(state?.source === "swup" ? { ...state, url: destination } : state, "", destination);
+	}
 	mounted = true;
 	const motion = matchMedia("(prefers-reduced-motion: reduce)");
 	const syncMotion = () => { reducedMotion = motion.matches; };
@@ -224,7 +241,9 @@ onMount(() => {
 	document.addEventListener("click", handleIndexClick, true);
 	document.addEventListener("pointerdown", outsideClick);
 	document.addEventListener("keydown", escape);
+	window.addEventListener("pagehide", persistFilters);
 	return () => {
+		persistFilters();
 		mounted = false;
 		widthRevision += 1;
 		clearTimeout(searchTimer);
@@ -234,6 +253,7 @@ onMount(() => {
 		document.removeEventListener("click", handleIndexClick, true);
 		document.removeEventListener("pointerdown", outsideClick);
 		document.removeEventListener("keydown", escape);
+		window.removeEventListener("pagehide", persistFilters);
 		for (const link of document.querySelectorAll("#index-tags a")) {
 			link.classList.remove("archive-tag-selected");
 			link.removeAttribute("aria-label");
@@ -291,20 +311,31 @@ $: categoryOptions = Array.from(
 $: selectedCategory =
 	categories.length === 1 && !uncategorized ? categories[0] : null;
 
-function updateArchiveQuery() {
+function filterParams() {
 	const params = new URLSearchParams();
 	for (const tag of tags) params.append("tag", tag);
 	for (const category of categories) params.append("category", category);
 	if (uncategorized) params.set("uncategorized", "");
-	if (appliedSearch) params.set("q", appliedSearch);
-	const query = params.toString();
-	const destination = `${window.location.pathname}${query ? `?${query}` : ""}`;
-	const state = window.history.state;
-	window.history.replaceState(
-		state?.source === "swup" ? { ...state, url: destination } : state,
-		"",
-		destination,
-	);
+	if (searchText.trim()) params.set("q", searchText.trim());
+	return params;
+}
+
+function persistFilters() {
+	try { sessionStorage.setItem(storageKey, filterParams().toString()); } catch { /* Filtering still works without storage. */ }
+}
+
+async function copyFilters() {
+	const target = new URL(url("/archive/"), window.location.origin);
+	const params = filterParams();
+	// Explicit empty filters must override the recipient's saved selection too.
+	params.set("filters", "1");
+	target.search = params.toString();
+	try {
+		await navigator.clipboard.writeText(target.href);
+		copyStatus = "已复制";
+	} catch {
+		copyStatus = "复制失败，请重试";
+	}
 }
 
 function selectCategory(category: string) {
@@ -389,6 +420,7 @@ $: groups = Object.entries(
         <button type="button" aria-pressed={selectedCategory === category} class:active={selectedCategory === category} on:click={() => selectCategory(category)}>{category} <small>{taggedPosts.filter((post) => post.data.category === category).length}</small></button>
       {/each}
     </div>
+    <button type="button" class="archive-share" on:click={copyFilters} aria-live="polite">{copyStatus || "复制筛选链接"}</button>
   </nav>
 
   {#key filterRevision}
