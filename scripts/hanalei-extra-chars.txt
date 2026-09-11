@@ -7,3 +7,6 @@
 
 # DisplaySettings is client-only: keep its complete static labels in production.
 主题色点击切换到对应主题亮色主题暗色主题蓝色金色显示效果水波纹动画网格卡片
+
+# Index toggle changes its label at runtime after expanding tags.
+收起
