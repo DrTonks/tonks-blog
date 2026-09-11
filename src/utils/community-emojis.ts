@@ -58,14 +58,14 @@ export function splitEmojiText(content: string): Array<{text:string;emoji?:Emoji
   if (offset < content.length) result.push({text:content.slice(offset)})
   return result
 }
-export function renderEmojiText(element: HTMLElement, content: string) {
+export function renderEmojiText(element: HTMLElement, content: string, options: { preview?: boolean } = {}) {
   const nodes = splitEmojiText(content).map(part => {
     if (!part.emoji?.src) return document.createTextNode(part.emoji?.text ?? part.text)
     const img = document.createElement('img')
     img.src=part.emoji.src; img.alt=`[${part.emoji.label}]`; img.title=part.emoji.label
     img.className='community-inline-emoji'; img.width=48; img.height=48
     img.loading='lazy'; img.decoding='async'; img.draggable=false
-    attachEmojiPreview(img)
+    if (options.preview !== false) attachEmojiPreview(img)
     img.addEventListener('error',()=>img.replaceWith(document.createTextNode(img.alt)),{once:true})
     return img
   })

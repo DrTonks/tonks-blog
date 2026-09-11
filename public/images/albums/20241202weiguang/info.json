@@ -8,6 +8,6 @@
 		"温馨小窝",
 		"工作室"
 	],
-	"layout": "grid",
+	"layout": "masonry",
 	"columns": 2
 }

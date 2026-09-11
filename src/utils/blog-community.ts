@@ -189,7 +189,7 @@ function attachCommunityEmojiPicker(
 			button.className = "community-emoji-item";
 			button.title = item.label;
 			button.setAttribute("aria-label", item.label);
-			renderEmojiText(button, item.text ?? item.token);
+			renderEmojiText(button, item.text ?? item.token, { preview: false });
 			button.addEventListener("click", () => {
 				const start = textarea.selectionStart;
 				const end = textarea.selectionEnd;
