@@ -7,9 +7,11 @@ import { getImage } from "astro:assets";
 import { parse } from "node-html-parser";
 import { getPostUrlBySlug } from "../../utils/url-utils";
 import "../../styles/article.css";
+import { annotateCommentBlocks, saveDevCommentManifest } from "../../utils/article-comment-map.mjs";
 
 interface Props {
 	class: string;
+	commentSlug?: string;
 }
 const className = Astro.props.class;
 const rendered = parse(await Astro.slots.render("default"));
@@ -34,9 +36,12 @@ if (references.length) {
     ref.replaceWith(`<a class="article-post-card no-styling" href="${escape(getPostUrlBySlug(post.slug))}">${cover ? `<img src="${escape(cover)}" alt="" width="160" height="110" loading="lazy" decoding="async">` : '<span class="post-card-placeholder" aria-hidden="true">↗</span>'}<span class="post-card-copy"><span class="post-card-label">站内延伸阅读</span><strong>${escape(post.data.title)}</strong><span class="post-card-description">${escape(post.data.description || "阅读这篇文章")}</span></span><span aria-hidden="true" class="post-card-arrow">↗</span></a>`);
   }
 }
+const commentMap = Astro.props.commentSlug ? annotateCommentBlocks(rendered, Astro.props.commentSlug) : null;
+if (commentMap && import.meta.env.DEV) saveDevCommentManifest(commentMap);
 ---
 <div data-pagefind-body class={`prose dark:prose-invert prose-base !max-w-none custom-md ${className}`}>
     <!--<div class="prose dark:prose-invert max-w-none custom-md">-->
     <!--<div class="max-w-none custom-md">-->
     <Fragment set:html={rendered.toString()} />
+    {commentMap && <script is:inline type="application/json" data-article-comment-map set:html={JSON.stringify(commentMap).replace(/</g, '\\u003c')} />}
 </div>

@@ -1,6 +1,5 @@
 ---
 import path from "node:path";
-import Comment from "@components/comment/index.astro";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import PasswordProtection from "@components/PasswordProtection.astro";
@@ -18,6 +17,7 @@ import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import BlogLike from "../../components/community/BlogLike.astro";
+import ArticleComments from "../../components/community/ArticleComments.astro";
 import { profileConfig, siteConfig } from "../../config";
 import {findAuthoredSummary} from "../../utils/ai-summary";
 import manualSummaries from "../../content/ai-summaries.json";
@@ -236,7 +236,7 @@ const jsonLd = {
                     </PasswordProtection>
                 ) : (
                     <>
-                        <Markdown class="mb-6 markdown-content onload-animation">
+                        <Markdown class="mb-6 markdown-content onload-animation" commentSlug={!entry.data.draft ? entry.slug : undefined}>
                             <Content />
                         </Markdown>
                         {licenseConfig.enable && (
@@ -258,7 +258,7 @@ const jsonLd = {
     </div>
 
     <!-- 评论 -->
-    <Comment post={entry} />
+    {!entry.data.draft && !entry.data.encrypted ? <ArticleComments /> : null}
 
     {siteConfig.showLastModified && (
         <>

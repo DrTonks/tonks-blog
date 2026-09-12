@@ -1,4 +1,5 @@
 import sitemap from "@astrojs/sitemap";
+import articleComments from "./scripts/article-comments-integration.mjs";
 import optimizedImages from "./scripts/optimized-images.mjs";
 import buildVersion from "./scripts/build-version.mjs";
 import pruneThemeAvatarOriginals from "./scripts/prune-theme-avatar-originals.mjs";
@@ -64,6 +65,7 @@ function getLocalEnvValue(name) {
 }
 
 const sleepyDevProxyTarget = getLocalEnvValue("SLEEPY_DEV_PROXY_TARGET");
+const articleDevTarget = getLocalEnvValue("SLEEPY_ARTICLE_DEV_TARGET");
 if (process.env.NODE_ENV !== "production") {
 	console.info(`[sleepy proxy] ${sleepyDevProxyTarget ? "configured" : "not configured"}`);
 }
@@ -79,7 +81,7 @@ const sleepyDevProxyFallback = {
 	apply: "serve",
 	enforce: "post",
 	configureServer(server) {
-		if (!sleepyDevProxyTarget) return;
+		if (!sleepyDevProxyTarget && !articleDevTarget) return;
 		const forwardRequest = async (request, response, next) => {
 			const requestUrl = request.url || "";
 			if (!requestUrl.startsWith("/api/")) {
@@ -88,7 +90,9 @@ const sleepyDevProxyFallback = {
 			}
 
 			try {
-				const upstreamUrl = new URL(requestUrl.replace(/^\/api/, ""), sleepyDevProxyTarget);
+				const target = articleDevTarget && requestUrl.startsWith('/api/blog/community/articles/') ? articleDevTarget : sleepyDevProxyTarget;
+				if (!target) { next(); return; }
+				const upstreamUrl = new URL(requestUrl.replace(/^\/api/, ""), target);
 				const headers = new Headers();
 				for (const [name, value] of Object.entries(request.headers)) {
 					if (value && !["connection", "content-length", "host"].includes(name)) {
@@ -149,6 +153,7 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 	integrations: [
+		articleComments(),
 		optimizedImages(),
 		buildVersion(),
 		tailwind({

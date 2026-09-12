@@ -124,13 +124,13 @@ export const siteConfig: SiteConfig = {
 			enable: true, // 在主页显示自定义文本
 			title: "Tonks", // 主页横幅主标题
 
-			subtitle: ["你好！", "欢迎来到Dr.Tonks的博客", "记录生活中点滴的美好"],
+			subtitle: ["分享生活中细微的喜悦", "记录时光中点滴的美好"],
 			typewriter: {
 				enable: true, // 启用副标题打字机效果
 
 				speed: 100, // 打字速度（毫秒）
 				deleteSpeed: 40, // 删除速度（毫秒）
-				pauseTime: 3000, // 完全显示后的暂停时间（毫秒）
+				pauseTime: 5000, // 完全显示后的暂停时间（毫秒）
 			},
 		},
 

@@ -3,7 +3,8 @@
 	"type": "module",
 	"version": "6.1.0",
 	"scripts": {
-		"dev": "node scripts/run-font-subset.js --source-only && astro dev",
+		"dev": "node scripts/run-dev.mjs",
+		"dev:comments-preview": "node scripts/run-dev.mjs --comments-preview",
 		"start": "pnpm run dev",
 		"check": "astro check",
 		"build": "node scripts/run-build.mjs",

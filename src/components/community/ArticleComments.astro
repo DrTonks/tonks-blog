@@ -1,0 +1,54 @@
+---
+import '../../styles/article-comments.css';
+---
+<section class="ac-section card-base" data-article-comments aria-labelledby="article-comments-title" data-pagefind-ignore>
+  <header class="ac-section-header">
+    <div><span class="ac-kicker">CONVERSATION</span><div class="ac-heading" role="heading" aria-level="2" id="article-comments-title">留言与讨论 <span data-ac-total></span></div></div>
+    <div class="ac-actions"><button type="button" data-ac-admin aria-label="管理员模式" title="管理员模式">⚙</button><button type="button" class="ac-primary" data-ac-write>写留言 <span aria-hidden="true">↗</span></button></div>
+  </header>
+  <div data-ac-main-list class="ac-list" aria-live="polite"><p class="ac-muted">正在读取留言…</p></div>
+  <button type="button" class="ac-more" data-ac-main-more hidden>更多讨论</button>
+  <noscript>启用 JavaScript 后可以查看留言和参与段落讨论。</noscript>
+</section>
+<dialog class="ac-dialog" data-ac-dialog aria-labelledby="ac-dialog-title" data-community-overlay-root data-pagefind-ignore>
+  <div class="ac-dialog-shell">
+    <header class="ac-dialog-header"><div><span class="ac-kicker">CONVERSATION</span><div class="ac-heading" role="heading" aria-level="2" id="ac-dialog-title" tabindex="-1">本段评论 <span data-ac-dialog-count></span></div></div><button type="button" data-ac-close class="ac-close" aria-label="关闭评论">×</button></header>
+    <div data-ac-discussion class="ac-discussion">
+      <blockquote data-ac-quote class="ac-quote" hidden></blockquote>
+      <div class="ac-scroll"><div data-ac-dialog-list class="ac-list" aria-live="polite"></div><button type="button" class="ac-more" data-ac-dialog-more hidden>更多讨论</button></div>
+      <div class="ac-composer">
+        <button type="button" data-ac-start class="ac-start">说说你的想法… <span aria-hidden="true">↗</span></button>
+        <form data-ac-form hidden>
+          <div class="ac-composer-meta"><button type="button" data-ac-profile title="修改留言身份"></button><span data-ac-reply-label></span><button type="button" data-ac-cancel-reply hidden>取消回复</button></div>
+          <textarea name="content" aria-label="留言内容" placeholder="说说你的想法… 支持 Markdown" maxlength="800" rows="3" required></textarea>
+          <div class="ac-editor-footer"><button type="button" data-ac-emoji aria-label="插入表情" aria-expanded="false">☺</button><small data-ac-length>0 / 800</small><button type="submit" class="ac-primary">发送 ↗</button></div>
+          <div data-ac-emojis class="ac-emojis" hidden></div>
+        </form>
+        <p data-ac-status role="status" class="ac-status"></p>
+      </div>
+    </div>
+    <form data-ac-identity class="ac-identity" hidden>
+      <p class="ac-muted">沿用两站的访客身份。邮箱不会公开，仅用于识别留言。</p>
+      <label>昵称 <span>*</span><input name="nickname" autocomplete="nickname" maxlength="30" required /></label>
+      <label>邮箱 <span>*</span><input name="email" type="email" autocomplete="email" maxlength="254" required /></label>
+      <label>网站 <small>（选填）</small><input name="website" type="url" autocomplete="url" placeholder="https://" maxlength="300" /></label>
+      <label class="ac-remember"><input name="remember" type="checkbox" checked />在此设备记住身份，并在两站间共享</label>
+      <footer><button type="button" data-ac-identity-back>返回</button><button type="submit" class="ac-primary">保存并继续</button></footer>
+    </form>
+    <form data-ac-admin-form class="ac-identity" hidden>
+      <p class="ac-muted">验证后可以发布站长留言、审核和删除评论。</p>
+      <label>管理员密钥<input name="secret" type="password" autocomplete="current-password" required /></label>
+      <p data-ac-admin-status role="status"></p>
+      <footer><button type="button" data-ac-admin-back>返回</button><button type="button" data-ac-admin-out>退出</button><button type="submit" class="ac-primary">验证</button></footer>
+    </form>
+  </div>
+</dialog>
+<script>
+  import { initializeArticleComments } from '../../utils/article-comments';
+  const start = () => initializeArticleComments();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once:true});
+  else start();
+  const hook = () => (window as Window & {swup?: {hooks: {on: (event:string, fn:()=>void)=>void}}}).swup?.hooks.on('page:view', start);
+  if ((window as Window & {swup?:unknown}).swup) hook();
+  else document.addEventListener('swup:enable', hook, {once:true});
+</script>

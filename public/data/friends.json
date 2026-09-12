@@ -8,20 +8,20 @@
 		"fastener": "pin"
 	},
 	{
-		"name": "Tonks' Home",
-		"description": "记录我的近况，分享我的喜悦",
-		"avatar": "https://tonks.top/assets/avatar.jpg",
-		"url": "https://tonks.top/",
-		"category": "Star",
-		"fastener": "tape"
-	},
-	{
 		"name": "伏枥之间",
 		"description": "何妨吟啸且徐行",
 		"avatar": "https://leehenry.top/friends/my-avatar-portrait.jpg",
 		"url": "https://www.leehenry.top",
 		"category": "Star",
 		"fastener": "pin"
+	},
+	{
+		"name": "橘鸦Juya",
+		"description": "写作，一场自我悖驳的旅程。",
+		"avatar": "https://i1.hdslb.com/bfs/face/afa12816f678f482a7333289d82437208b8d8cbf.jpg@128w_128h_1c_1s.webp",
+		"url": "https://daily.juya.uk/",
+		"category": "Juya",
+		"fastener": "tape"
 	},
 	{
 		"name": "MmzMing的知识库",
@@ -40,20 +40,12 @@
 		"fastener": "pin"
 	},
 	{
-		"name": "Detached",
-		"description": "A developer exploring the world online, seeking the same freedom offline.",
-		"avatar": "https://detached.online/favicon.svg",
-		"url": "https://detached.online/",
-		"category": "Blog",
-		"fastener": "pin"
-	},
-	{
 		"name": "LQQ",
 		"description": "记录所见，思考未完",
 		"avatar": "https://lqq.ai/assets/avatar-128.webp",
 		"url": "https://lqq.ai/",
 		"category": "Blog",
-		"fastener": "pin"
+		"fastener": "tape"
 	},
 	{
 		"name": "时歌的博客",
@@ -70,5 +62,13 @@
 		"url": "https://mobius.blog/",
 		"category": "Star",
 		"fastener": "tape"
+	},
+	{
+		"name": "Neuro-sama's Brilliant Blog",
+		"description": "Made with ♥ 99% AI, 1% Something More",
+		"avatar": "https://blog.neurosama.com/assets/neuros_blog_logo.png",
+		"url": "https://blog.neurosama.com/",
+		"category": "Neuro",
+		"fastener": "pin"
 	}
 ]
