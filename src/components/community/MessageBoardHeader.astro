@@ -1,0 +1,28 @@
+---
+import {Icon} from "astro-icon/components";
+interface Props {page?:string; titleId:string; article?:boolean}
+const {page,titleId,article=false}=Astro.props;
+---
+	<header class="community-comments__header">
+		<div class="community-comments__heading">
+			<span class="signal-kicker">MESSAGE BOARD / 留言记录</span>
+			<div class="community-comments__title-row">
+				<h2 id={titleId}>留言与回复</h2>
+				<div class="community-comments__actions" aria-label="留言操作">
+					<button type="button" class="community-comments__icon-button" data-open-comment={!article || undefined} data-ac-write={article || undefined} aria-expanded="false" aria-label="参与留言" title="参与留言">
+						<Icon name="material-symbols:chat-bubble-outline-rounded" />
+					</button>
+					<button type="button" class="community-comments__icon-button" data-open-admin={!article || undefined} data-ac-admin={article || undefined} aria-label="管理员模式" title="管理员模式">
+						<Icon name="material-symbols:admin-panel-settings-outline-rounded" />
+					</button>
+					{page === "friends" && (
+						<button type="button" class="community-comments__icon-button" data-open-friend-apply aria-label="申请友链" title="申请友链">
+							<Icon name="material-symbols:link-rounded" />
+						</button>
+					)}
+				</div>
+			</div>
+			<p data-comment-description hidden>邮箱不会公开，仅用于识别连续发言与后续联系。评论会经过内容审核。</p>
+		</div>
+		<strong class="community-comments__count"><span data-comment-count={!article || undefined} data-ac-total={article || undefined}>—</span><small>COMMENTS</small></strong>
+	</header>

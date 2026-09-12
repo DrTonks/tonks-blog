@@ -1,12 +1,12 @@
 ---
 import '../../styles/article-comments.css';
+import '../../styles/community-comments.css';
+import MessageBoardHeader from './MessageBoardHeader.astro';
 ---
-<section class="ac-section card-base" data-article-comments aria-labelledby="article-comments-title" data-pagefind-ignore>
-  <header class="ac-section-header">
-    <div><span class="ac-kicker">CONVERSATION</span><div class="ac-heading" role="heading" aria-level="2" id="article-comments-title">留言与讨论 <span data-ac-total></span></div></div>
-    <div class="ac-actions"><button type="button" data-ac-admin aria-label="管理员模式" title="管理员模式">⚙</button><button type="button" class="ac-primary" data-ac-write>写留言 <span aria-hidden="true">↗</span></button></div>
-  </header>
-  <div data-ac-main-list class="ac-list" aria-live="polite"><p class="ac-muted">正在读取留言…</p></div>
+<section id="article-comments" class="ac-section community-comments card-base" data-article-comments aria-labelledby="article-comments-title" data-pagefind-ignore>
+  <MessageBoardHeader article titleId="article-comments-title" />
+  <div class="community-comments__rule"><span>PUBLIC MESSAGES</span></div>
+  <div data-ac-main-list class="ac-list community-comments__list" aria-live="polite"><p class="ac-muted">正在读取留言…</p></div>
   <button type="button" class="ac-more" data-ac-main-more hidden>更多讨论</button>
   <noscript>启用 JavaScript 后可以查看留言和参与段落讨论。</noscript>
 </section>
@@ -16,13 +16,13 @@ import '../../styles/article-comments.css';
     <div data-ac-discussion class="ac-discussion">
       <blockquote data-ac-quote class="ac-quote" hidden></blockquote>
       <div class="ac-scroll"><div data-ac-dialog-list class="ac-list" aria-live="polite"></div><button type="button" class="ac-more" data-ac-dialog-more hidden>更多讨论</button></div>
-      <div class="ac-composer">
+      <div class="ac-composer community-comments">
         <button type="button" data-ac-start class="ac-start">说说你的想法… <span aria-hidden="true">↗</span></button>
         <form data-ac-form hidden>
           <div class="ac-composer-meta"><button type="button" data-ac-profile title="修改留言身份"></button><span data-ac-reply-label></span><button type="button" data-ac-cancel-reply hidden>取消回复</button></div>
           <textarea name="content" aria-label="留言内容" placeholder="说说你的想法… 支持 Markdown" maxlength="800" rows="3" required></textarea>
-          <div class="ac-editor-footer"><button type="button" data-ac-emoji aria-label="插入表情" aria-expanded="false">☺</button><small data-ac-length>0 / 800</small><button type="submit" class="ac-primary">发送 ↗</button></div>
-          <div data-ac-emojis class="ac-emojis" hidden></div>
+          <div data-ac-editor></div>
+          <div class="ac-editor-footer"><small data-ac-length>0 / 800</small><button type="submit" class="ac-primary">发送 ↗</button></div>
         </form>
         <p data-ac-status role="status" class="ac-status"></p>
       </div>

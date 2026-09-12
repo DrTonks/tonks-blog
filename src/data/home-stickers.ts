@@ -100,7 +100,7 @@ export const homeStickerDefinitions: HomeStickerDefinition[] = [
 		eyebrow: "MESSAGE / CHAT",
 		title: "来聊聊天",
 		note: "去 Tonks' Chat 留句话",
-		image: "/assets/home/home.png",
+		image: "/images/projects/chat.png",
 		href: "https://tonks.top/?open=community",
 		external: true,
 		tilt: -1.6,

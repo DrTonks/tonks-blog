@@ -116,7 +116,8 @@ const { target, variant = "article", class: className = "" } = Astro.props;
 	.community-like__meta-count { font: 600 0.78rem/1 "JetBrains Mono Variable", monospace; font-variant-numeric: tabular-nums; }
 	.community-like--meta.is-pulsing .community-like__meta-heart { animation: community-heart-pulse 460ms var(--ease-signal); }
 
-	.community-like--article { margin: 0.75rem 0 1.5rem; }
+	.community-like--article { margin: 0.75rem 0 1.5rem; color: var(--deep-text, #333); }
+	:global(html.dark) .community-like--article { color: #e0e3e8; }
 	.community-like--article .community-like__button { padding: 0.7rem 1.2rem; border-style: dashed; border-radius: 0.45rem; clip-path: polygon(0.45rem 0, 100% 0, 100% calc(100% - 0.45rem), calc(100% - 0.45rem) 100%, 0 100%, 0 0.45rem); }
 	.community-like--article .community-like__heart { font-size: 1.75rem; }
 

@@ -55,6 +55,8 @@ export function attachArticlePicker(textarea: HTMLTextAreaElement, host: HTMLEle
   let open = false
   const position = () => {
     if (!open) return
+    const owner = communityOverlayHost(host)
+    if (panel.parentElement !== owner) owner.append(panel)
     Object.assign(panel.style,communityOverlayPosition(toggle,380,420))
   }
   const hide = (focus = false) => {open=false; panel.hidden=true;toggle.setAttribute('aria-expanded','false'); if(focus) textarea.focus()}

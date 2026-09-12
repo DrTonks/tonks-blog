@@ -7,6 +7,7 @@ import { i18n } from "../i18n/translation";
 import { getDir, getTagUrl } from "../utils/url-utils";
 import { siteConfig } from "../config";
 import ImageWrapper from "./misc/ImageWrapper.astro";
+import {articleCommentId} from "../utils/article-comment-map.mjs";
 import PostMetadata from "./PostMeta.astro";
 
 interface Props {
@@ -58,15 +59,19 @@ const { remarkPluginFrontmatter } = await entry.render();
     ></a>
     <div class:list={["post-card__body pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%_-_52px_-_12px)]": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]": hasCover}]}>
         <span class="post-card__signal-rail" aria-hidden="true"></span>
+        <div class="post-card__title-row">
         <a href={url}
            class="post-card__title signal-sweep signal-marker group w-full block font-bold mb-3 text-3xl text-90 active:text-[var(--signal-ink)]">
             <span class="relative z-10">
-                {pinned && <Icon name="mdi:pin" class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5"></Icon>}
+                {pinned && <Icon name="mdi:pin" class="post-card__pin inline text-2xl mr-2 -translate-y-0.5"></Icon>}
                 {title}
                 <Icon class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
                 <Icon class="signal-arrow text-[var(--signal-ink)] text-[2rem] hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
             </span>
         </a>
+
+        {!entry.data.draft && !entry.data.encrypted && <a href={`${url}#article-comments`} class="post-card__comments" data-article-count={articleCommentId(entry.slug)} aria-label="查看文章评论" hidden data-pagefind-ignore><Icon name="material-symbols:chat-bubble-outline-rounded" /><span></span></a>}
+        </div>
 
         <!-- metadata (without tags) -->
         <PostMetadata published={published} updated={updated} tags={tags} category={category || ''} hideTagsForMobile={true} hideUpdateDate={true} className="post-card__meta mb-4" showOnlyBasicMeta={true} words={remarkPluginFrontmatter.words} showWordCount={true} slug={entry.slug} showViews={true}></PostMetadata>
@@ -490,3 +495,22 @@ const { remarkPluginFrontmatter } = await entry.render();
         }
     }
 </style>
+
+<style>
+.post-card__title-row{display:flex;align-items:center;gap:1.5rem;margin-bottom:.75rem;min-width:0}
+.post-card__title-row .post-card__title{margin-bottom:0;min-width:0}
+.post-card__comments{position:relative;z-index:20;display:inline-flex;flex-shrink:0;align-items:center;gap:.25rem;color:var(--primary);font:600 .78rem/1 monospace;padding:.2rem}
+.post-card__comments[hidden]{display:none}
+.post-card__comments :global(svg){width:.9rem;height:.9rem}
+.post-card__pin{color:var(--primary);transition:color 180ms ease}
+.post-card:hover .post-card__pin,.post-card:focus-within .post-card__pin{color:var(--signal-ink)}
+@media(prefers-reduced-motion:reduce){.post-card__pin{transition:none}}
+</style>
+<script>
+import {initializeArticleCounts} from '../utils/article-counts';
+initializeArticleCounts();
+document.addEventListener('swup:page:view',initializeArticleCounts);
+document.addEventListener('astro:page-load',initializeArticleCounts);
+const hook=()=>window.swup?.hooks.on('page:view',initializeArticleCounts);
+if(window.swup)hook();else document.addEventListener('swup:enable',hook,{once:true});
+</script>

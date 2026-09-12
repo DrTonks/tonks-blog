@@ -258,7 +258,7 @@ const jsonLd = {
     </div>
 
     <!-- 评论 -->
-    {!entry.data.draft && !entry.data.encrypted ? <ArticleComments /> : null}
+
 
     {siteConfig.showLastModified && (
         <>
@@ -424,4 +424,5 @@ const jsonLd = {
     </div>
 
 	<BlogLike target={`post:${entry.slug}`} variant="article" />
+    {!entry.data.draft && !entry.data.encrypted ? <ArticleComments /> : null}
 </MainGridLayout>

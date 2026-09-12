@@ -1,0 +1,189 @@
+
+	.community-comments {
+		position: relative;
+		width: 100%;
+		margin-top: 1rem;
+		padding: clamp(1.25rem, 3vw, 2rem);
+		overflow: hidden;
+		color: rgba(0, 0, 0, 0.9);
+		background:
+			linear-gradient(90deg, color-mix(in srgb, currentColor 3%, transparent) 1px, transparent 1px),
+			linear-gradient(color-mix(in srgb, currentColor 3%, transparent) 1px, transparent 1px),
+			var(--card-bg);
+		background-size: 2rem 2rem, 2rem 2rem, auto;
+	}
+
+	html.dark .community-comments { color: rgba(255, 255, 255, 0.9); }
+
+	.community-comments__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
+	.community-comments__heading { min-width: 0; }
+	.community-comments__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 0.85rem; margin-top: 0.55rem; }
+	.community-comments__header h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); }
+	.community-comments__header p { max-width: 40rem; margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.78rem; line-height: 1.6; }
+	.community-comments__header p[hidden],
+	.community-comment-form[hidden] { display: none; }
+	.community-comments__count { display: grid; min-width: 5rem; color: var(--primary); font: 800 2rem/1 "JetBrains Mono Variable", monospace; text-align: right; }
+	.community-comments__count small { margin-top: 0.35rem; color: color-mix(in srgb, currentColor 45%, transparent); font-size: 0.5rem; letter-spacing: 0.12em; }
+	.community-comments__actions { display: inline-flex; align-items: center; gap: 0.35rem; }
+	.community-comments__icon-button { display: grid; width: 2.1rem; height: 2.1rem; place-items: center; padding: 0; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.3rem; background: var(--signal); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-bg) 40%, transparent), 0.12rem 0.14rem 0 color-mix(in srgb, var(--signal-line) 24%, transparent); cursor: pointer; transition: color var(--motion-signal-fast) ease, border-color var(--motion-signal-fast) ease, background-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease, transform var(--motion-signal-fast) var(--ease-signal); }
+	.community-comments__icon-button:hover,
+	.community-comments__icon-button:focus-visible,
+	.community-comments__icon-button[aria-expanded="true"],
+	.community-comments__icon-button.is-active { color: var(--signal-ink); border-color: var(--primary); background: color-mix(in srgb, var(--signal) 72%, var(--primary)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-bg) 30%, transparent), 0.18rem 0.2rem 0 color-mix(in srgb, var(--signal-line) 32%, transparent); transform: translate(-0.04rem, -0.08rem); }
+	.community-comments__icon-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+	.community-comments__icon-button svg { width: 1.05rem; height: 1.05rem; }
+
+	.community-comment-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; margin-top: 1.4rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--signal-line) 48%, currentColor 10%); background: color-mix(in srgb, var(--industrial-surface) 88%, transparent); }
+	.community-comment-form label { display: grid; gap: 0.4rem; min-width: 0; color: color-mix(in srgb, currentColor 70%, transparent); font-size: 0.75rem; font-weight: 700; }
+	.community-comment-form label > span b { color: var(--signal-line); }
+	.community-comment-form input,
+	.community-comment-form textarea { width: 100%; min-width: 0; padding: 0.72rem 0.78rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: 0.25rem; outline: none; background: color-mix(in srgb, var(--card-bg) 91%, transparent); font: inherit; font-weight: 500; resize: vertical; transition: border-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease; }
+	.community-comment-form input:focus,
+	.community-comment-form textarea:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 17%, transparent); }
+	.community-comment-form__content { position: relative; grid-column: 1 / -1; }
+	.community-comment-form__content small { position: absolute; right: 0.65rem; bottom: 0.45rem; color: color-mix(in srgb, currentColor 38%, transparent); font: 600 0.55rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments .community-emoji-toolbar { display: flex; gap: 0.5rem; }
+	.community-comments .community-emoji-toggle,
+	.community-comments .community-emoji-picker button { color: inherit; padding: 0.4rem 0.55rem; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 0.3rem; background: var(--card-bg); cursor: pointer; font: inherit; }
+	.community-comments .community-emoji-picker { display: grid; gap: 0.6rem; min-width: 0; width: 100%; padding: 0.65rem; border: 1px solid var(--signal-line); border-radius: 0.35rem; background: var(--card-bg); }
+	.community-comments .community-emoji-search[hidden],
+	.community-comments .community-emoji-more[hidden],
+	.community-comments .community-emoji-picker[hidden],
+	.community-comments .community-comment-preview[hidden] { display: none; }
+	.community-comments .community-emoji-header { display: flex; align-items: flex-start; gap: 0.5rem; min-width: 0; }
+	.community-comments .community-emoji-groups { display: flex; flex: 1; flex-wrap: wrap; gap: 0.35rem; min-width: 0; }
+	.community-comments .community-emoji-groups button { max-width: 100%; overflow-wrap: anywhere; }
+	.community-comments .community-emoji-picker .community-emoji-search-toggle,
+	.community-comments .community-emoji-picker .community-emoji-search-close { display: grid; flex: 0 0 auto; width: 2.25rem; min-height: 2.25rem; place-items: center; padding: 0; }
+	.community-comments .community-emoji-search-toggle svg { width: 1rem; height: 1rem; }
+	.community-comments .community-emoji-picker .community-emoji-search-toggle[aria-expanded="true"] { color: var(--signal-ink); border-color: var(--signal-line); background: var(--signal); }
+	.community-comments .community-emoji-search { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+	.community-comments .community-emoji-picker .community-emoji-search-input { box-sizing: border-box; flex: 1; width: 100%; min-width: 0; min-height: 2.5rem; padding: 0.6rem 0.75rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 20%, transparent); border-radius: 0.4rem; outline: none; background: color-mix(in srgb, var(--industrial-surface) 88%, var(--card-bg)); font: inherit; line-height: 1.4; }
+	.community-comments .community-emoji-search-input::placeholder { color: color-mix(in srgb, currentColor 55%, transparent); }
+	.community-comments .community-emoji-picker .community-emoji-search-input:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
+	.community-comments .community-emoji-picker .community-emoji-search-close { font-size: 1.25rem; }
+	.community-comments .community-emoji-groups button[aria-pressed="true"] { color: var(--signal-ink); border-color: var(--signal-line); background: var(--signal); }
+	.community-comments .community-emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(3.25rem, 1fr)); gap: 0.3rem; max-height: 15rem; overflow-y: auto; overscroll-behavior: contain; padding: 0.2rem; }
+	.community-comments .community-emoji-grid .community-emoji-item { display: grid; place-items: center; min-width: 0; min-height: 3.25rem; padding: 0.2rem; font-size: 1.5rem; overflow-wrap: anywhere; }
+	.community-comments .community-emoji-picker button:hover { background: var(--signal-soft); }
+	.community-comments .community-emoji-picker button:focus-visible,
+	.community-comments .community-emoji-toggle:focus-visible { outline: 2px solid var(--signal-line); outline-offset: 2px; }
+	.community-comments .community-emoji-message { margin: 0; font-size: 0.72rem; }
+	.community-comments .community-inline-emoji { display: inline-block; width: 48px; height: 48px; max-width: 48px; object-fit: contain; vertical-align: middle; }
+	.community-comments .community-comment-preview { padding: 0.65rem; border: 1px dashed color-mix(in srgb, currentColor 20%, transparent); border-radius: 0.3rem; font-size: 0.82rem; }
+	.community-comments .community-comment-preview > strong { font-size: 0.68rem; opacity: 0.65; }
+	.community-comments .community-comment-preview > div { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+	.community-comment-form__content { display: grid; gap: 0.4rem; min-width: 0; font-size: 0.75rem; }
+	.community-comment-form__content small { position: static; justify-self: end; }
+	.community-comment-form__footer { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 1rem; }
+	.community-comment-form__footer p { min-height: 1.2rem; margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.72rem; }
+	.community-comment-form__footer p[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
+	.community-comment-form__footer button { padding: 0.65rem 0.9rem; color: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal-line); cursor: pointer; font-size: 0.76rem; font-weight: 800; transition: transform var(--motion-signal-fast) var(--ease-signal), opacity var(--motion-signal-fast) ease; }
+	.community-comment-form__footer button:hover { transform: translateY(-0.1rem); }
+	.community-comment-form__footer button:disabled { cursor: wait; opacity: 0.58; transform: none; }
+
+	.community-comments__rule { display: flex; align-items: center; gap: 0.75rem; margin: 1.5rem 0 1rem; color: var(--signal-line); font: 800 0.55rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.12em; }
+	.community-comments__rule::after { width: 100%; border-top: 1px dashed var(--signal-line); content: ""; opacity: 0.55; }
+	.community-comments__loading { color: color-mix(in srgb, currentColor 48%, transparent); font-size: 0.78rem; }
+	.community-comments__list .community-comment { position: relative; padding: 0.9rem 0; border-bottom: 1px dashed color-mix(in srgb, currentColor 12%, transparent); }
+	.community-comments__list .community-comment__main { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem; }
+	.community-comments__list .community-comment__avatar { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; color: var(--card-bg); border: 1px solid color-mix(in srgb, var(--signal-line) 55%, currentColor); border-radius: 0.35rem 0.65rem 0.4rem 0.55rem; background: color-mix(in oklch, var(--primary) 76%, hsl(var(--avatar-hue) 42% 55%)); font: 800 0.78rem/1 "JetBrains Mono Variable", monospace; transform: rotate(var(--avatar-angle, -2deg)); }
+	.community-comments__list .community-comment__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.45rem 0.7rem; }
+	.community-comments__list .community-comment__name { color: inherit; font-weight: 800; }
+	.community-comments__list a.community-comment__name:hover { color: var(--primary); }
+	.community-comments__list .community-comment__reply-to,
+	.community-comments__list .community-comment__time { color: color-mix(in srgb, currentColor 43%, transparent); font-size: 0.64rem; }
+	.community-comments__list .community-comment__content { margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 76%, transparent); font-size: 0.82rem; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+	.community-comments__list .community-comment__reply-button { margin-top: 0.45rem; padding: 0; color: var(--signal-line); border: 0; background: none; cursor: pointer; font: 700 0.62rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list .community-comment__reply-button:hover,
+	.community-comments__list .community-comment__reply-button:focus-visible { color: var(--primary); text-decoration: underline; text-underline-offset: 0.2rem; }
+	.community-comments__list .community-comment__replies { margin: 0.3rem 0 0 3.25rem; padding-left: 0.85rem; border-left: 2px solid color-mix(in srgb, var(--signal-line) 38%, transparent); }
+	.community-comments__list .community-comment__replies .community-comment { padding: 0.7rem 0; }
+	.community-comments__list .community-inline-reply { position: relative; display: grid; gap: 0.75rem; margin: 0.85rem 0 0 3.25rem; padding: 0.9rem; color: inherit; border: 1px solid color-mix(in srgb, var(--signal-line) 58%, currentColor 10%); border-left-width: 3px; border-radius: 0.3rem; background: color-mix(in srgb, var(--industrial-surface) 90%, var(--signal-soft)); box-shadow: 0.18rem 0.2rem 0 color-mix(in srgb, var(--signal-line) 12%, transparent); animation: community-reply-enter 220ms var(--ease-signal) both; }
+	.community-comments__list .community-inline-reply__heading { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+	.community-comments__list .community-inline-reply__heading strong { color: var(--signal-line); font-size: 0.75rem; }
+	.community-comments__list .community-inline-reply__heading small { margin-left: 0.45rem; color: color-mix(in srgb, currentColor 42%, transparent); font: 700 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.08em; }
+	.community-comments__list .community-inline-reply__close { display: grid; width: 1.65rem; height: 1.65rem; flex: 0 0 auto; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 55%, transparent); border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--card-bg) 78%, transparent); cursor: pointer; font-size: 1rem; line-height: 1; }
+	.community-comments__list .community-inline-reply__close:hover,
+	.community-comments__list .community-inline-reply__close:focus-visible { color: var(--signal-line); border-color: var(--signal-line); }
+	.community-comments__list .community-inline-reply__identity { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; }
+	.community-comments__list .community-inline-reply label { display: grid; gap: 0.35rem; min-width: 0; color: color-mix(in srgb, currentColor 68%, transparent); font-size: 0.68rem; font-weight: 700; }
+	.community-comments__list .community-inline-reply label b { color: var(--signal-line); }
+	.community-comments__list .community-inline-reply input,
+	.community-comments__list .community-inline-reply textarea { width: 100%; min-width: 0; padding: 0.68rem 0.72rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 0.25rem; outline: none; background: color-mix(in srgb, var(--card-bg) 92%, transparent); font: inherit; font-weight: 500; resize: vertical; transition: border-color var(--motion-signal-fast) ease, box-shadow var(--motion-signal-fast) ease; }
+	.community-comments__list .community-inline-reply input:focus,
+	.community-comments__list .community-inline-reply textarea:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 17%, transparent); }
+	.community-comments__list .community-inline-reply__content { position: relative; display: grid; gap: 0.4rem; min-width: 0; }
+	.community-comments__list .community-inline-reply__content small { position: static; justify-self: end; right: 0.6rem; bottom: 0.42rem; color: color-mix(in srgb, currentColor 38%, transparent); font: 600 0.52rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list .community-inline-reply__footer { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+	.community-comments__list .community-inline-reply__status { min-height: 1.1rem; margin: 0; color: color-mix(in srgb, currentColor 56%, transparent); font-size: 0.68rem; }
+	.community-comments__list .community-inline-reply__status[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
+	.community-comments__list .community-inline-reply__actions { display: inline-flex; align-items: center; gap: 0.45rem; }
+	.community-comments__list .community-inline-reply__actions button { padding: 0.55rem 0.72rem; color: var(--signal-line); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: transparent; cursor: pointer; font-size: 0.68rem; font-weight: 800; }
+	.community-comments__list .community-inline-reply__actions button[type="submit"] { color: var(--card-bg); background: var(--signal-line); }
+	.community-comments__list .community-inline-reply__actions button:disabled { cursor: wait; opacity: 0.58; }
+	.community-comments__list .community-comments__empty { padding: 1.2rem; color: color-mix(in srgb, currentColor 48%, transparent); border: 1px dashed color-mix(in srgb, currentColor 14%, transparent); text-align: center; }
+	.community-comments__list .community-comment__avatar { overflow: hidden; user-select: none; }
+	.community-comments__list .community-comment__avatar img,
+	.community-comments__list .community-comment__avatar-fallback { grid-area: 1 / 1; }
+	.community-comments__list .community-comment__avatar img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+	.community-comments__list .community-comment__avatar-fallback { display: grid; width: 100%; height: 100%; place-items: center; }
+	.community-comments__list .community-comment__owner-badge { display: inline-flex; align-items: center; margin-left: 0.35rem; padding: 0.12rem 0.3rem; color: var(--signal-ink); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal); font: 800 0.52rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.04em; vertical-align: 0.1em; }
+	.community-comments__list .community-comment__status { padding: 0.12rem 0.3rem; color: var(--signal-line); border: 1px dashed currentColor; border-radius: 0.2rem; font: 700 0.52rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list .community-comment__admin-tools { display: inline-flex; align-items: center; gap: 0.45rem; margin-left: auto; }
+	.community-comments__list .community-comment__delete { padding: 0; color: color-mix(in srgb, var(--signal-line) 72%, currentColor); border: 0; background: none; cursor: pointer; font: 700 0.58rem/1 "JetBrains Mono Variable", monospace; }
+	.community-comments__list .community-comment__delete:hover { color: var(--primary); text-decoration: underline; }
+
+	.community-admin-dialog { width: min(28rem, calc(100vw - 2rem)); padding: 0; color: rgba(0, 0, 0, 0.9); border: 1px solid var(--signal-line); border-radius: 0.45rem; background: var(--card-bg); box-shadow: 0.55rem 0.6rem 0 color-mix(in srgb, currentColor 13%, transparent); }
+	html.dark .community-admin-dialog { color: rgba(255, 255, 255, 0.9); }
+	.community-admin-dialog::backdrop { background: color-mix(in srgb, var(--card-bg) 68%, transparent); backdrop-filter: blur(3px); }
+	.community-admin-form { display: grid; gap: 1rem; padding: 1.25rem; background: linear-gradient(135deg, color-mix(in srgb, var(--signal-soft) 30%, transparent), transparent 50%); }
+	.community-admin-form__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+	.community-admin-form__heading h3 { margin: 0.4rem 0 0; font-size: 1.35rem; }
+	.community-admin-form > p { margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.75rem; line-height: 1.6; }
+	.community-admin-form label { display: grid; gap: 0.45rem; color: color-mix(in srgb, currentColor 68%, transparent); font-size: 0.72rem; font-weight: 700; }
+	.community-admin-form input { width: 100%; padding: 0.7rem 0.75rem; color: inherit; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 0.25rem; outline: none; background: color-mix(in srgb, var(--industrial-surface) 88%, transparent); font: inherit; }
+	.community-admin-form input:focus { border-color: var(--signal-line); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 16%, transparent); }
+	.community-admin-form__close { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; padding: 0; color: color-mix(in srgb, currentColor 54%, transparent); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); border-radius: 50%; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; }
+	.community-admin-form__footer { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
+	.community-admin-form__footer > span { min-height: 1.1rem; color: color-mix(in srgb, currentColor 52%, transparent); font-size: 0.68rem; }
+	.community-admin-form__footer > span[data-state="error"] { color: color-mix(in srgb, var(--signal-line) 75%, #c33); }
+	.community-admin-form__footer > div { display: inline-flex; align-items: center; gap: 0.45rem; }
+	.community-admin-form__footer button { padding: 0.55rem 0.7rem; color: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 0.2rem; background: var(--signal-line); cursor: pointer; font-size: 0.68rem; font-weight: 800; }
+	.community-admin-form__footer .community-admin-form__logout { color: var(--signal-line); border-color: var(--signal-line); background: transparent; }
+	.community-admin-form__footer button:disabled { cursor: wait; opacity: 0.55; }
+
+	@keyframes community-reply-enter {
+		from { opacity: 0; transform: translateY(-0.35rem) scale(0.99); }
+		to { opacity: 1; transform: translateY(0) scale(1); }
+	}
+
+	@media (max-width: 720px) {
+		.community-comments__header { align-items: flex-start; }
+		.community-comments__count { min-width: 3.8rem; font-size: 1.45rem; }
+		.community-comments__title-row { align-items: center; }
+		.community-comment-form { grid-template-columns: 1fr; }
+		.community-comment-form__content,
+		.community-comment-form__footer { grid-column: auto; }
+		.community-comments__list .community-comment__replies { margin-left: 1rem; }
+		.community-comments__list .community-inline-reply { margin-left: 1rem; }
+		.community-comments__list .community-inline-reply__identity { grid-template-columns: 1fr; }
+		.community-comments__list .community-inline-reply__footer { align-items: stretch; flex-direction: column; }
+		.community-comments__list .community-inline-reply__actions { width: 100%; }
+		.community-comments__list .community-inline-reply__actions button { flex: 1; }
+		.community-comment-form__footer { align-items: flex-start; flex-direction: column; }
+		.community-comment-form__footer button { width: 100%; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.community-comment-form input,
+		.community-comment-form textarea,
+		.community-comment-form__footer button,
+		.community-comments__list .community-inline-reply input,
+		.community-comments__list .community-inline-reply textarea { transition: none; }
+		.community-comments__list .community-inline-reply { animation: none; }
+	}
+
+.community-comments .community-article-picker { top:calc(100% + 8px); bottom:auto }
+.community-comments .community-emoji-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+.community-comments .community-comment__content { white-space:normal }

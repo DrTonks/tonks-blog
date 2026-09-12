@@ -63,6 +63,20 @@
 .ac-identity footer{display:flex;justify-content:flex-end;gap:.65rem;margin-top:1.2rem}
 .ac-emojis{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.5rem;max-height:90px;overflow:auto}.ac-emojis button{font-size:1.2rem;padding:.2rem}
 .ac-section [hidden],.ac-dialog [hidden]{display:none!important}
+.ac-section{scroll-margin-top:6rem}
+.ac-section .community-comments__icon-button{padding:0;border-radius:.3rem}
+.ac-section .community-comments__count [data-ac-total]:empty::after{content:'0'}
+.ac-section .ac-comment{grid-template-columns:2.5rem minmax(0,1fr);border-bottom-style:dashed;padding:1.1rem 0}
+.ac-section .ac-avatar{width:2.5rem;height:2.5rem;border-radius:.35rem .65rem .4rem .55rem}
+.ac-section .ac-comment-name{font-size:1rem;color:inherit;flex-wrap:wrap}
+.ac-section .ac-comment-body{font-size:.82rem}
+.ac-section .ac-comment-actions{color:var(--signal-line)}
+.ac-section .ac-badge{background:var(--signal);color:var(--signal-ink);padding:.12rem .3rem;border-radius:.2rem}
+.ac-composer.community-comments{margin:0;background:var(--industrial-surface);overflow:auto;max-height:55dvh;min-height:0;flex-shrink:1;scrollbar-width:thin}
+.ac-scroll{min-height:3rem}
+.dark .ac-dialog{color-scheme:dark}
+.ac-composer .community-emoji-grid{max-height:10rem}
+.ac-composer .community-comment-preview{max-height:9rem;overflow:auto}
 [data-comment-block]{position:relative}
 .custom-md .ac-paragraph-button{display:inline-flex;align-items:center;gap:3px;position:relative;vertical-align:baseline;margin-left:.45em;padding:1px 4px;border:0;border-radius:5px;background:transparent;color:color-mix(in srgb,var(--primary) 65%,var(--deep-text,#888));font:500 11px/1.4 system-ui;white-space:nowrap;cursor:pointer;opacity:0;transition:opacity 160ms ease,color 160ms ease,background-color 160ms ease;user-select:none}
 .ac-paragraph-button svg{width:17px;height:17px;display:inline-block}

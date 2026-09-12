@@ -1,3 +1,5 @@
+import {attachCommunityEmojiPicker} from './community-editor';
+import {subscribeEmojis,loadEmojiManifest} from './community-emojis';
 import {getCommunityIdentityToken, getCommunityProfile, saveCommunityProfile, clearCommunityProfile, type CommunityProfile} from './community-identity';
 import {getBlogClientId} from './visitor-id';
 import {renderCommunityMarkdown, safeCommentUrl} from './community-markdown';
@@ -28,6 +30,13 @@ export function initializeArticleComments() {
   const article=JSON.parse(data.textContent || '{}') as ArticleMap;
   const blocks=new Map(article.blocks.map(b=>[b.id,b.text]));
   const controller=new AbortController(); const {signal}=controller;
+  const quoteObserver=new ResizeObserver(entries=>{for(const {target} of entries){
+    const p=target as HTMLElement;const toggle=p.parentElement?.querySelector<HTMLButtonElement>('[data-quote-toggle]');
+    if(toggle)toggle.hidden=p.scrollHeight<=parseFloat(getComputedStyle(p).lineHeight)*3+1;
+  }});
+  const emojiContents=new Map<HTMLElement,string>();
+  const unsubscribeEmojis=subscribeEmojis(()=>{for(const [host,text] of emojiContents){if(host.isConnected)renderCommunityMarkdown(host,text);else emojiContents.delete(host);}});
+  void loadEmojiManifest().catch(()=>{});
   const q=<T extends HTMLElement>(selector:string)=>dialog.querySelector<T>(selector)!;
   const main=section.querySelector<HTMLElement>('[data-ac-main-list]')!;
   const mainMore=section.querySelector<HTMLButtonElement>('[data-ac-main-more]')!;
@@ -57,9 +66,14 @@ export function initializeArticleComments() {
     if(!response.ok || !result.success) throw new Error(result.message || '留言暂时无法读取，请稍后重试');
     return result;
   }
+  function clearContent(host:HTMLElement,...nodes:Node[]){
+    host.querySelectorAll('.ac-quote p').forEach(p=>quoteObserver.unobserve(p));
+    for(const node of emojiContents.keys())if(host.contains(node))emojiContents.delete(node);
+    host.replaceChildren(...nodes);
+  }
   function showError(host:HTMLElement,error:unknown,retry:()=>void) {
     if(signal.aborted) return;
-    host.replaceChildren(element('p','ac-muted',error instanceof Error?error.message:'读取失败'),button('重试',retry,'ac-more'));
+    clearContent(host,element('p','ac-muted',error instanceof Error?error.message:'读取失败'),button('重试',retry,'ac-more'));
   }
   function updateCounts(result:Result) {
     if(!result.counts) return;
@@ -79,13 +93,15 @@ export function initializeArticleComments() {
     if(n) title.append(element('span','',String(n)));
   }
   function showQuote(host:HTMLElement,text:string,block:string|null,jump=false) {
+    host.querySelectorAll('p').forEach(p=>quoteObserver.unobserve(p));
     host.replaceChildren(); host.hidden=!text;
     if(!text) return;
     host.classList.remove('is-expanded'); host.append(element('p','',text));
-    if(text.length>80) host.append(button('展开',()=>{
-      const expanded=host.classList.toggle('is-expanded');
-      const toggle=host.querySelector('button')!; toggle.textContent=expanded?'收起':'展开';
-    }));
+    const toggle=button('展开',()=>{
+      const expanded=host.classList.toggle('is-expanded');toggle.textContent=expanded?'收起':'展开';toggle.setAttribute('aria-expanded',String(expanded));
+    });
+    toggle.dataset.quoteToggle='';toggle.hidden=true;toggle.setAttribute('aria-expanded','false');host.append(toggle);
+    quoteObserver.observe(host.querySelector('p')!);
     if(block && !blocks.has(block)) host.append(element('small','','原文已更新或移除'));
     else if(jump && block) host.append(button('查看段落 ↗',()=>{
       const target=document.querySelector<HTMLElement>(`[data-comment-block="${CSS.escape(block)}"]`);
@@ -97,14 +113,14 @@ export function initializeArticleComments() {
     }));
   }
   function renderComment(comment:Comment,showContext:boolean) {
-    const row=element('article','ac-comment'), avatar=element('span','ac-avatar',comment.nickname.slice(0,1));
+    const row=element('article','ac-comment community-comment'), avatar=element('span','ac-avatar community-comment__avatar',comment.nickname.slice(0,1));
     if(comment.status==='published') {
       const img=element('img');img.alt='';img.loading='lazy';img.decoding='async';
       img.src=`${endpoint}/avatar/${comment.id}`;
       img.addEventListener('error',()=>{if(!img.dataset.fallback){img.dataset.fallback='true';img.src+= '?fallback=1';}else img.remove();},{signal});
       avatar.append(img);
     }
-    const body=element('div'), name=element('div','ac-comment-name',comment.nickname || '已删除');
+    const body=element('div'), name=element('div','ac-comment-name community-comment__meta',comment.nickname || '已删除');
     if(comment.website && safeCommentUrl(comment.website)){
       const link=element('a','',comment.nickname);link.href=safeCommentUrl(comment.website)!;link.rel='nofollow noopener noreferrer';link.target='_blank';name.replaceChildren(link);
     }
@@ -112,12 +128,12 @@ export function initializeArticleComments() {
     if(comment.reply_to_name) name.append(element('span','',`回复 ${comment.reply_to_name}`));
     if(comment.status==='pending') name.append(element('span','ac-badge','待审核'));
     if(comment.status==='rejected') name.append(element('span','ac-badge','未通过'));
-    body.append(name);
+    name.classList.add('community-comment__name');body.append(name);
     if(showContext && comment.quote){const ref=element('blockquote','ac-quote');showQuote(ref,comment.quote,comment.block_id,true);body.append(ref);}
-    const content=element('div','ac-comment-body');renderCommunityMarkdown(content,comment.content);body.append(content);
+    const content=element('div','ac-comment-body community-comment__content');renderCommunityMarkdown(content,comment.content);emojiContents.set(content,comment.content);body.append(content);
     const actions=element('div','ac-comment-actions');
-    const time=element('time','',new Date(comment.created_at).toLocaleDateString('zh-CN'));time.dateTime=comment.created_at;actions.append(time);
-    if(comment.status==='published') actions.append(button('回复',()=>open(comment.block_id,comment,true)));
+    const time=element('time','community-comment__time',new Date(comment.created_at).toLocaleDateString('zh-CN'));time.dateTime=comment.created_at;name.append(time);
+    if(comment.status==='published') actions.append(button('↳ 回复',()=>open(comment.block_id,comment,true),'community-comment__reply-button'));
     if(secret && comment.status!=='deleted') {
       const manage=async(method:string,state?:string)=>{
         try{await api(`/${comment.id}`,{method,body:state?JSON.stringify({status:state}):undefined});await refresh();}catch(e){status.textContent=(e as Error).message;}
@@ -135,7 +151,7 @@ export function initializeArticleComments() {
         toggle.disabled=true;
         try{
           const result=await api(`?root=${comment.id}${after?`&after=${after}`:''}`);
-          if(!loaded)replies.replaceChildren();
+          if(!loaded)clearContent(replies);
           replies.querySelector('[data-more-replies]')?.remove();
           result.comments.forEach(c=>replies.append(renderComment(c,false)));
           after=result.next_after || null;
@@ -153,7 +169,7 @@ export function initializeArticleComments() {
     try{
       const result=await api(append&&mainCursor?`?before=${mainCursor}`:'');
       if(generation!==mainGeneration)return;
-      if(!append)main.replaceChildren();
+      if(!append)clearContent(main);
       result.comments.forEach(c=>main.append(renderComment(c,true)));
       if(!main.children.length)main.append(element('p','ac-muted','还没有留言，来聊聊这篇文章吧。'));
       mainCursor=result.next_before || null;mainMore.hidden=!mainCursor;updateCounts(result);
@@ -164,14 +180,14 @@ export function initializeArticleComments() {
     const params=new URLSearchParams();if(activeBlock)params.set('block',activeBlock);if(append&&cursor)params.set('before',String(cursor));
     try{
       const result=await api(`?${params}`);if(generation!==requestGeneration)return;
-      if(!append)list.replaceChildren();result.comments.forEach(c=>list.append(renderComment(c,!activeBlock)));
+      if(!append)clearContent(list);result.comments.forEach(c=>list.append(renderComment(c,!activeBlock)));
       if(!list.children.length)list.append(element('p','ac-muted','还没有留言。'));
       cursor=result.next_before || null;more.hidden=!cursor;updateCounts(result);
     }catch(e){if(generation===requestGeneration)showError(list,e,()=>{void loadDialog();});}finally{if(generation===requestGeneration)more.disabled=false;}
   }
   async function refresh(){await Promise.all([loadMain(),dialog!.open?loadDialog():Promise.resolve()]);}
-  function restoreDraft(){input.value=drafts.get(draftKey()) || '';updateLength();}
-  function updateLength(){q('[data-ac-length]').textContent=`${input.value.length} / 800`;}
+  function restoreDraft(){input.value=drafts.get(draftKey()) || '';updateLength(true);}
+  function updateLength(syncPreview=false){q('[data-ac-length]').textContent=`${input.value.length} / 800`;if(syncPreview)input.dispatchEvent(new Event('community:content-sync'));}
   function profileName(){q('[data-ac-profile]').textContent=profile.nickname || '留言身份';}
   function showDiscussion(){identity.hidden=true;adminForm.hidden=true;discussion.hidden=false;updateTitle();}
   function editIdentity(){
@@ -196,7 +212,7 @@ export function initializeArticleComments() {
       focusReturn=document.activeElement as HTMLElement;oldOverflow=document.documentElement.style.overflow;
       document.documentElement.style.overflow='hidden';locked=true;dialog!.showModal();
     }
-    list.replaceChildren(element('p','ac-muted','正在读取留言…'));void loadDialog();
+    clearContent(list,element('p','ac-muted','正在读取留言…'));void loadDialog();
     if(compose || (block && (counts[block] || 0)===0))begin();else title.focus();
   }
   function close(immediate=false){
@@ -227,14 +243,11 @@ export function initializeArticleComments() {
     sending=true;const submit=form.querySelector<HTMLButtonElement>('[type=submit]')!;submit.disabled=true;status.textContent='正在提交…';
     try{
       const result=await api('',{method:'POST',body:JSON.stringify({...profile,content,block_id:activeBlock,parent_id:reply?.id || null,version:article.version})});
-      if(drafts.get(submittedKey)?.trim()===content)drafts.delete(submittedKey);persistDrafts();if(draftKey()===submittedKey && input.value.trim()===content)input.value='';updateLength();status.textContent=result.message || '已提交';await refresh();
+      if(drafts.get(submittedKey)?.trim()===content)drafts.delete(submittedKey);persistDrafts();if(draftKey()===submittedKey && input.value.trim()===content)input.value='';updateLength(true);status.textContent=result.message || '已提交';await refresh();
     }catch(e){if(!signal.aborted)status.textContent=(e as Error).message;}finally{sending=false;submit.disabled=false;}
   },{signal});
   mainMore.addEventListener('click',()=>{void loadMain(true);},{signal});more.addEventListener('click',()=>{void loadDialog(true);},{signal});
-  q('[data-ac-emoji]').addEventListener('click',()=>{
-    const host=q('[data-ac-emojis]');host.hidden=!host.hidden;q('[data-ac-emoji]').setAttribute('aria-expanded',String(!host.hidden));
-    if(!host.children.length)for(const emoji of ['😀','😊','🥰','🤔','😭','👍','👏','🎉','❤️','✨','🌙','🍀','☕','📚','💻','👀'])host.append(button(emoji,()=>{input.setRangeText(emoji,input.selectionStart,input.selectionEnd,'end');input.dispatchEvent(new Event('input'));input.focus();}));
-  },{signal});
+  attachCommunityEmojiPicker(input,q('[data-ac-editor]'));
   section.querySelector('[data-ac-admin]')!.addEventListener('click',()=>{
     open();discussion.hidden=true;identity.hidden=true;adminForm.hidden=false;title.textContent='管理员模式';
     (adminForm.elements.namedItem('secret') as HTMLInputElement).focus();
@@ -259,5 +272,5 @@ export function initializeArticleComments() {
   window.addEventListener('focus',()=>{if(!ephemeral){profile=getCommunityProfile();profileName();}},{signal});
   // Counts are fetched once on entry, also supplies the first page for the footer.
   void loadMain();
-  teardown=()=>{controller.abort();requestGeneration++;mainGeneration++;if(closingTimer)clearTimeout(closingTimer);if(dialog.open)close(true);paragraphButtons.forEach(b=>b.remove());};
+  teardown=()=>{controller.abort();quoteObserver.disconnect();unsubscribeEmojis();emojiContents.clear();requestGeneration++;mainGeneration++;if(closingTimer)clearTimeout(closingTimer);if(dialog.open)close(true);paragraphButtons.forEach(b=>b.remove());};
 }
