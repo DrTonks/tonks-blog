@@ -1,15 +1,21 @@
 /* One lifecycle controls outgoing and incoming page motion. */
 html.is-changing .transition-swup-fade {
-    transition: opacity 200ms ease, transform 200ms ease;
+    transition: opacity 400ms cubic-bezier(0.25, 0.1, 0.25, 1), transform 400ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 html.is-changing.is-leaving .transition-swup-fade {
     transition-duration: 200ms;
-    transition-timing-function: ease-out;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
-html.is-animating .transition-swup-fade { opacity: 0; transform: translateY(1rem); }
-html.is-animating.is-leaving .transition-swup-fade { transform: translateY(1rem); }
-/* New content starts its CSS entrance only after the outgoing phase. */
-html.is-animating #swup-container .onload-animation { animation-play-state: paused; }
+/* Preserve the fade-out/fade-in, with a shorter content transition. */
+html.is-animating .transition-swup-fade { opacity: 0; transform: translateY(.35rem); }
+html.is-animating.is-leaving .transition-swup-fade { opacity: 0; transform: translateY(.35rem); }
+/* First-load staggers must not multiply the page transition's opacity or delay. */
+html[data-page-navigation] #swup-container .onload-animation,
+html[data-page-navigation] #swup-container .onload-animation-fade-in {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+}
 /* 增强的淡入动画 - 添加侧滑效果 */
 @keyframes fade-in-up {
     from {

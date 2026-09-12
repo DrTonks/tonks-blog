@@ -816,6 +816,7 @@ import {
 } from 'overlayscrollbars';
 import { getBannerCarouselEnabled, BANNER_CAROUSEL_CHANGE } from "../utils/banner-carousel-preference";
 import { boundedNavigationScroll } from "../utils/navigation-scroll";
+import { createBannerNavigation } from "../utils/banner-navigation";
 import {getStoredTheme, isThemeDark} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
@@ -1357,15 +1358,39 @@ const setup = () => {
 		scrollRestoreInputController = null;
 	};
 
-    // ScrollPlugin owns destinations/cache; native scrolling owns interpolation.
+    // ScrollPlugin owns destinations/cache. Home banner changes share a clock
+    // with scrolling; other visits keep native smooth scrolling.
     let navigationScrollCancelled = false;
     let pendingPageScroll = false;
-    const resetScrollCancellation = () => { navigationScrollCancelled = false; pendingPageScroll = false; };
+    let pendingBannerVisit: {to: {url: string}} | null = null;
+    let earlyBannerTarget: number | null = null;
+    let destinationGridOffset = 0;
+    let scrollAnchor: string | undefined;
+    const bannerNavigation = createBannerNavigation(scrollFunction);
+    window.addEventListener('resize', () => {
+        earlyBannerTarget = null;
+        if (bannerNavigation.prepared) bannerNavigation.finish();
+    }, { passive: true });
+    const resetScrollCancellation = (visit: {to: {hash?: string}; scroll: {target?: string}}) => {
+        navigationScrollCancelled = false;
+        pendingPageScroll = false;
+        scrollAnchor = visit.scroll.target ?? visit.to.hash;
+    };
     window.swup.hooks.before('link:self', resetScrollCancellation);
     window.swup.hooks.before('link:anchor', resetScrollCancellation);
     window.swup.scrollTo = (target: number, animate = true) => {
         if (navigationScrollCancelled) return;
         const smooth = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (bannerNavigation.prepared) {
+            const anchor = scrollAnchor ? window.swup.getAnchorElement(scrollAnchor) : null;
+            const grid = document.getElementById('main-grid');
+            if (anchor && grid?.contains(anchor)) {
+                // ScrollPlugin measured the anchor while its parent was held at
+                // the outgoing transform. Convert to the final layout coordinate.
+                const transform = getComputedStyle(grid).transform;
+                target += destinationGridOffset - (transform === 'none' ? 0 : new DOMMatrixReadOnly(transform).m42);
+            }
+        }
         if (pendingPageScroll) {
             pendingPageScroll = false;
             const current = window.scrollY;
@@ -1377,7 +1402,19 @@ const setup = () => {
                 for (let node: HTMLElement | null = grid; node; node = node.offsetParent as HTMLElement | null) {
                     bottom += node.offsetTop;
                 }
+                // Include the destination home's transform in its scroll bounds.
+                bottom += bannerNavigation.prepared ? destinationGridOffset :
+                    (document.body.classList.contains('is-home') && innerWidth >= 1024
+                        ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--banner-height-extend')) || 0 : 0);
                 const positions = boundedNavigationScroll(current, target, bottom - innerHeight);
+                if (earlyBannerTarget !== null && Math.abs(positions.target - earlyBannerTarget) < 1) {
+                    // This scroll started with the outgoing animation. Content
+                    // replacement must not stop or restart the same movement.
+                    earlyBannerTarget = null;
+                    scrollFunction();
+                    return;
+                }
+                earlyBannerTarget = null;
                 // Keep the spacer until the viewport fits the incoming document.
                 // Removing it here would clamp short-page scrolls before they animate.
                 document.body.style.minHeight = `${Math.max(bottom, positions.start + innerHeight)}px`;
@@ -1386,6 +1423,10 @@ const setup = () => {
                 }
                 target = positions.target;
             }
+        }
+        if (bannerNavigation.prepared) {
+            bannerNavigation.start(target, smooth);
+            return;
         }
         window.scrollTo({top: target, behavior: smooth ? 'smooth' : 'instant'});
         scrollFunction();
@@ -1412,12 +1453,12 @@ const setup = () => {
 			setBannerTextVisibility(bannerTextOverlay, true)
 			bannerWrapper?.classList.remove('mobile-hide-banner')
 			mainContentWrapper?.classList.remove('mobile-main-no-banner')
-			// 与 banner 展开同时开始遮罩淡入和贴纸贴入，避免等待展开完成后的滞后感。
+			// 与 banner 展开同时开始贴纸贴入，避免等待展开完成后的滞后感。
 			window.dispatchEvent(new CustomEvent('tonks:home-stickers:state', {
 				detail: { active: true, refresh: true, revealDelay: 0 },
 			}))
 		} else if (isLeavingHome) {
-			// 遮罩、贴纸、banner 和正文从同一帧开始退场/位移。
+			// 贴纸、banner 和正文从同一帧开始退场/位移，遮罩常驻。
 			window.dispatchEvent(new CustomEvent('tonks:home-stickers:state', {
 				detail: { active: false },
 			}))
@@ -1480,7 +1521,22 @@ const setup = () => {
         });
     }, { priority: 100 });
     window.swup.hooks.before('animation:in:start', scrollFunction);
+    window.swup.hooks.before('content:scroll', (scrollVisit: {to: {hash?: string}; scroll: {target?: string}}) => {
+        scrollAnchor = scrollVisit.scroll.target ?? scrollVisit.to.hash;
+        if (!pendingBannerVisit) return;
+        const visit = pendingBannerVisit;
+        pendingBannerVisit = null;
+        destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit));
+    }, { priority: -100 });
     window.swup.hooks.on('content:scroll', () => {
+        // ScrollPlugin may skip restoration (e.g. the user scrolled while the
+        // next page loaded). Still finish the banner without taking the wheel.
+        // ScrollPlugin schedules ordinary restoration in its own next frame.
+        requestAnimationFrame(() => {
+            if (bannerNavigation.prepared && !bannerNavigation.started) {
+                bannerNavigation.start(window.scrollY, !matchMedia('(prefers-reduced-motion: reduce)').matches, false);
+            }
+        });
         delete document.body.dataset.navigationReplacing;
         document.body.style.removeProperty('--navigation-panel-height');
         // Styles and the persistent sidebar are settled now. Establish the new
@@ -1489,6 +1545,7 @@ const setup = () => {
         if (window.swup.visit.animation.animate) {
             document.getElementById('swup-container')?.getBoundingClientRect();
             window.swup.classes.remove('is-animating');
+
         }
         scrollFunction();
     });
@@ -1534,12 +1591,18 @@ const setup = () => {
 		}
 	})
 	window.swup.hooks.on('visit:start', (visit: {
-		to: {url: string};
+		to: {url: string; hash?: string};
+		history: {popstate: boolean};
 		animation: {wait: boolean};
-		scroll: {reset: boolean; animate?: boolean};
+		scroll: {reset: boolean; animate?: boolean; target?: string};
 	}) => {
 		navigationScrollCancelled = false;
+		earlyBannerTarget = null;
+		pendingPageScroll = false;
+		scrollAnchor = visit.scroll.target ?? visit.to.hash;
+		bannerNavigation.freeze();
 		visit.animation.wait = true;
+		document.documentElement.dataset.pageNavigation = '';
         window.scrollTo({top: window.scrollY, behavior: 'instant'});
         visit.scroll.animate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
         // 页面过渡期间冻结轮播，避免切页时同时触发图片切换和过渡布局。
@@ -1553,8 +1616,10 @@ const setup = () => {
 			// content:scroll hook from restoring an older cached Y position.
 			visit.scroll.reset = false;
             navigationScrollCancelled = true;
+			bannerNavigation.cancelScroll();
 			window.scrollTo({ top: window.scrollY, left: window.scrollX, behavior: 'instant' });
-			stopWatchingScrollRestore();
+			// Keep listening: a same-page link can restart scrolling before the
+			// banner finishes, and subsequent user input must still cancel it.
 		};
 		const passiveInputOptions = {
 			passive: true,
@@ -1567,13 +1632,33 @@ const setup = () => {
 			signal: scrollRestoreInputController.signal,
 		});
 
-		beginBannerTransition(visit);
+		const changesHome = pathsEqual(visit.to.url, url('/')) !== document.body.classList.contains('is-home');
+		if (document.body.classList.contains('enable-banner') && innerWidth >= 1024 && (changesHome || bannerNavigation.prepared)) {
+			if (scrollAnchor) {
+				// Cross-page anchors need the incoming DOM to resolve their target.
+				pendingBannerVisit = visit;
+			} else {
+				pendingBannerVisit = null;
+				const cached = visit.history.popstate
+					? window.swup.findPlugin('SwupScrollPlugin')?.getCachedScrollPositions(visit.to.url) : undefined;
+				earlyBannerTarget = visit.scroll.reset ? cached?.window.top ?? 0 : window.scrollY;
+				// Preserve the scroll range while the outgoing layout is still in
+				// place, including history destinations beyond this page's height.
+				document.body.style.minHeight = `${Math.max(document.documentElement.scrollHeight, earlyBannerTarget + innerHeight)}px`;
+				destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit));
+				bannerNavigation.start(earlyBannerTarget, visit.scroll.animate ?? true, visit.scroll.reset);
+			}
+		} else {
+			pendingBannerVisit = null;
+			bannerNavigation.finish();
+			beginBannerTransition(visit);
+		}
         // Hide the TOC while scrolling back to top
 		let toc = document.getElementById('toc-wrapper');
 		if (toc) {
 			toc.classList.add('toc-not-ready')
 		}
-	});
+	}, { priority: 2 }); // ScrollPlugin caches the outgoing position at priority 1.
 	window.swup.hooks.on('page:view', () => {
 		// 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
 		const storedTheme = getStoredTheme();
@@ -1646,7 +1731,7 @@ function scrollFunction() {
         scrollUIFrame = 0;
         const scrollTop = window.scrollY;
         const endMarker = document.getElementById('main-grid');
-        if (document.body.style.minHeight && endMarker && !document.body.dataset.navigationReplacing) {
+        if (document.body.style.minHeight && endMarker && !document.body.dataset.navigationReplacing && !document.body.dataset.bannerNavigation) {
             const naturalBottom = endMarker.getBoundingClientRect().bottom + scrollTop;
             if (scrollTop + innerHeight <= naturalBottom + 1) document.body.style.removeProperty('min-height');
 

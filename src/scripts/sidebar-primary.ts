@@ -81,7 +81,7 @@ export function initializePrimaryWidget() {
                 if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 const panel = host.querySelector<HTMLElement>('[data-sidebar-profile-panel]:not([hidden]), [data-sidebar-summary-panel]:not([hidden])');
                 panel?.getAnimations().forEach(animation => animation.cancel());
-                panel?.animate([{opacity: 0, transform: 'translateY(1rem)'}, {opacity: 1, transform: 'none'}], {duration: 300, easing: 'ease-out'});
+                panel?.animate([{transform: 'translateY(.35rem)'}, {transform: 'none'}], {duration: 300, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)'});
             });
     };
     if (window.swup) register();

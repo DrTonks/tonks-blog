@@ -7,8 +7,8 @@ const { mode } = Astro.props;
     <div data-sidebar-summary-panel hidden={mode !== 'summary'}><slot name="summary" /></div>
 </div>
 <style>
-    #sidebar-primary-widget { opacity: 1; transition: opacity 200ms ease; }
-    #sidebar-primary-widget[data-navigation-out] { opacity: 0; pointer-events: none; }
+    #sidebar-primary-widget { opacity: 1; transition: opacity 400ms cubic-bezier(0.25, 0.1, 0.25, 1); }
+    #sidebar-primary-widget[data-navigation-out] { opacity: 0; transition-duration: 200ms; pointer-events: none; }
     [hidden] { display: none; }
     @media (prefers-reduced-motion: reduce) { #sidebar-primary-widget { transition: none; } }
 </style>
