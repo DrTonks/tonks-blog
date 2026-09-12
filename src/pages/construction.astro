@@ -1,26 +1,9 @@
 ---
 import { Icon } from "astro-icon/components";
-import { readFile } from "node:fs/promises";
+import { constructionData, type ConstructionStage } from "../data/construction";
 import { siteConfig } from "../config";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-type ConstructionStage = "seed" | "trunk" | "branch" | "leaf";
-
-interface ConstructionEntry {
-	id: string;
-	date: string;
-	title: string;
-	description: string;
-	stage: ConstructionStage;
-	tags: string[];
-}
-
-const constructionData: ConstructionEntry[] = JSON.parse(
-	await readFile(
-		new URL("../../public/data/construction.json", import.meta.url),
-		"utf-8",
-	),
-);
 
 if (!siteConfig.featurePages.construction) {
 	return Astro.redirect("/404/");

@@ -1,4 +1,15 @@
-[
+export type ConstructionStage = "seed" | "trunk" | "branch" | "leaf";
+
+export interface ConstructionEntry {
+	id: string;
+	date: string;
+	title: string;
+	description: string;
+	stage: ConstructionStage;
+	tags: string[];
+}
+
+export const constructionData: ConstructionEntry[] = [
 	{
 		"id": "2026-theme-presets",
 		"date": "2026-08-27",
@@ -47,4 +58,4 @@
 		"stage": "seed",
 		"tags": ["Origin", "Writing"]
 	}
-]
+];

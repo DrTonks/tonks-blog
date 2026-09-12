@@ -1,14 +1,11 @@
 <script lang="ts">
   import { optimizedImage } from '../utils/optimized-image';
-  import { onMount } from "svelte";
   import Icon from "@iconify/svelte";
   import type { Project } from "../data/projects";
   import { i18n } from "../i18n/translation";
   import I18nKey from "../i18n/i18nKey";
 
-  let projects: Project[] = [];
-  let loading = true;
-  let error: string | null = null;
+  export let projects: Project[];
 
   type TechFamily = "ai" | "frontend" | "backend" | "language" | "infra" | "other";
 
@@ -88,143 +85,123 @@
           : I18nKey.projectsPlanned,
     );
 
-  onMount(async () => {
-    try {
-      const response = await fetch("/data/projects.json", { cache: "no-store" });
-      if (!response.ok) throw new Error("Failed to fetch projects.json");
-      projects = await response.json();
-    } catch (caught: unknown) {
-      console.error(caught);
-      error = caught instanceof Error ? caught.message : String(caught);
-    } finally {
-      loading = false;
-    }
-  });
-
   $: representative = projects.filter((project) => project.award && String(project.award).trim() !== "");
   $: involved = projects.filter((project) => project.category === "web" || project.category === "mobile");
   $: techSet = Array.from(new Set(projects.flatMap((project) => project.techStack || []))).sort();
 </script>
-
-{#if loading}
-  <div class="project-state">正在载入项目索引…</div>
-{:else if error}
-  <div class="project-state project-state--error">项目索引载入失败：{error}</div>
-{:else}
-  {#if representative.length > 0}
-    <section class="project-section" aria-labelledby="representative-projects">
-      <header class="section-heading">
-        <div>
-          <span class="section-kicker">SELECTED / WORKS</span>
-          <h2 id="representative-projects">代表作品</h2>
-        </div>
-        <span class="section-count">{String(representative.length).padStart(2, "0")}</span>
-      </header>
-
-      <div class="representative-grid">
-        {#each representative as project, index}
-          {@const cardUrl = getCardUrl(project)}
-          <article class="project-card project-card--representative" data-project-id={project.id}>
-            {#if cardUrl}
-              <a class="project-card__hit" href={cardUrl} target="_blank" rel="noopener noreferrer" aria-label={`打开 ${project.title}`}></a>
-            {/if}
-            {#if project.image}
-              <div class="project-media">
-                <img src={optimizedImage(project.image)} alt={project.title} class="project-image" loading="lazy" />
-                <span class="project-index">PRJ-{String(index + 1).padStart(2, "0")}</span>
-              </div>
-            {/if}
-            <div class="project-content">
-              <div class="project-title-row">
-                <h3>{project.title}</h3>
-                <span class="award-label">
-                  <Icon icon="material-symbols:trophy-outline-rounded" class="award-label__icon" aria-hidden="true" />
-                  <span>{project.award}</span>
-                </span>
-              </div>
-              <p>{project.description}</p>
-              <div class="tech-list" aria-label="技术栈">
-                {#each project.techStack?.slice(0, 5) ?? [] as tech}
-                  <span class={getTechClass(tech)}>{tech}</span>
-                {/each}
-                {#if project.techStack && project.techStack.length > 5}
-                  <span class="tech-chip tech-chip--other">+{project.techStack.length - 5}</span>
-                {/if}
-              </div>
-            </div>
-          </article>
-        {/each}
-      </div>
-    </section>
-  {/if}
-
-  {#if involved.length > 0}
-    <section class="project-section" aria-labelledby="involved-projects">
-      <header class="section-heading">
-        <div>
-          <span class="section-kicker">CONTRIBUTION / INDEX</span>
-          <h2 id="involved-projects">参与制作</h2>
-        </div>
-        <span class="section-count">{String(involved.length).padStart(2, "0")}</span>
-      </header>
-
-      <div class="involved-grid">
-        {#each involved as project, index}
-          {@const sourceUrl = getSourceUrl(project)}
-          {@const cardUrl = getCardUrl(project)}
-          <article class="project-card project-card--compact" data-project-id={project.id}>
-            {#if cardUrl}
-              <a class="project-card__hit" href={cardUrl} target="_blank" rel="noopener noreferrer" aria-label={`打开 ${project.title}`}></a>
-            {/if}
-            {#if project.image}
-              <div class="project-media">
-                <img src={optimizedImage(project.image)} alt={project.title} class="project-image" loading="lazy" />
-                <span class="project-index">{String(index + 1).padStart(2, "0")}</span>
-                {#if sourceUrl}
-                  <a class="project-source" href={sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`查看 ${project.title} 的源码`}>
-                    <span>源码</span><b aria-hidden="true">↗</b>
-                  </a>
-                {/if}
-              </div>
-            {/if}
-            <div class="project-content">
-              <div class="project-title-row">
-                <h3>{project.title}</h3>
-                <span class:status-completed={project.status === "completed"} class:status-progress={project.status === "in-progress"} class="status-label">
-                  {getStatusText(project)}
-                </span>
-              </div>
-              <p>{project.description}</p>
-              <div class="tech-list" aria-label="技术栈">
-                {#each project.techStack?.slice(0, 4) ?? [] as tech}
-                  <span class={getTechClass(tech)}>{tech}</span>
-                {/each}
-                {#if project.techStack && project.techStack.length > 4}
-                  <span class="tech-chip tech-chip--other">+{project.techStack.length - 4}</span>
-                {/if}
-              </div>
-            </div>
-          </article>
-        {/each}
-      </div>
-    </section>
-  {/if}
-
-  <section class="stack-section" aria-labelledby="project-stack">
-    <header class="section-heading section-heading--compact">
+{#if representative.length > 0}
+  <section class="project-section" aria-labelledby="representative-projects">
+    <header class="section-heading">
       <div>
-        <span class="section-kicker">CAPABILITY / MATRIX</span>
-        <h2 id="project-stack">{i18n(I18nKey.projectsTechStack)}</h2>
+        <span class="section-kicker">SELECTED / WORKS</span>
+        <h2 id="representative-projects">代表作品</h2>
       </div>
-      <span class="section-count">{String(techSet.length).padStart(2, "0")}</span>
+      <span class="section-count">{String(representative.length).padStart(2, "0")}</span>
     </header>
-    <div class="stack-list">
-      {#each techSet as tech}
-        <span class={getTechClass(tech)}>{tech}</span>
+
+    <div class="representative-grid">
+      {#each representative as project, index}
+        {@const cardUrl = getCardUrl(project)}
+        <article class="project-card project-card--representative" data-project-id={project.id}>
+          {#if cardUrl}
+            <a class="project-card__hit" href={cardUrl} target="_blank" rel="noopener noreferrer" aria-label={`打开 ${project.title}`}></a>
+          {/if}
+          {#if project.image}
+            <div class="project-media">
+              <img src={optimizedImage(project.image)} alt={project.title} class="project-image" loading="lazy" />
+              <span class="project-index">PRJ-{String(index + 1).padStart(2, "0")}</span>
+            </div>
+          {/if}
+          <div class="project-content">
+            <div class="project-title-row">
+              <h3>{project.title}</h3>
+              <span class="award-label">
+                <Icon icon="material-symbols:trophy-outline-rounded" class="award-label__icon" aria-hidden="true" />
+                <span>{project.award}</span>
+              </span>
+            </div>
+            <p>{project.description}</p>
+            <div class="tech-list" aria-label="技术栈">
+              {#each project.techStack?.slice(0, 5) ?? [] as tech}
+                <span class={getTechClass(tech)}>{tech}</span>
+              {/each}
+              {#if project.techStack && project.techStack.length > 5}
+                <span class="tech-chip tech-chip--other">+{project.techStack.length - 5}</span>
+              {/if}
+            </div>
+          </div>
+        </article>
       {/each}
     </div>
   </section>
 {/if}
+
+{#if involved.length > 0}
+  <section class="project-section" aria-labelledby="involved-projects">
+    <header class="section-heading">
+      <div>
+        <span class="section-kicker">CONTRIBUTION / INDEX</span>
+        <h2 id="involved-projects">参与制作</h2>
+      </div>
+      <span class="section-count">{String(involved.length).padStart(2, "0")}</span>
+    </header>
+
+    <div class="involved-grid">
+      {#each involved as project, index}
+        {@const sourceUrl = getSourceUrl(project)}
+        {@const cardUrl = getCardUrl(project)}
+        <article class="project-card project-card--compact" data-project-id={project.id}>
+          {#if cardUrl}
+            <a class="project-card__hit" href={cardUrl} target="_blank" rel="noopener noreferrer" aria-label={`打开 ${project.title}`}></a>
+          {/if}
+          {#if project.image}
+            <div class="project-media">
+              <img src={optimizedImage(project.image)} alt={project.title} class="project-image" loading="lazy" />
+              <span class="project-index">{String(index + 1).padStart(2, "0")}</span>
+              {#if sourceUrl}
+                <a class="project-source" href={sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`查看 ${project.title} 的源码`}>
+                  <span>源码</span><b aria-hidden="true">↗</b>
+                </a>
+              {/if}
+            </div>
+          {/if}
+          <div class="project-content">
+            <div class="project-title-row">
+              <h3>{project.title}</h3>
+              <span class:status-completed={project.status === "completed"} class:status-progress={project.status === "in-progress"} class="status-label">
+                {getStatusText(project)}
+              </span>
+            </div>
+            <p>{project.description}</p>
+            <div class="tech-list" aria-label="技术栈">
+              {#each project.techStack?.slice(0, 4) ?? [] as tech}
+                <span class={getTechClass(tech)}>{tech}</span>
+              {/each}
+              {#if project.techStack && project.techStack.length > 4}
+                <span class="tech-chip tech-chip--other">+{project.techStack.length - 4}</span>
+              {/if}
+            </div>
+          </div>
+        </article>
+      {/each}
+    </div>
+  </section>
+{/if}
+
+<section class="stack-section" aria-labelledby="project-stack">
+  <header class="section-heading section-heading--compact">
+    <div>
+      <span class="section-kicker">CAPABILITY / MATRIX</span>
+      <h2 id="project-stack">{i18n(I18nKey.projectsTechStack)}</h2>
+    </div>
+    <span class="section-count">{String(techSet.length).padStart(2, "0")}</span>
+  </header>
+  <div class="stack-list">
+    {#each techSet as tech}
+      <span class={getTechClass(tech)}>{tech}</span>
+    {/each}
+  </div>
+</section>
 
 <style>
   .project-state {

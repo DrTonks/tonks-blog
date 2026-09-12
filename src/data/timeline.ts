@@ -5,7 +5,7 @@ export interface TimelineItem {
 	id: string;
 	title: string;
 	description: string;
-	type: "education" | "work" | "project" | "achievement";
+	type: "education" | "work" | "project" | "achievement" | "love";
 	startDate: string;
 	endDate?: string; // If empty, it means current
 	location?: string;
@@ -21,198 +21,276 @@ export interface TimelineItem {
 	icon?: string; // Iconify icon name
 	color?: string;
 	featured?: boolean;
+	image?: string[];
 }
 
 export const timelineData: TimelineItem[] = [
 	{
-		id: "current-study",
-		title: "Studying Computer Science and Technology",
-		description:
-			"Currently studying Computer Science and Technology, focusing on web development and software engineering.",
-		type: "education",
-		startDate: "2022-09-01",
-		location: "Beijing",
-		organization: "Beijing Institute of Technology",
-		skills: ["Java", "Python", "JavaScript", "HTML/CSS", "MySQL"],
-		achievements: [
-			"Current GPA: 3.6/4.0",
-			"Completed data structures and algorithms course project",
-			"Participated in multiple course project developments",
-		],
-		icon: "material-symbols:school",
-		color: "#059669",
-		featured: true,
+		"id": "2024-06-highschool-graduation",
+		"title": "高中毕业与升学",
+		"description": "成为电兵之前...需要隐忍（）",
+		"type": "education",
+		"startDate": "2024-06-01",
+		"endDate": "2024-09-01",
+		"location": "福建 福清——四川 成都",
+		"organization": "福清一中",
+		"position": "雏凤",
+		"icon": "material-symbols:school",
+		"color": "#2563EB"
 	},
 	{
-		id: "mizuki-blog-project",
-		title: "Mizuki Personal Blog Project",
-		description:
-			"A personal blog website developed using the Astro framework as a practical project for learning frontend technologies.",
-		type: "project",
-		startDate: "2024-06-01",
-		endDate: "2024-08-01",
-		skills: ["Astro", "TypeScript", "Tailwind CSS", "Git"],
-		achievements: [
-			"Mastered modern frontend development tech stack",
-			"Learned responsive design and user experience optimization",
-			"Completed the full process from design to deployment",
+		"id": "2024-10-join-miguang",
+		"title": "成为微光工作室的一员",
+		"description": "通过笔试与面试，加入电科大信软学院创新工坊名下的微光工作室，成为工作室前端方向的成员。",
+		"type": "work",
+		"startDate": "2024-10-01",
+		"icon": "material-symbols:work",
+		"location": "四川 成都",
+		"organization": "微光工作室",
+		"position": "前端方向成员",
+		"skills": [
+			"前端方向"
 		],
-		links: [
+		"links": [
 			{
-				name: "GitHub Repository",
-				url: "https://github.com/example/mizuki-blog",
-				type: "project",
-			},
-			{
-				name: "Live Demo",
-				url: "https://mizuki-demo.example.com",
-				type: "website",
-			},
+				"name": "工作室官网",
+				"url": "https://glimmer.org.cn/",
+				"type": "website"
+			}
 		],
-		icon: "material-symbols:code",
-		color: "#7C3AED",
-		featured: true,
+		"image": [
+			"/images/projects/weiguang.png",
+			"/images/projects/weiguang2.png"
+		],
+		"color": "#DC2626"
 	},
 	{
-		id: "summer-internship-2024",
-		title: "Frontend Development Intern",
-		description:
-			"Summer internship at an internet company, participating in frontend development of web applications.",
-		type: "work",
-		startDate: "2024-07-01",
-		endDate: "2024-08-31",
-		location: "Beijing",
-		organization: "TechStart Internet Company",
-		position: "Frontend Development Intern",
-		skills: ["React", "JavaScript", "CSS3", "Git", "Figma"],
-		achievements: [
-			"Completed user interface component development",
-			"Learned team collaboration and code standards",
-			"Received outstanding internship performance certificate",
+		"id": "2024-12-autoparts-defect-system",
+		"title": "汽车零部件缺陷检测系统开发",
+		"description": "2024年12月参与制作汽车零部件缺陷检测系统，参加第16届全国大学生服务外包创新创业大赛。",
+		"type": "project",
+		"startDate": "2024-12-01",
+		"endDate": "2025-07-01",
+		"achievements": [
+			"以赛区第九名的成绩获得西部赛区三等奖"
 		],
-		icon: "material-symbols:work",
-		color: "#DC2626",
-		featured: true,
+		"icon": "material-symbols:engineering",
+		"location": "陕西 西安",
+		"organization": "微光工作室-glimmer08小组",
+		"position": "前端工程师/组长",
+		"image": [
+			"/images/projects/A08.png",
+			"/images/projects/cardetect.png"
+		],
+		"skills": [
+			"ECharts",
+			"JavaScript",
+			"Element Plus",
+			"Vue3"
+		],
+		"color": "#EA580C"
 	},
 	{
-		id: "web-development-course",
-		title: "Completed Web Development Online Course",
-		description:
-			"Completed a full-stack web development online course, systematically learning frontend and backend development technologies.",
-		type: "achievement",
-		startDate: "2024-01-15",
-		endDate: "2024-05-30",
-		organization: "Mooc Website",
-		skills: ["HTML", "CSS", "JavaScript", "Node.js", "Express"],
-		achievements: [
-			"Received course completion certificate",
-			"Completed 5 practical projects",
-			"Mastered full-stack development fundamentals",
-		],
-		links: [
-			{
-				name: "Course Certificate",
-				url: "https://certificates.example.com/web-dev",
-				type: "certificate",
-			},
-		],
-		icon: "material-symbols:verified",
-		color: "#059669",
+		"id": "2025-01-16-important-meeting",
+		"title": "遇见重要的人",
+		"description": "好梦不长。",
+		"type": "love",
+		"startDate": "2025-01-16",
+		"endDate": "2026-05-13",
+		"icon": "material-symbols:emoji-events",
+		"location": "四川 成都",
+		"color": "#7C3AED"
 	},
 	{
-		id: "student-management-system",
-		title: "Student Management System Course Project",
-		description:
-			"Final project for the database course, developed a complete student information management system.",
-		type: "project",
-		startDate: "2023-11-01",
-		endDate: "2023-12-15",
-		skills: ["Java", "MySQL", "Swing", "JDBC"],
-		achievements: [
-			"Received excellent course project grade",
-			"Implemented complete CRUD functionality",
-			"Learned database design and optimization",
+		"id": "2025-07-miguang-recruit-system",
+		"title": "微光工作室招新系统建设",
+		"description": "2025年7月开始微光工作室招新系统的建设，包括招新网站、提交题目网站与官网的维护，负责25级面向大一新生的招新题。",
+		"type": "project",
+		"startDate": "2025-07-01",
+		"endDate": "2025-09-01",
+		"icon": "material-symbols:language",
+		"organization": "微光工作室",
+		"position": "前端方向负责人",
+		"image": [
+			"/images/projects/weiguangvite.png",
+			"/images/projects/weiguangvite2.png"
 		],
-		icon: "material-symbols:database",
-		color: "#EA580C",
+		"skills": [
+			"HTML",
+			"JavaScript",
+			"TypeScript",
+			"Vue3",
+			"Tailwind CSS",
+			"Pinia",
+			"Vitepress"
+		],
+		"location": "四川 成都",
+		"color": "#7C3AED"
 	},
 	{
-		id: "programming-contest",
-		title: "University Programming Contest",
-		description:
-			"Participated in a programming contest held by the university, improving algorithm and programming skills.",
-		type: "achievement",
-		startDate: "2023-10-20",
-		location: "Beijing Institute of Technology",
-		organization: "School of Computer Science",
-		skills: ["C++", "Algorithms", "Data Structures"],
-		achievements: [
-			"Won third prize in university contest",
-			"Improved algorithmic thinking ability",
-			"Strengthened programming fundamentals",
+		"id": "2025-08-personal-website",
+		"title": "个人网站建设计划",
+		"description": "2025年8月开始制作个人网站，包括 Sleepy 服务器后端建设、相关状态组件的开发、Astro博客的改造等。",
+		"type": "project",
+		"startDate": "2025-08-01",
+		"icon": "material-symbols:public",
+		"location": "四川 成都",
+		"skills": [
+			"HTML",
+			"Vue Bits",
+			"TypeScript",
+			"Vue3",
+			"Tailwind CSS"
 		],
-		icon: "material-symbols:emoji-events",
-		color: "#7C3AED",
+		"image": [
+			"/images/projects/personalWebsite.png",
+			"/images/projects/myblog.png"
+		],
+		"color": "#059669"
 	},
 	{
-		id: "part-time-tutor",
-		title: "Part-time Programming Tutor",
-		description:
-			"Provided programming tutoring for high school students, helping them learn Python basics.",
-		type: "work",
-		startDate: "2023-09-01",
-		endDate: "2024-01-31",
-		position: "Programming Tutor",
-		skills: ["Python", "Teaching", "Communication"],
-		achievements: [
-			"Helped 3 students master Python basics",
-			"Improved expression and communication skills",
-			"Gained teaching experience",
+		"id": "2025-09-loan-risk-platform",
+		"title": "多数据源贷款及风控平台",
+		"description": "2025年9月开始进行多数据源贷款及风控平台的制作，与小组成员商定接口文档、需求分析和设计文档，并初步建设后端和 Web 管理端。",
+		"type": "project",
+		"startDate": "2025-09-01",
+		"icon": "material-symbols:engineering",
+		"location": "四川 成都",
+		"organization": "金融方向互联网+综合设计小组",
+		"position": "前端工程师",
+		"image": [
+			"/images/projects/loanriskctl.png",
+			"/images/projects/loanrisk.png"
 		],
-		icon: "material-symbols:school",
-		color: "#059669",
+		"color": "#F59E0B"
 	},
 	{
-		id: "high-school-graduation",
-		title: "High School Graduation",
-		description:
-			"Graduated from high school with excellent grades and was admitted to the Computer Science and Technology program at Beijing Institute of Technology.",
-		type: "education",
-		startDate: "2019-09-01",
-		endDate: "2022-06-30",
-		location: "Jinan, Shandong",
-		organization: "No.1 High School of Jinan",
-		achievements: [
-			"College entrance exam score: 620",
-			"Received municipal model student award",
-			"Won provincial second prize in math competition",
-		],
-		icon: "material-symbols:school",
-		color: "#2563EB",
+		"id": "2025-10-uniapp-loan-app",
+		"title": "基于 Uniapp 的多数据源贷款 APP ",
+		"description": "在管理端之后开始参与基于 Uniapp 的多数据源贷款 APP 的前端开发。",
+		"type": "project",
+		"startDate": "2025-10-01",
+		"icon": "material-symbols:engineering",
+		"location": "四川 成都",
+		"organization": "金融方向互联网+综合设计小组",
+		"position": "前端工程师",
+		"color": "#7F3FBF"
 	},
 	{
-		id: "first-programming-experience",
-		title: "First Programming Experience",
-		description:
-			"First encountered programming in high school IT class, started learning Python basic syntax.",
-		type: "education",
-		startDate: "2021-03-01",
-		skills: ["Python", "Basic Programming Concepts"],
-		achievements: [
-			'Completed first "Hello World" program',
-			"Learned basic loops and conditional statements",
-			"Developed interest in programming",
-		],
-		icon: "material-symbols:code",
-		color: "#7C3AED",
+		"id": "2025-10-scholarship-uestc",
+		"title": "获得电子科技大学信息与软件工程学院二等奖学金",
+		"description": "获得电子科技大学信软学院二等奖学金",
+		"type": "achievement",
+		"startDate": "2025-09-11",
+		"endDate": "2025-10-11",
+		"icon": "material-symbols:emoji-events",
+		"location": "四川 成都",
+		"organization": "电子科技大学信息与软件工程学院",
+		"color": "#bf963f",
+		"image": [
+			"/images/projects/jxj.jpg"
+		]
 	},
-
+	{
+		"id": "2026-1-pgvector",
+		"title": "2025全国大学生计算机系统能力大赛-数据库创新设计赛",
+		"description": "完成第2届PolarDB数据库创新设计赛，排位44/3529，进入决赛第二阶段，未入围前20，无缘线下答辩",
+		"type": "achievement",
+		"startDate": "2025-11-01",
+		"endDate": "2026-01-05",
+		"icon": "material-symbols:engineering",
+		"location": "四川 成都",
+		"organization": "计系大赛-阿里云天池大赛",
+		"position": "混合索引算法优化/组长",
+		"skills": [
+			"C",
+			"SQL",
+			"IVF/HNSW",
+			"Postgresql"
+		],
+		"image": [
+			"/images/projects/tianchi.png",
+			"/images/projects/tianchi2.png"
+		],
+		"color": "#7C3AED"
+	},
+	{
+		"id": "2026-05-jsj-contest",
+		"title": "第19届中国大学生计算机设计大赛四川省省赛",
+		"description": "参加第19届中国大学生计算机设计大赛四川省省赛，软件应用与开发类，5月16号完成线上答辩并获奖。",
+		"type": "achievement",
+		"startDate": "2026-05-01",
+		"endDate": "2026-05-16",
+		"icon": "material-symbols:emoji-events",
+		"location": "四川 成都",
+		"organization": "中国大学生计算机设计大赛",
+		"achievements": [
+			"省二等奖"
+		],
+		"image": [
+			"/images/projects/js2026-1.png"
+		],
+		"color": "#7C3AED"
+	},
+	{
+		"id": "2026-06-career-planner",
+		"title": "第17届中国大学生服务外包创新创业大赛 - 微光职引",
+		"description": "参加第17届服创大赛【A13】赛题，开发基于AI的大学生职业规划智能体「微光职引」，获西部赛区一等奖并晋级国赛。",
+		"type": "achievement",
+		"startDate": "2026-06-01",
+		"endDate": "2026-07-01",
+		"icon": "material-symbols:emoji-events",
+		"location": "四川 成都——陕西 西安",
+		"organization": "中国大学生服务外包创新创业大赛 · 西部赛区",
+		"position": "【A13】基于AI的大学生职业规划智能体",
+		"achievements": [
+			"西部赛区一等奖"
+		],
+		"image": [
+			"/images/projects/fc2026-1.jpg",
+			"/images/projects/fc2026-2.jpg"
+		],
+		"skills": [
+			"Vue3",
+			"Springboot",
+			"Agent",
+			"LLM"
+		],
+		"color": "#EA580C"
+	},
+	{
+		"id": "2026-08-career-planner-wuxi",
+		"title": "第17届中国大学生服创大赛全国总决赛",
+		"description": "前往江苏·无锡参加全国总决赛，为期三天，获国家级二等奖。",
+		"type": "achievement",
+		"startDate": "2026-08-20",
+		"endDate": "2026-08-22",
+		"icon": "material-symbols:emoji-events",
+		"location": "江苏 无锡",
+		"organization": "中国大学生服务外包创新创业大赛 · 无锡总决赛",
+		"position": "【A13】基于AI的大学生职业规划智能体",
+		"achievements": [
+			"国家级二等奖"
+		],
+		"image": [
+			"/images/projects/fc2026-wuxi1.png",
+			"/images/projects/fc2026-wuxi2.png"
+		],
+		"skills": [
+			"Vue3",
+			"Springboot",
+			"Agent",
+			"LLM"
+		],
+		"color": "#7C3AED"
+	}
 ];
 
 // Get timeline statistics
 export const getTimelineStats = () => {
 	const total = timelineData.length;
 	const byType = {
+		love: timelineData.filter((item) => item.type === "love").length,
 		education: timelineData.filter((item) => item.type === "education").length,
 		work: timelineData.filter((item) => item.type === "work").length,
 		project: timelineData.filter((item) => item.type === "project").length,
@@ -226,7 +304,7 @@ export const getTimelineStats = () => {
 // Get timeline items by type
 export const getTimelineByType = (type?: string) => {
 	if (!type || type === "all") {
-		return timelineData.sort(
+		return timelineData.slice().sort(
 			(a, b) =>
 				new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
 		);

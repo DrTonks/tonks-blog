@@ -14,8 +14,8 @@ test('missing directory retains remote URL and only warns', () => fixture(async 
   const friend = { name: '新增友链', avatar: 'https://example.com/avatar.png' };
   const avatars = await scanFriendAvatars(root);
   assert.equal(resolveFriendAvatar(friend, avatars), friend.avatar);
-  await mkdir(join(root, 'public/data'), { recursive: true });
-  await writeFile(join(root, 'public/data/friends.json'), JSON.stringify([friend]));
+  await mkdir(join(root, 'src/data'), { recursive: true });
+  await writeFile(join(root, 'src/data/friends.ts'), 'export const friendsData = ' + JSON.stringify([friend]));
   const messages = [];
   await reportFriendAvatars(root, { warn: message => messages.push(message), info: message => messages.push(message) });
   assert.ok(messages.some(message => message.includes('新增友链.png')));
@@ -36,9 +36,9 @@ test('exact names, mixed extensions and URL encoding share the same resolution',
 test('duplicate formats select a stable priority and emit an advisory', () => fixture(async root => {
   const dir = join(root, 'public/images/friends');
   await mkdir(dir, { recursive: true });
-  await mkdir(join(root, 'public/data'));
+  await mkdir(join(root, 'src/data'), { recursive: true });
   for (const name of ['Name.jpg', 'Name.webp']) await writeFile(join(dir, name), 'fixture');
-  await writeFile(join(root, 'public/data/friends.json'), JSON.stringify([{name:'Name',avatar:'remote'}]));
+  await writeFile(join(root, 'src/data/friends.ts'), 'export const friendsData = ' + JSON.stringify([{name:'Name',avatar:'remote'}]));
   const avatars = await scanFriendAvatars(root);
   assert.equal(resolveFriendAvatar({name:'Name'}, avatars), '/images/friends/Name.webp');
   const messages=[];

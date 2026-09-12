@@ -28,8 +28,8 @@ test('new/replaced/deleted sources, cache and original preservation', async () =
     const removed = await generateImages(root);
     assert.equal(Object.keys(removed.manifest).length, 0);
     assert.equal(removed.outputs.size, 0); // Old cache files are not deployed.
-    await mkdir(join(root, 'public/data'), { recursive: true });
-    await writeFile(join(root, 'public/data/projects.json'), JSON.stringify([{ image: '/images/projects/missing.png' }]));
+    await mkdir(join(root, 'src/data'), { recursive: true });
+    await writeFile(join(root, 'src/data/projects.ts'), 'export const projectsData = ' + JSON.stringify([{ image: '/images/projects/missing.png' }]));
     await assert.rejects(generateImages(root), /Image source not found/);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
@@ -74,14 +74,14 @@ test('YAML frontmatter and encoded image references use the real parser', async 
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-test('real Vite watcher updates SSR/client manifest, reloads JSON and retires deleted hashes', { timeout: 60000 }, async () => {
+test('real Vite watcher updates SSR/client manifest, reloads TS and retires deleted hashes', { timeout: 60000 }, async () => {
   // macOS aliases /var to /private/var; match Vite's canonical module paths.
   const root = await realpath(await mkdtemp(join(tmpdir(), 'blog-image-vite-')));
   let server, socket;
   try {
     await mkdir(join(root, 'public/images/projects'), { recursive: true });
     await mkdir(join(root, 'public/images/albums/demo'), { recursive: true });
-    await mkdir(join(root, 'public/data'), { recursive: true });
+    await mkdir(join(root, 'src/data'), { recursive: true });
     await mkdir(join(root, 'src/utils'), { recursive: true });
     await mkdir(join(root, 'src/content/posts'), { recursive: true });
     await writeFile(join(root, 'src/utils/optimized-image.ts'), await readFile(new URL('../src/utils/optimized-image.ts', import.meta.url)));
@@ -91,8 +91,8 @@ test('real Vite watcher updates SSR/client manifest, reloads JSON and retires de
     const source = join(root, 'public', original);
     const initialBytes = await makeImage('#abcdef');
     await writeFile(source, initialBytes);
-    const dataPath = join(root, 'public/data/projects.json');
-    await writeFile(dataPath, JSON.stringify([{ image: original }]));
+    const dataPath = join(root, 'src/data/projects.ts');
+    await writeFile(dataPath, 'export const projectsData = ' + JSON.stringify([{ image: original }]));
     const integration = optimizedImages();
     let config;
     const warnings = [];
@@ -146,27 +146,27 @@ test('real Vite watcher updates SSR/client manifest, reloads JSON and retires de
     await until(async () => Boolean((await entry()).default[added]), 'added file');
     assert.equal((await entry()).optimizedImage(encodeURI(added) + '?v=2#zoom'), (await entry()).optimizedImage(added) + '?v=2#zoom');
     let count = reloads.length;
-    await writeFile(dataPath, JSON.stringify([{ image: added }]));
-    await until(() => reloads.length > count, 'project JSON reload');
+    await writeFile(dataPath, 'export const projectsData = ' + JSON.stringify([{ image: added }]));
+    await until(() => reloads.length > count, 'project TS reload');
     count = reloads.length;
-    await writeFile(join(root, 'public/data/timeline.json'), JSON.stringify([{ images: [added] }]));
-    await until(() => reloads.length > count, 'new timeline JSON reload');
+    await writeFile(join(root, 'src/data/timeline.ts'), 'export const timelineData = ' + JSON.stringify([{ images: [added] }]));
+    await until(() => reloads.length > count, 'new timeline TS reload');
     count = reloads.length;
     await writeFile(join(root, 'public/images/albums/demo/info.json'), JSON.stringify({ hidden: true, mode: 'external', cover: 'https://example.com/cover.jpg' }));
     await until(() => reloads.length > count, 'album metadata reload');
     count = reloads.length;
-    await rm(join(root, 'public/data/timeline.json'));
-    await until(() => reloads.length > count, 'JSON deletion reload');
+    await rm(join(root, 'src/data/timeline.ts'));
+    await until(() => reloads.length > count, 'TS deletion reload');
 
-    // Rapid saves + a partial JSON write must recover to the final disk state.
+    // Rapid saves + a partial TS write must recover to the final disk state.
     await writeFile(dataPath, '[');
-    await until(() => warnings.some(message => /JSON/.test(message)), 'partial JSON warning');
+    await until(() => warnings.some(message => /projects\.ts/.test(message)), 'partial TS warning');
     await writeFile(source, await makeImage('#111111'));
     await writeFile(source, await makeImage('#22cc55'));
-    await writeFile(dataPath, JSON.stringify([{ image: original }]));
+    await writeFile(dataPath, 'export const projectsData = ' + JSON.stringify([{ image: original }]));
     const expected = (await generateImages(root)).manifest[original].thumbnail;
     await until(async () => (await entry()).optimizedImage(original) === expected, 'rapid final replacement');
-    // Delete while JSON still references it: dev must discard it, not freeze.
+    // Delete while TS still references it: dev must discard it, not freeze.
     await rm(source);
     await until(async () => !(await entry()).default[original], 'deleted source removed from manifest');
     for (const url of [oldUrl, newUrl, recoveredUrl, expected]) assert.equal((await fetch(base + url)).status, 404);

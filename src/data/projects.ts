@@ -24,103 +24,221 @@ export interface Project {
 
 export const projectsData: Project[] = [
 	{
-		id: "mizuki-blog",
-		title: "个人博客",
-		description:
-			"Modern blog theme developed based on the Astro framework, supporting multilingual, dark mode, and responsive design features.",
-		image: "",
-		category: "web",
-		techStack: ["Astro", "TypeScript", "Tailwind CSS", "Svelte"],
-		status: "completed",
-		liveDemo: "https://blog.example.com",
-		sourceCode: "https://github.com/example/mizuki",
-		startDate: "2024-01-01",
-		endDate: "2024-06-01",
-		featured: true,
-		tags: ["Blog", "Theme", "Open Source"],
+		"id": "career-planner-2026",
+		"title": "“微光职引”大学生职业规划智能体",
+		"description": "旨在让大学生快速了解当前就业市场对于应届生招聘岗位的能力要求，清晰并准确的分析出自身就业能力、就业意愿。",
+		"image": "/images/projects/fc2026-1.jpg",
+		"category": "web",
+		"techStack": [
+			"AI",
+			"LLM",
+			"Agent",
+			"Vue3",
+			"Springboot"
+		],
+		"status": "completed",
+		"startDate": "2026-06-01",
+		"endDate": "2026-08-21",
+		"tags": [
+			"服创",
+			"AI",
+			"职业规划",
+			"Agent"
+		],
+		"award": "国家二等奖 · 赛区一等奖",
+		"links": "https://career-planner.tonks.top/",
+		"featured": true
 	},
 	{
-		id: "portfolio-website",
-		title: "Personal Portfolio",
-		description:
-			"Personal portfolio website showcasing project experience and technical skills.",
-		image: "",
-		category: "web",
-		techStack: ["React", "Next.js", "TypeScript", "Framer Motion"],
-		status: "completed",
-		liveDemo: "https://portfolio.example.com",
-		sourceCode: "https://github.com/example/portfolio",
-		startDate: "2023-09-01",
-		endDate: "2023-12-01",
-		featured: true,
-		tags: ["Portfolio", "React", "Animation"],
+		"id": "tianchi-polardb-2025",
+		"title": "PG数据库创新设计",
+		"description": "对pgvector的HNSW算法向量检索优化，性能排名44/3529，进入决赛第二阶段，未入围前20。",
+		"image": "/images/projects/tianchi.png",
+		"category": "web",
+		"techStack": [
+			"C",
+			"SQL",
+			"HNSW"
+		],
+		"status": "completed",
+		"startDate": "2025-11-01",
+		"endDate": "2026-01-05",
+		"tags": [
+			"Postgresql",
+			"pgvector",
+			"数据库",
+			"向量检索"
+		],
+		"sourceCode": "https://gitee.com/DrTonks/polardb_competition_2025/"
 	},
 	{
-		id: "task-manager-app",
-		title: "Task Manager App",
-		description:
-			"Cross-platform task management application supporting team collaboration and project management.",
-		image: "",
-		category: "mobile",
-		techStack: ["React Native", "TypeScript", "Redux", "Firebase"],
-		status: "in-progress",
-		startDate: "2024-03-01",
-		tags: ["Mobile", "Productivity", "Team Collaboration"],
+		"id": "tonks-home",
+		"title": "Tonks-Home",
+		"description": "基于sleepy后端的个人主页，展示日常状态和项目活动，实现音乐播放与桌宠系统。",
+		"image": "/images/projects/personalWebsite.png",
+		"category": "web",
+		"techStack": [
+			"Vue3",
+			"TypeScript",
+			"Tailwind CSS",
+			"Python",
+			"Flask",
+			"SQLite"
+		],
+		"status": "in-progress",
+		"startDate": "2025-5-16",
+		"tags": [
+			"homepage",
+			"personal"
+		],
+		"sourceCode": "https://github.com/DrTonks/tonks-home",
+		"links": "https://tonks.top"
 	},
 	{
-		id: "data-visualization-tool",
-		title: "Data Visualization Tool",
-		description:
-			"Data visualization tool supporting multiple chart types and interactive analysis.",
-		image: "",
-		category: "web",
-		techStack: ["Vue.js", "D3.js", "TypeScript", "Node.js"],
-		status: "completed",
-		liveDemo: "https://dataviz.example.com",
-		startDate: "2023-06-01",
-		endDate: "2023-11-01",
-		tags: ["Data Visualization", "Analytics", "Charts"],
+		"id": "carDetect",
+		"title": "汽车零部件缺陷检测系统",
+		"description": "参与第16届服创大赛A08赛题的项目。基于Yolo v5的汽车零部件缺陷检测系统，旨在提升生产线质量控制效率。",
+		"image": "/images/projects/A08.png",
+		"category": "web",
+		"techStack": [
+			"Vue3",
+			"JavaScript",
+			"Tailwind CSS",
+			"TensorFlow",
+			"MySQL",
+			"Spring Boot"
+		],
+		"status": "completed",
+		"startDate": "2024-12-20",
+		"endDate": "2025-06-21",
+		"featured": true,
+		"tags": [
+			"服创",
+			"端侧AI",
+			"机器学习"
+		],
+		"award": "赛区三等奖",
+		"sourceCode": "https://github.com/DrTonks/vue-detectSystem"
 	},
 	{
-		id: "e-commerce-platform",
-		title: "E-commerce Platform",
-		description:
-			"Full-stack e-commerce platform including user management, product management, and order processing features.",
-		image: "",
-		category: "web",
-		techStack: ["Next.js", "Node.js", "PostgreSQL", "Stripe"],
-		status: "planned",
-		startDate: "2024-07-01",
-		tags: ["E-commerce", "Full Stack", "Payment Integration"],
+		"id": "calculator-app",
+		"title": "通用贷款计算器",
+		"description": "《金融学基础》教学项目，可视化计算过程，帮助用户处理不同贷款方案的还款计划和情境计算。",
+		"image": "/images/projects/calculator.png",
+		"category": "web",
+		"techStack": [
+			"Vue3",
+			"lodash",
+			"TypeScript",
+			"Tailwind CSS"
+		],
+		"status": "completed",
+		"startDate": "2025-09-21",
+		"endDate": "2025-10-01",
+		"featured": true,
+		"tags": [
+			"金融",
+			"贷款",
+			"数学"
+		],
+		"links": "https://loancalculator.tonks.top"
 	},
-];
-
-// Try to load external projects.json (in public/data) at build/runtime. Fallback to embedded projectsData.
-import * as fs from "node:fs";
-import * as path from "node:path";
-
-const loadExternalProjects = (): Project[] => {
-	try {
-		const filePath = path.join(
-			process.cwd(),
-			"public",
-			"data",
-			"projects.json",
-		);
-		if (!fs.existsSync(filePath)) return projectsData;
-		const raw = fs.readFileSync(filePath, "utf8");
-		const parsed = JSON.parse(raw);
-		if (Array.isArray(parsed)) return parsed as Project[];
-		return projectsData;
-	} catch (_err) {
-		// If anything goes wrong, fallback to embedded data
-		return projectsData;
+	{
+		"id": "loan-risk-dashboard",
+		"title": "贷款平台可视化数据大屏",
+		"description": "互+综合设计课程项目，作为拓展功能（其实就是装杯功能）被实现。计划添加地图中的更多可交互元素",
+		"image": "/images/projects/dashboard.png",
+		"category": "web",
+		"techStack": [
+			"Vue3",
+			"Three.js",
+			"TypeScript",
+			"Tailwind CSS"
+		],
+		"status": "in-progress",
+		"startDate": "2025-10-21",
+		"tags": [
+			"金融",
+			"贷款",
+			"数据可视化",
+			"大屏"
+		],
+		"links": "https://loanriskctl-dashboard.tonks.top"
+	},
+	{
+		"id": "loan-risk-Web",
+		"title": "多数据源贷款及风控平台",
+		"description": "互+综合设计课程项目，分为安卓APP+Web管理端(可预览)。计划添加评分卡模型与自动审批模型等风控功能。",
+		"image": "/images/projects/loanrisk.png",
+		"category": "web",
+		"techStack": [
+			"Uniapp",
+			"TypeScript",
+			"Vue3",
+			"Node.js",
+			"Tailwind CSS",
+			"MySQL",
+			"Docker",
+			"Express"
+		],
+		"status": "in-progress",
+		"startDate": "2025-09-01",
+		"tags": [
+			"金融",
+			"贷款",
+			"后台管理",
+			"APP"
+		],
+		"links": "https://loanriskctl-webend.tonks.top"
+	},
+	{
+		"id": "myblog",
+		"title": "Tonks-Blog",
+		"description": "基于fuwari的个人博客，深度改造，支持AI摘要/后端统计/首屏加载/主题切换等功能。",
+		"image": "/images/projects/myblog2.png",
+		"category": "web",
+		"techStack": [
+			"Astro",
+			"TypeScript",
+			"Tailwind CSS",
+			"Node.js"
+		],
+		"status": "in-progress",
+		"startDate": "2024-12-01",
+		"tags": [
+			"blog"
+		],
+		"sourceCode": "https://github.com/DrTonks/tonks-blog",
+		"links": "https://blog.tonks.top"
+	},
+	{
+		"id": "weiguang",
+		"title": "微光工作室招新系统",
+		"description": "微光工作室25届招新已完成，参与维护官网、招新网站。计划重构为管理端/用户端分离的集成系统。",
+		"image": "/images/projects/weiguang.png",
+		"category": "web",
+		"techStack": [
+			"HTML",
+			"CSS",
+			"JavaScript",
+			"Vue3",
+			"Pinia"
+		],
+		"status": "completed",
+		"startDate": "2024-10-01",
+		"endDate": "2025-11-01",
+		"tags": [
+			"微光工作室",
+			"招新",
+			"三件套项目"
+		],
+		"links": "https://glimmer.org.cn/"
 	}
-};
+];
 
 // Get project statistics
 export const getProjectStats = () => {
-	const data = loadExternalProjects();
+	const data = projectsData;
 	const total = data.length;
 	const completed = data.filter((p) => p.status === "completed").length;
 	const inProgress = data.filter((p) => p.status === "in-progress").length;
@@ -138,7 +256,7 @@ export const getProjectStats = () => {
 
 // Get projects by category
 export const getProjectsByCategory = (category?: string) => {
-	const data = loadExternalProjects();
+	const data = projectsData;
 	if (!category || category === "all") {
 		return data;
 	}
@@ -147,13 +265,13 @@ export const getProjectsByCategory = (category?: string) => {
 
 // Get featured projects
 export const getFeaturedProjects = () => {
-	const data = loadExternalProjects();
+	const data = projectsData;
 	return data.filter((p) => p.featured);
 };
 
 // Get all tech stacks
 export const getAllTechStack = () => {
-	const data = loadExternalProjects();
+	const data = projectsData;
 	const techSet = new Set<string>();
 	for (const project of data) {
 		const stack = project.techStack || [];

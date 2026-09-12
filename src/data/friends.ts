@@ -1,4 +1,13 @@
-[
+export interface FriendLink {
+	name: string;
+	description: string;
+	avatar: string;
+	url: string;
+	category: string;
+	fastener?: "pin" | "tape";
+}
+
+export const friendsData: FriendLink[] = [
 	{
 		"name": "Fuwari",
 		"description": "基于 Astro 开发的静态博客模板。",
@@ -71,4 +80,4 @@
 		"category": "Neuro",
 		"fastener": "pin"
 	}
-]
+];

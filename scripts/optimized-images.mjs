@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomUUID } from 'node:crypto';
 import sharp from 'sharp';
+import { readContentData } from './content-data.mjs';
 import { walk, fileKey, encodePath, frontmatter, localImagePath, isWithin } from './image-pipeline-utils.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex').slice(0, 20);
@@ -32,9 +33,9 @@ export async function generateImages(root, { strict = true } = {}) {
   for (const name of ['projects', 'timeline']) {
     await attempt(async () => {
       let data;
-      try { data = await readFile(join(root, 'public/data', name + '.json'), 'utf8'); }
+      try { data = await readContentData(root, name); }
       catch (error) { if (error.code === 'ENOENT') return; throw error; }
-      for (const entry of JSON.parse(data)) {
+      for (const entry of data) {
         for (const value of [entry.image, entry.images].flat()) await checkReference(value);
       }
     });
@@ -160,7 +161,7 @@ export default function optimizedImages() {
           const relevant = path => {
             const absolute = resolve(path);
             return isWithin(join(root, 'public/images'), absolute)
-              || (isWithin(join(root, 'public/data'), absolute) && /\.json$/i.test(path))
+              || (isWithin(join(root, 'src/data'), absolute) && /\.ts$/i.test(path))
               || isWithin(join(root, 'src/content/posts'), absolute);
           };
           const changed = (event, path) => {
@@ -178,7 +179,7 @@ export default function optimizedImages() {
                   if (completed !== revision) continue; // Never publish a stale scan.
                   publish(next);
                   report(next);
-                  // Album scanners and runtime JSON fetches aren't module imports.
+                  // Album scanners and build-time data readers aren't module imports.
                   // Invalidate SSR importers too, then reload clients AFTER commit.
                   server.moduleGraph.invalidateAll();
                   server.ws.send({ type: 'full-reload', path: '*' });
@@ -189,7 +190,7 @@ export default function optimizedImages() {
               } finally { running = false; }
             })();
           };
-          server.watcher.add([join(root, 'public/images'), join(root, 'public/data'), join(root, 'src/content/posts')]);
+          server.watcher.add([join(root, 'public/images'), join(root, 'src/data'), join(root, 'src/content/posts')]);
           server.watcher.on('all', changed);
           const rescan = () => changed('change', join(root, 'public/images'));
           // config:setup can precede watcher registration by seconds. Close that

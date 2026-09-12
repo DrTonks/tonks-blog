@@ -10,7 +10,7 @@ export type HomeStickerDefinition = {
 	/** 单张图片直接填写 image；同一贴纸随机图片可填写 images。 */
 	image?: string;
 	images?: string[];
-	/** 自动读取 public/data/projects.json 中 status 为 in-progress 的项目封面。 */
+	/** 自动读取 src/data/projects.ts 中 status 为 in-progress 的项目封面。 */
 	imageSource?: "in-progress-projects";
 };
 

@@ -4,6 +4,7 @@ import { resolve, relative, join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import sharp from 'sharp';
+import { readContentData } from './content-data.mjs';
 import { walk, slash, fileKey, encodePath, isWithin, localImagePath, frontmatter } from './image-pipeline-utils.mjs';
 
 const projectRoot = resolve(fileURLToPath(new URL('../', import.meta.url)));
@@ -87,7 +88,9 @@ export async function exportImageAudit({ root = projectRoot, output = join(root,
     const text = await readFile(path, 'utf8'), file = slash(relative(root, path));
     const parsed = new Set();
     try {
-      const data = /\.json$/i.test(path) ? JSON.parse(text) : /\.mdx?$/i.test(path) ? frontmatter(text, path) : null;
+      const contentName = file.match(/^src\/data\/(projects|timeline|friends|construction)\.ts$/)?.[1];
+      const data = contentName ? await readContentData(root, contentName)
+        : /\.json$/i.test(path) ? JSON.parse(text) : /\.mdx?$/i.test(path) ? frontmatter(text, path) : null;
       for (const value of strings(data)) {
         try { const key = localImagePath(value.trim()); if (key) parsed.add(key); }
         catch (error) { diagnostics.push({ file, message: error.message }); }
@@ -105,7 +108,7 @@ export async function exportImageAudit({ root = projectRoot, output = join(root,
       source.text.split('\n').forEach((line, index) => {
         if ([key, url, JSON.stringify(key).slice(1, -1)].some(value => line.includes(value))) references.push({ file: source.file, line: index + 1, text: line.trim(), kind: 'literal' });
       });
-      if (references.length === start && source.parsed.has(key)) references.push({ file: source.file, line: 1, text: 'Parsed YAML/JSON image reference (document-level location)', kind: 'parsed' });
+      if (references.length === start && source.parsed.has(key)) references.push({ file: source.file, line: 1, text: 'Parsed TS/YAML/JSON image reference (document-level location)', kind: 'parsed' });
     }
     let album = null;
     if (key.startsWith('/images/albums/')) {

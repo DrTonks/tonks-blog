@@ -1,6 +1,6 @@
 ---
 import ProjectsClient from "../components/ProjectsClient.svelte";
-import { getAllTechStack, getProjectStats } from "../data/projects";
+import { projectsData, getAllTechStack, getProjectStats } from "../data/projects";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -52,8 +52,8 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
         </div>
       </div>
 
-      <!-- Projects are rendered on the client to allow runtime updates from /public/data/projects.json -->
-      <ProjectsClient client:load />
+      <!-- Cards, statistics and home stickers share the same build-time data. -->
+      <ProjectsClient projects={projectsData} client:load />
     </div>
   </div>
 </MainGridLayout>

@@ -1,4 +1,5 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
+import { readContentData } from './content-data.mjs';
 import { extname, join } from 'node:path';
 
 export const avatarDirectory = 'public/images/friends';
@@ -31,7 +32,7 @@ export function resolveFriendAvatar(friend, avatars) {
 
 export async function reportFriendAvatars(root, log = console) {
   try {
-    const friends = JSON.parse(await readFile(join(root, 'public/data/friends.json'), 'utf8'));
+    const friends = await readContentData(root, 'friends');
     const avatars = await scanFriendAvatars(root);
     const missing = friends.filter(friend => !avatars.has(friend.name));
     if (missing.length) {

@@ -1,3 +1,4 @@
+import { readContentData } from './content-data.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, writeFile, rm, symlink, lstat } from 'node:fs/promises';
@@ -42,16 +43,17 @@ test('output boundary rejects project paths, Windows case variants and junctions
   } finally { await rm(workspace, { recursive: true, force: true }); }
 });
 
-test('audit exports real config and JSON references, YAML covers, dynamic albums and valid CDN files', async () => {
+test('audit exports real config and TS/JSON references, YAML covers, dynamic albums and valid CDN files', async () => {
   const { workspace, root, source } = await fixture();
   try {
     // Real management data, backed by small synthetic files: no full-site build
     // or costly re-encoding of the user's entire photo library is necessary.
     await mkdir(join(root, 'public/data'), { recursive: true });
+    await mkdir(join(root, 'src/data'), { recursive: true });
     for (const name of ['projects', 'timeline']) {
-      const text = await readFile(new URL(`../public/data/${name}.json`, import.meta.url), 'utf8');
-      await writeFile(join(root, `public/data/${name}.json`), text);
-      for (const item of JSON.parse(text)) {
+      const text = await readFile(new URL(`../src/data/${name}.ts`, import.meta.url), 'utf8');
+      await writeFile(join(root, `src/data/${name}.ts`), text);
+      for (const item of await readContentData(root, name)) {
         for (const value of [item.image, item.images].flat()) {
           if (typeof value !== 'string' || !value.startsWith('/images/')) continue;
           const path = join(root, 'public', decodeURI(value));
@@ -69,6 +71,11 @@ test('audit exports real config and JSON references, YAML covers, dynamic albums
     await writeFile(join(root, 'src/content/posts/cover.md'), '---\nimage: >-\n  /images/covers/%E5%B0%81%E9%9D%A2%20%23%25.PNG\n---\n');
     await writeFile(join(root, 'public/data/escaped.json'), '{"image":"/images/covers/\\u5c01\\u9762 #%.PNG"}');
     await writeFile(join(root, 'public/data/invalid.json'), '{"image":"/images/covers/%ZZ.png"}');
+    // A valid same-file constant has no complete image URL in the source text.
+    const projectFile = join(root, 'src/data/projects.ts');
+    const computedImage = '/images/projects/computed-reference.png';
+    await writeFile(join(root, 'public', computedImage), source);
+    await writeFile(projectFile, (await readFile(projectFile, 'utf8')) + '\nconst directory = "/images/projects/";\nprojectsData.push({ image: `${directory}computed-reference.png` } as Project);\n');
     const output = join(workspace, 'package');
     const result = await exportImageAudit({ root, output });
     assert.equal(result.cdn.length, 11);
@@ -81,12 +88,13 @@ test('audit exports real config and JSON references, YAML covers, dynamic albums
     }
     const audit = JSON.parse(await readFile(join(output, 'local-reference-audit.json'), 'utf8'));
     assert.ok(audit.every(item => !item.url.includes('\\')));
+    assert.ok(audit.find(item => item.url === computedImage)?.references.some(ref => ref.file === 'src/data/projects.ts' && ref.kind === 'parsed'));
     for (const name of ['projects', 'timeline']) {
-      const data = JSON.parse(await readFile(join(root, `public/data/${name}.json`), 'utf8'));
+      const data = await readContentData(root, name);
       for (const item of data) for (const value of [item.image, item.images].flat()) {
         if (typeof value !== 'string' || !value.startsWith('/images/')) continue;
         const row = audit.find(entry => decodeURI(entry.url) === decodeURI(value));
-        assert.ok(row?.references.some(ref => ref.file === `public/data/${name}.json`), `${name}: ${value}`);
+        assert.ok(row?.references.some(ref => ref.file === `src/data/${name}.ts`), `${name}: ${value}`);
       }
     }
     assert.equal(audit.find(item => item.url === '/images/projects/personalWebsite2.png').cdn, 'blog/personalWebsite2.webp');

@@ -1,3 +1,5 @@
+> **内容维护入口：** [src/data/README.md](src/data/README.md) — 友链、时间线、项目、建设树与首页贴纸统一在 src/data 维护。
+
 # Tonks Blog
 
 基于 Astro 构建的个人博客，保留了 Fuwari 清爽的内容结构，并围绕文章阅读、个性化外观和低开销动态效果进行了持续深度改造。

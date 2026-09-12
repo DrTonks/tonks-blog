@@ -1,6 +1,6 @@
 # 友链头像管理
 
-头像放在 `public/images/friends/`，文件名（不含扩展名）与 `public/data/friends.json` 的 `name` 完全一致，包括大小写、中文和空格。例如 `Tonks Home.jpg`、`时歌的博客.webp`。
+头像放在 `public/images/friends/`，文件名（不含扩展名）与 `src/data/friends.ts` 的 `name` 完全一致，包括大小写、中文和空格。例如 `Tonks Home.jpg`、`时歌的博客.webp`。
 
 支持 webp、avif、png、jpg、jpeg、gif、svg、ico、bmp，扩展名大小写均可。每个 name 保留一张即可；若重复，按以上格式顺序优先选择，构建会提醒。同格式重复时按文件名排序。
 

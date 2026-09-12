@@ -5,41 +5,17 @@
   import { i18n } from '../i18n/translation';
   import I18nKey from '../i18n/i18nKey';
 
-  type TimelineLink = {
-    name: string;
-    url: string;
-    type: 'website' | 'certificate' | 'project' | 'other';
-  };
-
-  type TimelineItem = {
-    id: string;
-    title: string;
-    description: string;
-    type: 'education' | 'work' | 'project' | 'achievement' | 'love';
-    startDate: string;
-    endDate?: string;
-    location?: string;
-    organization?: string;
-    position?: string;
-    skills?: string[];
-    achievements?: string[];
-    links?: TimelineLink[];
-    icon?: string;
-    color?: string;
-    featured?: boolean;
-    image?: string[];
-  };
+  import type { TimelineItem } from "../data/timeline";
+  type TimelineLink = NonNullable<TimelineItem["links"]>[number];
 
   type TimelineYearGroup = {
     year: string;
     items: TimelineItem[];
   };
 
-  export let initialItems: unknown[] = [];
+  export let initialItems: TimelineItem[];
 
   let items: TimelineItem[] = initialItems.map(normalizeItem);
-  let loading = items.length === 0;
-  let error: string | null = null;
   let activeId: string | null = null;
   let activeYear = '';
   let scrollProgress = 0;
@@ -68,27 +44,11 @@
     : '—';
 
   onMount(async () => {
-    try {
-      if (items.length === 0) {
-        const response = await fetch('/data/timeline.json', { cache: 'no-store' });
-        if (!response.ok) throw new Error('Failed to fetch timeline.json');
-        const rawItems = await response.json();
-        items = rawItems.map(normalizeItem);
-      }
-    } catch (caught: any) {
-      console.error(caught);
-      error = caught?.message || String(caught);
-    } finally {
-      loading = false;
-      await tick();
-      activeYear = yearGroups[0]?.year || '';
-      scheduleUpdate();
-
-      if (isBrowser) {
-        window.addEventListener('scroll', scheduleUpdate, { passive: true });
-        window.addEventListener('resize', scheduleUpdate);
-      }
-    }
+    await tick();
+    activeYear = yearGroups[0]?.year || '';
+    scheduleUpdate();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
   });
 
   onDestroy(() => {
@@ -281,122 +241,115 @@
     }
   }
 </script>
+<div class="timeline-shell card-base">
+  <header class="timeline-register">
+    <div>
+      <span class="timeline-register__eyebrow">CHRONOLOGICAL INDEX</span>
+      <strong>{activeYear || yearGroups[0]?.year}</strong>
+    </div>
+    <div class="timeline-register__meta">
+      <span>{yearRange}</span>
+      <span>{String(allTimelineItems.length).padStart(2, '0')} ENTRIES</span>
+    </div>
+  </header>
 
-{#if loading}
-  <div class="timeline-state card-base">Loading timeline…</div>
-{:else if error}
-  <div class="timeline-state timeline-state--error card-base">Error: {error}</div>
-{:else}
-  <div class="timeline-shell card-base">
-    <header class="timeline-register">
-      <div>
-        <span class="timeline-register__eyebrow">CHRONOLOGICAL INDEX</span>
-        <strong>{activeYear || yearGroups[0]?.year}</strong>
-      </div>
-      <div class="timeline-register__meta">
-        <span>{yearRange}</span>
-        <span>{String(allTimelineItems.length).padStart(2, '0')} ENTRIES</span>
-      </div>
-    </header>
+  <div class="timeline-sequence" bind:this={containerEl} style={`--timeline-progress: ${scrollProgress}%`}>
+    <div class="timeline-rail" aria-hidden="true"><span></span></div>
 
-    <div class="timeline-sequence" bind:this={containerEl} style={`--timeline-progress: ${scrollProgress}%`}>
-      <div class="timeline-rail" aria-hidden="true"><span></span></div>
+    {#each yearGroups as group (group.year)}
+      <section class="timeline-year" data-year={group.year} class:is-current={activeYear === group.year}>
+        <div class="timeline-year__ghost" aria-hidden="true">{group.year}</div>
 
-      {#each yearGroups as group (group.year)}
-        <section class="timeline-year" data-year={group.year} class:is-current={activeYear === group.year}>
-          <div class="timeline-year__ghost" aria-hidden="true">{group.year}</div>
+        <header class="timeline-year__header">
+          <span class="timeline-year__code">YR / {group.year}</span>
+          <span class="timeline-year__rule"></span>
+          <span class="timeline-year__count">{String(group.items.length).padStart(2, '0')} EVENTS</span>
+        </header>
 
-          <header class="timeline-year__header">
-            <span class="timeline-year__code">YR / {group.year}</span>
-            <span class="timeline-year__rule"></span>
-            <span class="timeline-year__count">{String(group.items.length).padStart(2, '0')} EVENTS</span>
-          </header>
+        <div class="timeline-year__events">
+          {#each group.items as item (item.id)}
+            <article
+              class="timeline-item timeline-card"
+              class:active={activeId === item.id}
+              data-id={item.id}
+              data-year={group.year}
+              aria-current={activeId === item.id ? 'step' : undefined}
+            >
+              <div class="timeline-node" style={`--node-color: ${item.color || 'rgb(99 102 241)'}`} aria-hidden="true">
+                <Icon icon={item.icon || getTypeIcon(item.type)} class="timeline-node__icon" color="currentColor" />
+              </div>
 
-          <div class="timeline-year__events">
-            {#each group.items as item (item.id)}
-              <article
-                class="timeline-item timeline-card"
-                class:active={activeId === item.id}
-                data-id={item.id}
-                data-year={group.year}
-                aria-current={activeId === item.id ? 'step' : undefined}
-              >
-                <div class="timeline-node" style={`--node-color: ${item.color || 'rgb(99 102 241)'}`} aria-hidden="true">
-                  <Icon icon={item.icon || getTypeIcon(item.type)} class="timeline-node__icon" color="currentColor" />
-                </div>
-
-                <div class="timeline-card__body">
-                  <div class="timeline-card__marker" aria-hidden="true"></div>
-                  <div class="timeline-card__head">
-                    <div>
-                      <h3>{item.title}</h3>
-                      {#if item.organization}
-                        <div class="timeline-card__organization">
-                          {item.organization}{item.position ? ` • ${item.position}` : ''}
-                        </div>
-                      {/if}
-                    </div>
-                    <span class={`timeline-badge ${getBadgeClass(item.type)}`}>{getBadgeText(item.type)}</span>
-                  </div>
-
-                  <div class="timeline-card__date">
-                    <span>{formatDate(item.startDate)} — {item.endDate ? formatDate(item.endDate) : i18n(I18nKey.timelinePresent)}</span>
-                    <span class="timeline-card__dot">•</span>
-                    <span>{getDuration(item.startDate, item.endDate)}</span>
-                    {#if item.location}
-                      <span class="timeline-card__dot">•</span>
-                      <span>📍 {item.location}</span>
+              <div class="timeline-card__body">
+                <div class="timeline-card__marker" aria-hidden="true"></div>
+                <div class="timeline-card__head">
+                  <div>
+                    <h3>{item.title}</h3>
+                    {#if item.organization}
+                      <div class="timeline-card__organization">
+                        {item.organization}{item.position ? ` • ${item.position}` : ''}
+                      </div>
                     {/if}
                   </div>
+                  <span class={`timeline-badge ${getBadgeClass(item.type)}`}>{getBadgeText(item.type)}</span>
+                </div>
 
-                  <p class="timeline-card__description">{item.description}</p>
-
-                  {#if item.image && item.image.length > 0}
-                    <div class="timeline-gallery" use:fitGalleryOnOneLine>
-                      {#each item.image as imageSource}
-                        <div class="timeline-gallery__frame">
-                          <img src={optimizedImage(imageSource, 'display')} alt={item.title} loading="lazy" decoding="async" />
-                        </div>
-                      {/each}
-                    </div>
-                  {/if}
-
-                  {#if item.achievements && item.achievements.length > 0}
-                    <div class="timeline-details">
-                      <h4>{i18n(I18nKey.timelineAchievements)}</h4>
-                      <ul>
-                        {#each item.achievements as achievement}
-                          <li><span aria-hidden="true">•</span><span>{achievement}</span></li>
-                        {/each}
-                      </ul>
-                    </div>
-                  {/if}
-
-                  {#if item.skills && item.skills.length > 0}
-                    <div class="timeline-skills">
-                      {#each item.skills as skill}<span>{skill}</span>{/each}
-                    </div>
-                  {/if}
-
-                  {#if item.links && item.links.length > 0}
-                    <div class="timeline-links">
-                      {#each item.links as link}
-                        <a href={link.url} target="_blank" rel="noopener noreferrer">
-                          <span aria-hidden="true">{getLinkEmoji(link.type)}</span>
-                          <span>{link.name || link.url}</span>
-                        </a>
-                      {/each}
-                    </div>
+                <div class="timeline-card__date">
+                  <span>{formatDate(item.startDate)} — {item.endDate ? formatDate(item.endDate) : i18n(I18nKey.timelinePresent)}</span>
+                  <span class="timeline-card__dot">•</span>
+                  <span>{getDuration(item.startDate, item.endDate)}</span>
+                  {#if item.location}
+                    <span class="timeline-card__dot">•</span>
+                    <span>📍 {item.location}</span>
                   {/if}
                 </div>
-              </article>
-            {/each}
-          </div>
-        </section>
-      {/each}
-    </div>
+
+                <p class="timeline-card__description">{item.description}</p>
+
+                {#if item.image && item.image.length > 0}
+                  <div class="timeline-gallery" use:fitGalleryOnOneLine>
+                    {#each item.image as imageSource}
+                      <div class="timeline-gallery__frame">
+                        <img src={optimizedImage(imageSource, 'display')} alt={item.title} loading="lazy" decoding="async" />
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+
+                {#if item.achievements && item.achievements.length > 0}
+                  <div class="timeline-details">
+                    <h4>{i18n(I18nKey.timelineAchievements)}</h4>
+                    <ul>
+                      {#each item.achievements as achievement}
+                        <li><span aria-hidden="true">•</span><span>{achievement}</span></li>
+                      {/each}
+                    </ul>
+                  </div>
+                {/if}
+
+                {#if item.skills && item.skills.length > 0}
+                  <div class="timeline-skills">
+                    {#each item.skills as skill}<span>{skill}</span>{/each}
+                  </div>
+                {/if}
+
+                {#if item.links && item.links.length > 0}
+                  <div class="timeline-links">
+                    {#each item.links as link}
+                      <a href={link.url} target="_blank" rel="noopener noreferrer">
+                        <span aria-hidden="true">{getLinkEmoji(link.type)}</span>
+                        <span>{link.name || link.url}</span>
+                      </a>
+                    {/each}
+                  </div>
+                {/if}
+              </div>
+            </article>
+          {/each}
+        </div>
+      </section>
+    {/each}
   </div>
-{/if}
+</div>
 
 <style>
   .timeline-state { padding: 2rem; color: var(--tw-prose-body, currentColor); }
