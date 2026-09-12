@@ -5,24 +5,46 @@ export function createBannerNavigation(onFinish: () => void) {
 		['home-sticker-motion', 'transform'],
 		['banner', 'transform'],
 		['main-grid', 'transform'],
-		['sidebar-sticky', 'top'],
+		['sidebar', 'transform'],
+		['sidebar-sticky', 'transform'],
 	] as const;
 	let effects: Animation[] = [];
-	let destinations: Array<{ element: HTMLElement; property: 'transform' | 'top'; from: string; to: string }> = [];
+	let destinations: Array<{ element: HTMLElement; property: 'transform'; from: string; to: string }> = [];
 	let transitions: Array<{ element: HTMLElement; value: string; priority: string }> = [];
-	let frame = 0;
-	let scrollEnd: (() => void) | undefined;
 	let generation = 0;
 	let scrolling = false;
 	let prepared = false;
 	let started = false;
+	const readStickyPositions = () => ['sidebar', 'sidebar-sticky'].flatMap(id => {
+		const element = document.getElementById(id);
+		return element ? [{element, top: element.getBoundingClientRect().top}] : [];
+	});
+	function compensateSticky(positions: ReturnType<typeof readStickyPositions>, tracks = destinations, paused = false) {
+		// Correct parent before child, so nested compensation is not counted twice.
+		for (const {element, top} of positions) {
+			const delta = top - element.getBoundingClientRect().top;
+			if (Math.abs(delta) < .5) continue;
+			const track = tracks.find(track => track.element === element);
+			if (!track) continue;
+			const value = getComputedStyle(element).transform;
+			const matrix = new DOMMatrix(value === 'none' ? undefined : value);
+			matrix.m42 += delta;
+			track.from = matrix.toString();
+			const frames = [{transform: track.from}, {transform: track.to}];
+			const existing = effects.find(effect => (effect.effect as KeyframeEffect)?.target === element);
+			if (existing) (existing.effect as KeyframeEffect).setKeyframes(frames);
+			else {
+				const effect = element.animate(frames, {
+					duration: paused ? 1 : 600, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
+				});
+				if (paused) { effect.pause(); effect.currentTime = 0; }
+				effects.push(effect);
+			}
+		}
+	}
 
 	function clear() {
 		generation++;
-		cancelAnimationFrame(frame);
-		frame = 0;
-		if (scrollEnd) window.removeEventListener('scrollend', scrollEnd);
-		scrollEnd = undefined;
 		for (const effect of effects) effect.cancel();
 		effects = [];
 		// Commit the underlying destination with transitions still disabled.
@@ -42,22 +64,19 @@ export function createBannerNavigation(onFinish: () => void) {
 
 	function cancelEffects() {
 		generation++;
-		cancelAnimationFrame(frame);
-		frame = 0;
-		if (scrollEnd) window.removeEventListener('scrollend', scrollEnd);
-		scrollEnd = undefined;
 		for (const effect of effects) effect.cancel();
 		effects = [];
 	}
 
-	function animateLayoutOnly(tracks = currentFrames()) {
+	function animateLayoutOnly(tracks = currentFrames(), afterStart?: () => void) {
 		cancelEffects();
 		const token = generation;
 		scrolling = false;
 		effects = tracks.filter(({ from, to }) => from !== to).map(({ element, property, from, to }) =>
 			element.animate([{ [property]: from }, { [property]: to }], {
-				duration: 600, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)', fill: 'both',
+				duration: 600, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
 			}));
+		afterStart?.();
 		Promise.all(effects.map(effect => effect.finished)).then(() => {
 			if (generation === token) { clear(); onFinish(); }
 		}).catch(() => { /* A new visit or user input replaced these effects. */ });
@@ -70,13 +89,21 @@ export function createBannerNavigation(onFinish: () => void) {
 		// Freeze its current presentation so the next transition starts there.
 		freeze() {
 			generation++;
-			cancelAnimationFrame(frame); frame = 0; scrolling = false;
-			if (scrollEnd) window.removeEventListener('scrollend', scrollEnd);
-			scrollEnd = undefined;
+			scrolling = false;
 			for (const effect of effects) effect.pause();
 		},
 		cancelScroll() {
-			if (prepared && scrolling) animateLayoutOnly();
+			if (prepared && scrolling) {
+				const grid = destinations.find(track => track.element.id === 'main-grid');
+				if (grid) {
+					const current = new DOMMatrixReadOnly(getComputedStyle(grid.element).transform).m42;
+					const final = new DOMMatrixReadOnly(grid.to === 'none' ? undefined : grid.to).m42;
+					const target = window.scrollY - (current - final);
+					clear();
+					window.scrollTo({ top: Math.max(0, target), behavior: 'instant' });
+					onFinish();
+				}
+			}
 			scrolling = false;
 		},
 		finish() {
@@ -84,6 +111,7 @@ export function createBannerNavigation(onFinish: () => void) {
 			clear(); onFinish();
 		},
 		prepare(updateLayout: () => void) {
+			const stickyPositions = readStickyPositions();
 			const snapshots = properties.flatMap(([id, property]) => {
 				const element = document.getElementById(id);
 				return element ? [{ element, property, from: getComputedStyle(element)[property] }] : [];
@@ -109,6 +137,7 @@ export function createBannerNavigation(onFinish: () => void) {
 				effect.currentTime = 0;
 				effects.push(effect);
 			}
+			compensateSticky(stickyPositions, destinations, true);
 			prepared = true;
 			document.body.dataset.bannerNavigation = 'true';
 			return gridOffset;
@@ -117,6 +146,7 @@ export function createBannerNavigation(onFinish: () => void) {
 			if (!prepared) return;
 			target = Math.max(0, Math.min(target, document.documentElement.scrollHeight - innerHeight));
 			const tracks = started ? currentFrames() : destinations;
+			const stickyPositions = readStickyPositions();
 			cancelEffects();
 			started = true;
 			scrolling = restoreScroll;
@@ -131,63 +161,17 @@ export function createBannerNavigation(onFinish: () => void) {
 				return;
 			}
 
-			const ScrollTimelineClass = (window as Window & {
-				ScrollTimeline?: new (options: { source: Element; axis: string }) => AnimationTimeline;
-			}).ScrollTimeline;
-			if (ScrollTimelineClass && document.scrollingElement && 'onscrollend' in window) {
-				// Native scrolling and these effects are sampled by the browser,
-				// not a JS frame loop. The layout follows the actual scroll progress
-				// even when page hydration temporarily occupies the main thread.
-				const timeline = new ScrollTimelineClass({ source: document.scrollingElement, axis: 'block' });
-				const options = {
-					timeline, rangeStart: `${Math.min(from, target)}px`, rangeEnd: `${Math.max(from, target)}px`,
-					fill: 'both', easing: 'linear',
-				} as KeyframeAnimationOptions & { timeline: AnimationTimeline; rangeStart: string; rangeEnd: string };
-				const nativeEffects = tracks.filter(track => track.from !== track.to).map(({ element, property, from: oldValue, to }) => {
-					const values = from < target ? [oldValue, to] : [to, oldValue];
-					return element.animate(values.map(value => ({ [property]: value })), options);
-				});
-				// A new scroll timeline has no resolved time until the browser's
-				// next sample. Keep the old pose above it until then to avoid a
-				// one-frame flash of the final layout before scrolling starts.
-				const holds = tracks.map(({ element, property, from }) => {
-					const hold = element.animate([{ [property]: from }, { [property]: from }], { duration: 1, fill: 'both' });
-					hold.pause(); hold.currentTime = 0;
-					return hold;
-				});
-				effects = [...nativeEffects, ...holds];
-				const token = generation;
-				Promise.all(nativeEffects.map(effect => effect.ready)).then(() => {
-					if (generation !== token) return;
-					for (const hold of holds) hold.cancel();
-					effects = nativeEffects;
-					scrollEnd = () => {
-						// Ignore a queued scrollend from the scroll we interrupted.
-						if (Math.abs(window.scrollY - target) < 1) { clear(); onFinish(); }
-					};
-					window.addEventListener('scrollend', scrollEnd);
-					window.scrollTo({ top: target, behavior: 'smooth' });
-				}).catch(() => { /* Superseded before the timeline became ready. */ });
-				return;
-			}
-
-			// Fallback for browsers without scroll-driven animations.
-			effects = tracks.filter(track => track.from !== track.to).map(({ element, property, from, to }) => {
-				const effect = element.animate([{ [property]: from }, { [property]: to }], { duration: 1, fill: 'both' });
-				effect.pause(); effect.currentTime = 0;
-				return effect;
+			// Commit the real scroll once; animate only the visual displacement.
+			const offset = target - from;
+			const visualTracks = tracks.map(track => {
+				if (track.element.id !== 'main-grid' && track.element.id !== 'banner-wrapper') return track;
+				const matrix = new DOMMatrix(track.from === 'none' ? undefined : track.from);
+				matrix.m42 += offset;
+				return { ...track, from: matrix.toString() };
 			});
-			const start = performance.now();
-			const duration = 600;
-			const tick = (now: number) => {
-				const progress = duration ? Math.min(1, (now - start) / duration) : 1;
-				const eased = progress * progress * (3 - 2 * progress);
-				for (const effect of effects) effect.currentTime = eased;
-				if (scrolling) window.scrollTo({ top: from + (target - from) * eased, behavior: 'instant' });
-				if (progress < 1) frame = requestAnimationFrame(tick);
-				else { clear(); onFinish(); }
-			};
-			tick(start);
+			window.scrollTo({ top: target, behavior: 'instant' });
+			animateLayoutOnly(visualTracks, () => compensateSticky(stickyPositions, visualTracks));
+			scrolling = true;
 		},
 	};
 }

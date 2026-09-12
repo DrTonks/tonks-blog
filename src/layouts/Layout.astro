@@ -816,6 +816,7 @@ import {
 } from 'overlayscrollbars';
 import { getBannerCarouselEnabled, BANNER_CAROUSEL_CHANGE } from "../utils/banner-carousel-preference";
 import { boundedNavigationScroll } from "../utils/navigation-scroll";
+import { createSidebarLayoutTransition } from "../utils/sidebar-layout-transition";
 import { createBannerNavigation } from "../utils/banner-navigation";
 import {getStoredTheme, isThemeDark} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
@@ -1497,7 +1498,11 @@ const setup = () => {
 		}
 
     }
+    const sidebarLayoutTransition = createSidebarLayoutTransition();
+    window.addEventListener('tonks:sidebar:before-layout', () => sidebarLayoutTransition.capture());
+    window.addEventListener('tonks:sidebar:after-layout', () => sidebarLayoutTransition.restore());
     window.swup.hooks.before('content:replace', () => {
+        sidebarLayoutTransition.capture();
         pendingPageScroll = true;
         const panel = document.getElementById('main-panel-wrapper');
         if (panel) document.body.style.setProperty('--navigation-panel-height', `${Math.max(0, document.documentElement.scrollHeight - (panel.getBoundingClientRect().top + scrollY))}px`);
@@ -1520,6 +1525,7 @@ const setup = () => {
             if (archive.dataset.archiveReady === 'true') finish();
         });
     }, { priority: 100 });
+    window.swup.hooks.on('content:replace', () => sidebarLayoutTransition.restore(), { priority: 200 });
     window.swup.hooks.before('animation:in:start', scrollFunction);
     window.swup.hooks.before('content:scroll', (scrollVisit: {to: {hash?: string}; scroll: {target?: string}}) => {
         scrollAnchor = scrollVisit.scroll.target ?? scrollVisit.to.hash;
@@ -1645,6 +1651,11 @@ const setup = () => {
 				// Preserve the scroll range while the outgoing layout is still in
 				// place, including history destinations beyond this page's height.
 				document.body.style.minHeight = `${Math.max(document.documentElement.scrollHeight, earlyBannerTarget + innerHeight)}px`;
+				const bounded = boundedNavigationScroll(window.scrollY, earlyBannerTarget, document.documentElement.scrollHeight - innerHeight);
+				earlyBannerTarget = bounded.target;
+				if (visit.scroll.reset && bounded.start !== window.scrollY) {
+					window.scrollTo({ top: bounded.start, behavior: 'instant' });
+				}
 				destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit));
 				bannerNavigation.start(earlyBannerTarget, visit.scroll.animate ?? true, visit.scroll.reset);
 			}

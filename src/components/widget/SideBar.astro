@@ -472,6 +472,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 	// Populate and position the persistent sidebar while the incoming page is
 	// still hidden. No FLIP offsets may span two different window scroll positions.
 	function settleSidebar() {
+		window.dispatchEvent(new Event('tonks:sidebar:before-layout'));
         cancelAnimationFrame(summaryToggleFrame);
         cancelAnimationFrame(tocToggleFrame);
         summaryToggleFrame = tocToggleFrame = 0;
@@ -487,6 +488,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 		if (stickyFrame) { cancelAnimationFrame(stickyFrame); stickyFrame = 0; }
 		syncArticleSidebarSticky(true);
 		document.querySelectorAll<HTMLElement & { settleForNavigation?: () => void }>("table-of-contents").forEach(toc => toc.settleForNavigation?.());
+		window.dispatchEvent(new Event('tonks:sidebar:after-layout'));
 	}
 
 	if (!sidebarWindow.__aiSummarySidebarInitialized) {
