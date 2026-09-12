@@ -29,6 +29,14 @@
 .ac-quote{margin:0;border-left:2px solid var(--primary);padding:.2rem .8rem;font-size:.82rem;line-height:1.7;color:color-mix(in srgb,currentColor 65%,transparent);overflow-wrap:anywhere}
 .ac-quote p{margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .ac-quote.is-expanded p{-webkit-line-clamp:unset}
+.ac-quote.ac-quote--summary{display:flex;align-items:center;gap:.6rem;min-width:0;padding-block:0}
+.ac-quote.ac-quote--summary p{display:block;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-quote.ac-quote--summary button,.ac-quote.ac-quote--summary small{flex:none;white-space:nowrap;margin:0}
+.ac-section .community-comment-form{animation:ac-inline-in 180ms ease both}
+.ac-section .ac-inline-remember{grid-column:1/-1;display:flex;align-items:center;gap:.5rem;font-size:.75rem}
+.ac-section .ac-inline-remember input{width:auto;accent-color:var(--primary)}
+@keyframes ac-inline-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.ac-section .community-comment-form{animation:none}}
 .ac-quote button{font-size:.7rem;padding:0 .3rem!important;color:var(--primary)}
 .ac-quote small{display:block;font-size:.67rem;opacity:.7}
 .ac-comment .ac-quote{margin:.5rem 0 .7rem}
@@ -65,6 +73,7 @@
 .ac-section [hidden],.ac-dialog [hidden]{display:none!important}
 .ac-section{scroll-margin-top:6rem}
 .ac-section .community-comments__icon-button{padding:0;border-radius:.3rem}
+.ac-section .community-comments__icon-button:hover,.ac-section .community-comments__icon-button[aria-expanded="true"]{background:var(--signal);color:var(--signal-ink)}
 .ac-section .community-comments__count [data-ac-total]:empty::after{content:'0'}
 .ac-section .ac-comment{grid-template-columns:2.5rem minmax(0,1fr);border-bottom-style:dashed;padding:1.1rem 0}
 .ac-section .ac-avatar{width:2.5rem;height:2.5rem;border-radius:.35rem .65rem .4rem .55rem}

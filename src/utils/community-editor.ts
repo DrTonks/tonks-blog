@@ -6,6 +6,7 @@ let emojiPickerId=0;
 export function attachCommunityEmojiPicker(
 	textarea: HTMLTextAreaElement,
 	host: HTMLElement,
+	options: {articles?:boolean} = {},
 ): void {
 	if (host.querySelector("[data-community-emoji-toggle]")) return;
 	textarea.maxLength = 800;
@@ -86,7 +87,7 @@ export function attachCommunityEmojiPicker(
 	preview.append(caption, previewBody);
 	toolbar.append(toggle);
 	host.append(toolbar, picker, preview);
-	const detachArticles = attachArticlePicker(textarea, toolbar);
+	const detachArticles = options.articles === false ? () => {} : attachArticlePicker(textarea, toolbar);
 	let activeGroup = getEmojiGroups()[0]?.id || "";
 	let visibleLimit = 80;
 	const requestManifest = () => {

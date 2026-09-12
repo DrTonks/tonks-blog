@@ -97,11 +97,14 @@ export function initializeArticleComments() {
     host.replaceChildren(); host.hidden=!text;
     if(!text) return;
     host.classList.remove('is-expanded'); host.append(element('p','',text));
+    if(!jump){
     const toggle=button('展开',()=>{
       const expanded=host.classList.toggle('is-expanded');toggle.textContent=expanded?'收起':'展开';toggle.setAttribute('aria-expanded',String(expanded));
     });
     toggle.dataset.quoteToggle='';toggle.hidden=true;toggle.setAttribute('aria-expanded','false');host.append(toggle);
     quoteObserver.observe(host.querySelector('p')!);
+    }
+    host.classList.toggle('ac-quote--summary',jump);
     if(block && !blocks.has(block)) host.append(element('small','','原文已更新或移除'));
     else if(jump && block) host.append(button('查看段落 ↗',()=>{
       const target=document.querySelector<HTMLElement>(`[data-comment-block="${CSS.escape(block)}"]`);
@@ -189,6 +192,56 @@ export function initializeArticleComments() {
   function restoreDraft(){input.value=drafts.get(draftKey()) || '';updateLength(true);}
   function updateLength(syncPreview=false){q('[data-ac-length]').textContent=`${input.value.length} / 800`;if(syncPreview)input.dispatchEvent(new Event('community:content-sync'));}
   function profileName(){q('[data-ac-profile]').textContent=profile.nickname || '留言身份';}
+  const inline=section.querySelector<HTMLFormElement>('[data-ac-inline]')!;
+  const inlineInput=inline.elements.namedItem('content') as HTMLTextAreaElement;
+  const inlineStatus=inline.querySelector<HTMLElement>('[data-comment-form-status]')!;
+  const inlineToggle=section.querySelector<HTMLButtonElement>('[data-ac-write]')!;
+  let inlineDirty=false,inlineSending=false;
+  function syncInlineIdentity(){
+    if(inlineDirty)return;
+    const current=ephemeral?profile:getCommunityProfile();
+    for(const key of ['nickname','email','website'] as const)(inline.elements.namedItem(key) as HTMLInputElement).value=current[key];
+    (inline.elements.namedItem('remember') as HTMLInputElement).checked=!ephemeral;
+  }
+  function syncInlineContent(){
+    inline.querySelector('[data-content-count]')!.textContent=String(inlineInput.value.length);
+    drafts.set('footer',inlineInput.value);persistDrafts();
+    inlineInput.dispatchEvent(new Event('community:content-sync'));
+  }
+  function toggleInline(){
+    const show=inline.hidden;
+    if(show)syncInlineIdentity();
+    inline.hidden=!show;inline.setAttribute('aria-hidden',String(!show));
+    inlineToggle.setAttribute('aria-expanded',String(show));
+    section!.querySelector<HTMLElement>('[data-comment-description]')!.hidden=!show;
+    if(show)inlineInput.focus({preventScroll:true});else inlineToggle.focus({preventScroll:true});
+  }
+  inlineInput.value=drafts.get('footer') || '';
+  attachCommunityEmojiPicker(inlineInput,inline.querySelector<HTMLElement>('.community-comment-form__content')!,{articles:false});
+  syncInlineContent();
+  inlineInput.addEventListener('input',()=>{
+    inline.querySelector('[data-content-count]')!.textContent=String(inlineInput.value.length);
+    drafts.set('footer',inlineInput.value);persistDrafts();
+  },{signal});
+  for(const key of ['nickname','email','website','remember'])(inline.elements.namedItem(key) as HTMLInputElement).addEventListener('input',()=>{inlineDirty=true;},{signal});
+  window.addEventListener('focus',syncInlineIdentity,{signal});
+  inline.addEventListener('submit',async e=>{
+    e.preventDefault();if(inlineSending)return;syncInlineIdentity();if(!inline.reportValidity())return;
+    const content=inlineInput.value.trim();if(!content){inlineInput.focus();return;}
+    const values=new FormData(inline);
+    const submittedProfile={nickname:String(values.get('nickname')).trim(),email:String(values.get('email')).trim(),website:String(values.get('website')).trim()};
+    profile=submittedProfile;ephemeral=!values.has('remember');
+    if(ephemeral)clearCommunityProfile();else saveCommunityProfile(profile);
+    inlineDirty=false;
+    const submit=inline.querySelector<HTMLButtonElement>('[type=submit]')!;
+    inlineSending=true;submit.disabled=true;inlineStatus.textContent='正在提交…';
+    try{
+      const result=await api('',{method:'POST',body:JSON.stringify({...submittedProfile,content,block_id:null,parent_id:null,version:article.version})});
+      if(inlineInput.value.trim()===content){inlineInput.value='';syncInlineContent();}
+      inlineStatus.textContent=result.message || '已提交';await refresh();
+    }catch(error){if(!signal.aborted)inlineStatus.textContent=(error as Error).message;}
+    finally{inlineSending=false;submit.disabled=false;}
+  },{signal});
   function showDiscussion(){identity.hidden=true;adminForm.hidden=true;discussion.hidden=false;updateTitle();}
   function editIdentity(){
     if(!ephemeral)profile=getCommunityProfile();
@@ -225,14 +278,14 @@ export function initializeArticleComments() {
   dialog.addEventListener('cancel',e=>{e.preventDefault();close();},{signal});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom)close();}},{signal});
   q('[data-ac-close]').addEventListener('click',()=>close(),{signal});
-  section.querySelector('[data-ac-write]')!.addEventListener('click',()=>open(null,null,true),{signal});
+  section.querySelector('[data-ac-write]')!.addEventListener('click',toggleInline,{signal});
   q('[data-ac-start]').addEventListener('click',begin,{signal});q('[data-ac-profile]').addEventListener('click',editIdentity,{signal});
   q('[data-ac-identity-back]').addEventListener('click',()=>{showDiscussion();q('[data-ac-start]').focus();},{signal});
   q('[data-ac-cancel-reply]').addEventListener('click',()=>{drafts.set(draftKey(),input.value);reply=null;q('[data-ac-reply-label]').textContent='';q('[data-ac-cancel-reply]').hidden=true;restoreDraft();},{signal});
   identity.addEventListener('submit',e=>{
     e.preventDefault();const values=new FormData(identity);
     profile={nickname:String(values.get('nickname')).trim(),email:String(values.get('email')).trim(),website:String(values.get('website')).trim()};
-    ephemeral=!values.has('remember');if(!ephemeral)saveCommunityProfile(profile);else clearCommunityProfile();begin();
+    ephemeral=!values.has('remember');if(!ephemeral)saveCommunityProfile(profile);else clearCommunityProfile();syncInlineIdentity();begin();
   },{signal});
   input.addEventListener('input',()=>{updateLength();drafts.set(draftKey(),input.value);persistDrafts();},{signal});
   form.addEventListener('submit',async e=>{
@@ -247,7 +300,7 @@ export function initializeArticleComments() {
     }catch(e){if(!signal.aborted)status.textContent=(e as Error).message;}finally{sending=false;submit.disabled=false;}
   },{signal});
   mainMore.addEventListener('click',()=>{void loadMain(true);},{signal});more.addEventListener('click',()=>{void loadDialog(true);},{signal});
-  attachCommunityEmojiPicker(input,q('[data-ac-editor]'));
+  attachCommunityEmojiPicker(input,q('[data-ac-editor]'),{articles:false});
   section.querySelector('[data-ac-admin]')!.addEventListener('click',()=>{
     open();discussion.hidden=true;identity.hidden=true;adminForm.hidden=false;title.textContent='管理员模式';
     (adminForm.elements.namedItem('secret') as HTMLInputElement).focus();

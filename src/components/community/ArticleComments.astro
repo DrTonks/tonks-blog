@@ -1,10 +1,12 @@
 ---
 import '../../styles/article-comments.css';
 import '../../styles/community-comments.css';
+import CommunityCommentForm from './CommunityCommentForm.astro';
 import MessageBoardHeader from './MessageBoardHeader.astro';
 ---
 <section id="article-comments" class="ac-section community-comments card-base" data-article-comments aria-labelledby="article-comments-title" data-pagefind-ignore>
   <MessageBoardHeader article titleId="article-comments-title" />
+  <CommunityCommentForm article />
   <div class="community-comments__rule"><span>PUBLIC MESSAGES</span></div>
   <div data-ac-main-list class="ac-list community-comments__list" aria-live="polite"><p class="ac-muted">正在读取留言…</p></div>
   <button type="button" class="ac-more" data-ac-main-more hidden>更多讨论</button>

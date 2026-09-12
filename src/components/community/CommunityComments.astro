@@ -1,5 +1,6 @@
 ---
 import "../../styles/community-comments.css";
+import CommunityCommentForm from "./CommunityCommentForm.astro";
 import MessageBoardHeader from "./MessageBoardHeader.astro";
 import { Icon } from "astro-icon/components";
 
@@ -13,29 +14,7 @@ const { page } = Astro.props;
 <section class="community-comments card-base" data-community-comments={page} aria-labelledby={`comments-title-${page}`}>
 	<MessageBoardHeader page={page} titleId={`comments-title-${page}`} />
 
-	<form class="community-comment-form" data-comment-form novalidate hidden aria-hidden="true">
-		<label>
-			<span>昵称 <b aria-hidden="true">*</b></span>
-			<input name="nickname" type="text" required maxlength="30" autocomplete="nickname" placeholder="怎么称呼你" />
-		</label>
-		<label>
-			<span>邮箱 <b aria-hidden="true">*</b></span>
-			<input name="email" type="email" required maxlength="254" autocomplete="email" placeholder="不会在页面公开" />
-		</label>
-		<label>
-			<span>网站</span>
-			<input name="website" type="url" maxlength="300" autocomplete="url" placeholder="https://（可选）" />
-		</label>
-		<div class="community-comment-form__content">
-			<span>想说的话 <b aria-hidden="true">*</b></span>
-			<textarea aria-label="想说的话" name="content" required maxlength="800" rows="5" placeholder="支持 Markdown；输入 @ 或点击「@ 文章」引用文章与小标题…"></textarea>
-			<small><span data-content-count>0</span> / 800</small>
-		</div>
-		<div class="community-comment-form__footer">
-			<p data-comment-form-status aria-live="polite"></p>
-			<button type="submit" class="signal-marker">提交留言 <span aria-hidden="true">↗</span></button>
-		</div>
-	</form>
+	<CommunityCommentForm />
 
 	<div class="community-comments__rule"><span>PUBLIC MESSAGES</span></div>
 	<div class="community-comments__list" data-comment-list aria-live="polite">

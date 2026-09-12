@@ -776,8 +776,21 @@ const bannerOffset =
 	.enable-banner.is-home #sidebar-sticky {
 		@apply top-[calc(1rem_-_var(--banner-height-extend))]
 	}
-	.navbar-hidden {
-		@apply opacity-0 -translate-y-16
+	#navbar-wrapper {
+		pointer-events: auto;
+		visibility: visible;
+		transition: transform 300ms ease, visibility 0s;
+	}
+	#navbar-wrapper.navbar-hidden {
+		/* Ancestor opacity creates a backdrop root and makes the glass snap
+		   when it reaches 1. Slide the whole surface out without fading it. */
+		transform: translateY(calc(-100% - 2rem));
+		pointer-events: none;
+		visibility: hidden;
+		transition: transform 300ms ease, visibility 0s 300ms;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		#navbar-wrapper, #navbar-wrapper.navbar-hidden { transition: none; }
 	}
 	
 	/* Water waves animation */
@@ -1770,6 +1783,7 @@ function scrollFunction() {
 			const isHome = document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024;
 			const currentBannerHeight = isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT;
 			const threshold = Math.max(1, window.innerHeight * (currentBannerHeight / 100) - 88);
+			navbar.inert = scrollTop >= threshold;
 			
 			if (scrollTop >= threshold) {
 				navbar.classList.add('navbar-hidden')
