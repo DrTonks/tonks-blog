@@ -91,8 +91,9 @@
 .ac-paragraph-button svg{width:17px;height:17px;display:inline-block}
 [data-comment-block]:hover>.ac-paragraph-button,[data-comment-block]:focus-within>.ac-paragraph-button,.ac-paragraph-button[data-count]:not([data-count='0']),[data-comment-block].ac-touched>.ac-paragraph-button{opacity:1}
 .custom-md .ac-paragraph-button:hover{background:var(--signal-soft);color:var(--primary)}
-[data-comment-block].ac-highlight{animation:ac-highlight 1.5s ease}
-@keyframes ac-highlight{0%,35%{background:var(--signal-soft)}100%{background:transparent}}
+[data-comment-block].ac-highlight::after{content:"";position:absolute;inset:-.15em -.35em;pointer-events:none;border-radius:.2em;background:var(--signal-soft);border-inline-start:2px solid var(--primary);animation:ac-highlight 1.8s ease-out both}
+@keyframes ac-highlight{0%{opacity:0}12%,65%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){[data-comment-block].ac-highlight::after{animation:none}}
 @keyframes ac-dialog-in{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes ac-dialog-out{to{opacity:0;transform:translateY(8px) scale(.99)}}
 @keyframes ac-backdrop-in{from{opacity:0}to{opacity:1}}@keyframes ac-backdrop-out{to{opacity:0}}

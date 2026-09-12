@@ -92,6 +92,31 @@ export function initializeArticleComments() {
     const n=activeBlock?(counts[activeBlock] || 0):total;
     if(n) title.append(element('span','',String(n)));
   }
+  let cancelParagraphHint=()=>{};
+  function revealParagraph(target:HTMLElement){
+    cancelParagraphHint();
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let frame=0, timer:ReturnType<typeof setTimeout>|undefined;
+    let previousY=window.scrollY, stableSince=performance.now();
+    const started=stableSince;
+    cancelParagraphHint=()=>{cancelAnimationFrame(frame);if(timer)clearTimeout(timer);target.classList.remove('ac-highlight');};
+    target.scrollIntoView({behavior:reduced?'instant':'smooth',block:'center'});
+    const show=()=>{
+      if(signal.aborted || !target.isConnected)return;
+      target.classList.add('ac-highlight');
+      timer=setTimeout(()=>target.classList.remove('ac-highlight'),1800);
+    };
+    const settle=(now:number)=>{
+      if(signal.aborted || !target.isConnected)return;
+      const y=window.scrollY;
+      if(Math.abs(y-previousY)>.5)stableSince=now;
+      previousY=y;
+      if(now-stableSince>=120 || now-started>=2500)show();
+      else frame=requestAnimationFrame(settle);
+    };
+    // Only watch while this requested scroll is moving; no permanent scroll listener.
+    frame=requestAnimationFrame(reduced?show:settle);
+  }
   function showQuote(host:HTMLElement,text:string,block:string|null,jump=false) {
     host.querySelectorAll('p').forEach(p=>quoteObserver.unobserve(p));
     host.replaceChildren(); host.hidden=!text;
@@ -111,8 +136,7 @@ export function initializeArticleComments() {
       if(!target) return;
       if(dialog!.open)close(true);
       target.querySelector<HTMLButtonElement>('.ac-paragraph-button')?.focus({preventScroll:true});
-      target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
-      target.classList.remove('ac-highlight'); void target.offsetWidth; target.classList.add('ac-highlight');
+      revealParagraph(target);
     }));
   }
   function renderComment(comment:Comment,showContext:boolean) {
@@ -325,5 +349,5 @@ export function initializeArticleComments() {
   window.addEventListener('focus',()=>{if(!ephemeral){profile=getCommunityProfile();profileName();}},{signal});
   // Counts are fetched once on entry, also supplies the first page for the footer.
   void loadMain();
-  teardown=()=>{controller.abort();quoteObserver.disconnect();unsubscribeEmojis();emojiContents.clear();requestGeneration++;mainGeneration++;if(closingTimer)clearTimeout(closingTimer);if(dialog.open)close(true);paragraphButtons.forEach(b=>b.remove());};
+  teardown=()=>{cancelParagraphHint();controller.abort();quoteObserver.disconnect();unsubscribeEmojis();emojiContents.clear();requestGeneration++;mainGeneration++;if(closingTimer)clearTimeout(closingTimer);if(dialog.open)close(true);paragraphButtons.forEach(b=>b.remove());};
 }
