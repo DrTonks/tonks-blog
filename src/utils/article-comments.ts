@@ -209,8 +209,8 @@ export function initializeArticleComments() {
       const result=await api(`?${params}`);if(generation!==requestGeneration)return;
       if(!append)clearContent(list);result.comments.forEach(c=>list.append(renderComment(c,!activeBlock)));
       if(!list.children.length)list.append(element('p','ac-muted','还没有留言。'));
-      cursor=result.next_before || null;more.hidden=!cursor;updateCounts(result);
-    }catch(e){if(generation===requestGeneration)showError(list,e,()=>{void loadDialog();});}finally{if(generation===requestGeneration)more.disabled=false;}
+      cursor=result.next_before || null;more.hidden=!cursor;more.textContent='加载更多';updateCounts(result);
+    }catch(e){if(generation===requestGeneration){if(!append)showError(list,e,()=>{void loadDialog();});else more.textContent='读取失败，点击重试';}}finally{if(generation===requestGeneration)more.disabled=false;}
   }
   async function refresh(){await Promise.all([loadMain(),dialog!.open?loadDialog():Promise.resolve()]);}
   function restoreDraft(){input.value=drafts.get(draftKey()) || '';updateLength(true);}
