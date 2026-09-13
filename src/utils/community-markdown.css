@@ -20,7 +20,7 @@
 .community-markdown table { border-collapse:collapse; font-size:.92em; width:max-content; min-width:100% }
 .community-markdown td,.community-markdown th { border:1px solid color-mix(in srgb,currentColor 25%,transparent); padding:.35em .6em; white-space:normal }
 .community-markdown hr { margin:.75em 0; border:0; border-top:1px solid color-mix(in srgb,currentColor 25%,transparent) }
-.community-markdown .community-inline-emoji { display:inline-block!important; width:auto!important; max-width:2.2em!important; height:1.4em!important; object-fit:contain; vertical-align:-.2em; margin:0 .08em }
+.community-markdown .community-inline-emoji { display:inline-block!important; width:48px!important; height:48px!important; object-fit:contain; vertical-align:middle; margin:2px }
 .community-markdown .community-markdown-image { display:inline-block; max-width:100%; max-height:320px; object-fit:contain; border-radius:6px; vertical-align:middle }
 .community-markdown--compact .community-markdown-image { max-height:180px }
 .community-markdown--compact { line-height:1.5 }
