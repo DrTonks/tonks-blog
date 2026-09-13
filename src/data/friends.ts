@@ -26,7 +26,7 @@ export const friendsData: FriendLink[] = [
 	},
 	{
 		"name": "橘鸦Juya",
-		"description": "写作，一场自我悖驳的旅程。",
+		"description": "记录人类完蛋全过程 | 每日更新",
 		"avatar": "https://i1.hdslb.com/bfs/face/afa12816f678f482a7333289d82437208b8d8cbf.jpg@128w_128h_1c_1s.webp",
 		"url": "https://daily.juya.uk/",
 		"category": "Juya",
@@ -37,14 +37,6 @@ export const friendsData: FriendLink[] = [
 		"description": "哈基米，南北绿豆",
 		"avatar": "https://i.stardots.io/784774835/StarDots-2026052116374135506.jpg",
 		"url": "https://tblog.mmzhiku.xyz",
-		"category": "Star",
-		"fastener": "pin"
-	},
-	{
-		"name": "fqzlr",
-		"description": "躬身入局，心为主理，行有尺度，自持本心.",
-		"avatar": "https://q1.qlogo.cn/g?b=qq&nk=20447289&s=640",
-		"url": "https://blog.fqzlr.top/",
 		"category": "Blog",
 		"fastener": "pin"
 	},
@@ -61,7 +53,7 @@ export const friendsData: FriendLink[] = [
 		"description": "理解以真实为本，但真实本身并不会自动呈现",
 		"avatar": "https://www.lapis.cafe/avatar.webp",
 		"url": "https://www.lapis.cafe",
-		"category": "Star",
+		"category": "Blog",
 		"fastener": "pin"
 	},
 	{

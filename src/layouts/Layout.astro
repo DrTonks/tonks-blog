@@ -1275,7 +1275,10 @@ function initCarousel() {
 			switchGeneration++;
 			stopCarousel();
 		} else {
-			startCarousel();
+			// Wrapper/device changes during a Swup visit skip rebuilding while
+			// paused. Restore the visible image as well as the timer, including
+			// when autoplay is disabled or reduced motion prevents that timer.
+			rebuildForDevice();
 		}
 	};
 
@@ -1585,14 +1588,9 @@ const setup = () => {
 			}
 		});
 			
-		if (isArticlePage) {
-			// 重新初始化移动端 TOC 组件
-			if (typeof (window as any).mobileTOCInit === 'function') {
-				setTimeout(() => {
-					(window as any).mobileTOCInit();
-				}, 100);
-			}
-		}
+		// 无目录页面也必须刷新，清除跨页保留的移动目录。
+		window.mobileTOCInit?.();
+
 		
 		
 		

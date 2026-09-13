@@ -46,6 +46,20 @@ class HanaleiTextParser(HTMLParser):
         self.characters: set[str] = set()
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        # Animated text is stored in attributes, not server-rendered text nodes.
+        classes = dict(attrs).get("class") or ""
+        if self.capture_depth or TARGET_CLASSES.intersection(classes.split()):
+            text = dict(attrs).get("data-text")
+            if text:
+                try:
+                    values = json.loads(text)
+                    if isinstance(values, str):
+                        self.characters.update(values)
+                    elif isinstance(values, list):
+                        for value in values:
+                            if isinstance(value, str): self.characters.update(value)
+                except (ValueError, TypeError):
+                    self.characters.update(text)
         if self.capture_depth:
             if tag not in VOID_TAGS:
                 self.capture_depth += 1

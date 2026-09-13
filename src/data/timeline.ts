@@ -179,7 +179,7 @@ export const timelineData: TimelineItem[] = [
 	{
 		"id": "2025-10-scholarship-uestc",
 		"title": "获得电子科技大学信息与软件工程学院二等奖学金",
-		"description": "获得电子科技大学信软学院二等奖学金",
+		"description": "就差一名一等奖...明年别卡我了(╥﹏╥)",
 		"type": "achievement",
 		"startDate": "2025-09-11",
 		"endDate": "2025-10-11",

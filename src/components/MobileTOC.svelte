@@ -3,19 +3,10 @@ import Icon from "@iconify/svelte";
 import { onMount } from "svelte";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
-import { navigateToPage } from "../utils/navigation-utils";
 
 let tocItems: Array<{ id: string; text: string; level: number }> = [];
-let postItems: Array<{
-	title: string;
-	url: string;
-	category?: string;
-	pinned?: boolean;
-}> = [];
 let activeId = "";
 let observer: IntersectionObserver;
-let isHomePage = false;
-let swupReady = false;
 let scrollAnimationFrame: number | null = null;
 
 const togglePanel = () => {
@@ -35,7 +26,7 @@ const setPanelVisibility = (show: boolean): void => {
 };
 
 const generateTOC = () => {
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+	const headings = document.querySelectorAll("#post-container .custom-md :is(h1, h2, h3, h4, h5, h6)[id]");
 	const items: Array<{ id: string; text: string; level: number }> = [];
 
 	headings.forEach((heading) => {
@@ -47,44 +38,6 @@ const generateTOC = () => {
 	});
 
 	tocItems = items;
-};
-
-const generatePostList = () => {
-	// 查找所有文章卡片
-	const postCards = document.querySelectorAll(".card-base");
-	const items: Array<{
-		title: string;
-		url: string;
-		category?: string;
-		pinned?: boolean;
-	}> = [];
-
-	postCards.forEach((card) => {
-		// 查找标题链接
-		const titleLink = card.querySelector('a[href*="/posts/"].transition.group');
-		// 查找分类链接
-		const categoryLink = card.querySelector('a[href*="/categories/"].link-lg');
-		// 查找置顶图标
-		const pinnedIcon = titleLink?.querySelector('svg[data-icon="mdi:pin"]');
-
-		if (titleLink) {
-			const href = titleLink.getAttribute("href");
-			const title = titleLink.textContent?.replace(/\s+/g, " ").trim() || "";
-			const category = categoryLink?.textContent?.trim() || "";
-			const pinned = !!pinnedIcon;
-
-			if (href && title) {
-				items.push({ title, url: href, category, pinned });
-			}
-		}
-	});
-
-	postItems = items;
-};
-
-const checkIsHomePage = () => {
-	isHomePage =
-		window.location.pathname === "/" || window.location.pathname === "";
 };
 
 const scrollToHeading = (id: string) => {
@@ -118,16 +71,8 @@ const scrollToHeading = (id: string) => {
 	}
 };
 
-const navigateToPost = (url: string) => {
-	// 关闭面板
-	setPanelVisibility(false);
-
-	// 使用统一的导航工具函数，实现无刷新跳转
-	navigateToPage(url);
-};
-
 const updateActiveHeading = () => {
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+	const headings = document.querySelectorAll("#post-container .custom-md :is(h1, h2, h3, h4, h5, h6)[id]");
 	const scrollTop = window.scrollY;
 	const offset = 100;
 
@@ -145,7 +90,7 @@ const updateActiveHeading = () => {
 };
 
 const setupIntersectionObserver = () => {
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+	const headings = document.querySelectorAll("#post-container .custom-md :is(h1, h2, h3, h4, h5, h6)[id]");
 
 	if (observer) {
 		observer.disconnect();
@@ -172,44 +117,14 @@ const setupIntersectionObserver = () => {
 	});
 };
 
-const checkSwupAvailability = () => {
-	if (typeof window !== "undefined") {
-		// 检查Swup是否已加载
-		swupReady = !!(window as any).swup;
-
-		// 如果Swup还未加载，监听其加载事件
-		if (!swupReady) {
-			const checkSwup = () => {
-				if ((window as any).swup) {
-					swupReady = true;
-					document.removeEventListener("swup:enable", checkSwup);
-				}
-			};
-
-			// 监听Swup启用事件
-			document.addEventListener("swup:enable", checkSwup);
-
-			// 设置超时检查
-			setTimeout(() => {
-				if ((window as any).swup) {
-					swupReady = true;
-					document.removeEventListener("swup:enable", checkSwup);
-				}
-			}, 1000);
-		}
-	}
-};
-
 const init = () => {
-	checkIsHomePage();
-	checkSwupAvailability();
-	if (isHomePage) {
-		generatePostList();
-	} else {
-		generateTOC();
-		setupIntersectionObserver();
-		updateActiveHeading();
-	}
+	setPanelVisibility(false);
+	activeId = "";
+	if (scrollAnimationFrame !== null) cancelAnimationFrame(scrollAnimationFrame);
+	scrollAnimationFrame = null;
+	generateTOC();
+	setupIntersectionObserver();
+	updateActiveHeading();
 };
 
 onMount(() => {
@@ -235,6 +150,7 @@ if (typeof window !== "undefined") {
 }
 </script>
 
+{#if tocItems.length > 0}
 <!-- TOC toggle button for mobile -->
 <button 
 	on:click={togglePanel} 
@@ -252,7 +168,7 @@ if (typeof window !== "undefined") {
 		top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
 >
 	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-lg font-bold text-[var(--primary)]">{isHomePage ? i18n(I18nKey.postList) : i18n(I18nKey.tableOfContents)}</h3>
+		<h3 class="text-lg font-bold text-[var(--primary)]">{i18n(I18nKey.tableOfContents)}</h3>
 		<button 
 			on:click={togglePanel}
 			aria-label="Close TOC"
@@ -262,33 +178,6 @@ if (typeof window !== "undefined") {
 		</button>
 	</div>
 
-	{#if isHomePage}
-		{#if postItems.length === 0}
-			<div class="text-center py-8 text-black/50 dark:text-white/50">
-				<Icon icon="material-symbols:article-outline" class="text-2xl mb-2" />
-				<p>暂无文章</p>
-			</div>
-		{:else}
-			<div class="post-content">
-				{#each postItems as post}
-					<button
-						on:click={() => navigateToPost(post.url)}
-						class="post-item"
-					>
-						<div class="post-title">
-							{#if post.pinned}
-								<Icon icon="mdi:pin" class="pinned-icon" />
-							{/if}
-							{post.title}
-						</div>
-						{#if post.category}
-							<div class="post-category">{post.category}</div>
-						{/if}
-					</button>
-				{/each}
-			</div>
-		{/if}
-	{:else}
 		{#if tocItems.length === 0}
 			<div class="text-center py-8 text-black/50 dark:text-white/50">
 				<Icon icon="material-symbols:article-outline" class="text-2xl mb-2" />
@@ -307,10 +196,14 @@ if (typeof window !== "undefined") {
 				{/each}
 			</div>
 		{/if}
-	{/if}
 </div>
+{/if}
 
 <style>
+	.mobile-toc-panel, .mobile-toc-panel :global(*) {
+		font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+	}
+
 	.mobile-toc-panel {
 		max-height: calc(100vh - 120px);
 		overflow-y: auto;
