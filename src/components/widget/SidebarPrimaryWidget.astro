@@ -2,6 +2,7 @@
 interface Props { mode: 'profile' | 'summary'; }
 const { mode } = Astro.props;
 ---
+<span id="sidebar-primary-home" hidden aria-hidden="true"></span>
 <div id="sidebar-primary-widget" data-sidebar-motion-item data-mode={mode}>
     <div data-sidebar-profile-panel hidden={mode === 'summary'}><slot name="profile" /></div>
     <div data-sidebar-summary-panel hidden={mode !== 'summary'}><slot name="summary" /></div>

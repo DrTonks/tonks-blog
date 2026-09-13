@@ -1,5 +1,36 @@
 let initialized = false;
 let typingFrame = 0;
+
+// Reparenting retains listeners but browsers reset focus on detached descendants.
+function movePrimaryWidget(host: HTMLElement, move: () => void) {
+    const focused = document.activeElement;
+    move();
+    if (focused instanceof HTMLElement && host.contains(focused)) {
+        focused.focus({ preventScroll: true });
+    }
+}
+
+// Keep one instance (and its event handlers) when crossing responsive layouts.
+function restorePrimaryWidget() {
+    const host = document.getElementById('sidebar-primary-widget');
+    const home = document.getElementById('sidebar-primary-home');
+    if (host && home && home.nextElementSibling !== host) {
+        movePrimaryWidget(host, () => home.after(host));
+    }
+}
+
+function positionPrimaryWidget() {
+    const host = document.getElementById('sidebar-primary-widget');
+    const destination = document.getElementById('mobile-article-summary');
+    if (host && destination && host.dataset.mode === 'summary' && matchMedia('(max-width: 767px)').matches) {
+        if (host.parentElement !== destination) {
+            movePrimaryWidget(host, () => destination.append(host));
+        }
+    } else {
+        restorePrimaryWidget();
+    }
+}
+
 function stopTyping() { cancelAnimationFrame(typingFrame); typingFrame = 0; }
 function startTyping() {
     stopTyping();
@@ -37,6 +68,7 @@ function startTyping() {
 		host.dataset.mode = isArticle ? "summary" : "profile";
 		profile.hidden = isArticle;
 		panel.hidden = !isArticle;
+        positionPrimaryWidget();
 		profile.classList.remove("is-leaving", "is-entering");
 		panel.classList.remove("is-leaving", "is-entering");
 		sidebar.classList.toggle("sidebar-article-mode", isArticle);
@@ -61,7 +93,11 @@ function startTyping() {
 export function initializePrimaryWidget() {
     if (initialized) return;
     initialized = true;
+    matchMedia('(max-width: 767px)').addEventListener('change', positionPrimaryWidget);
     const register = () => {
+            // The sidebar persists, but main is replaced. Rescue the shared node
+            // just before replacement, then settleSidebar positions it in the new page.
+            window.swup?.hooks?.before('content:replace', restorePrimaryWidget);
             window.swup?.hooks?.on('visit:start', (visit: {to: {url: string}}) => {
                 stopTyping();
                 const host = document.getElementById('sidebar-primary-widget');
