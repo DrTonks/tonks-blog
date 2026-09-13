@@ -152,7 +152,7 @@ export function initializeArticleComments() {
       const link=element('a','',comment.nickname);link.href=safeCommentUrl(comment.website)!;link.rel='nofollow noopener noreferrer';link.target='_blank';name.replaceChildren(link);
     }
     if(comment.is_admin) name.append(element('span','ac-badge','站长'));
-    if(comment.reply_to_name) name.append(element('span','',`回复 ${comment.reply_to_name}`));
+    if(comment.reply_to_name) name.append(element('span','',`回复 @${comment.reply_to_name}`));
     if(comment.status==='pending') name.append(element('span','ac-badge','待审核'));
     if(comment.status==='rejected') name.append(element('span','ac-badge','未通过'));
     name.classList.add('community-comment__name');body.append(name);
@@ -171,23 +171,23 @@ export function initializeArticleComments() {
     }
     body.append(actions);
     if(comment.reply_count) {
-      const replies=element('div','ac-replies'); replies.hidden=true;
-      const toggle=button(`展开 ${comment.reply_count} 条回复`,()=>{void toggleReplies();},'ac-more');
-      let loaded=false,after:number|null=null;
+      const replies=element('div','ac-replies');
+      const feedback=element('div');
+      const next=button('加载更多回复',()=>{void loadReplies();},'ac-more');next.hidden=true;
+      let after:number|null=null,loading=false;
       async function loadReplies(){
-        toggle.disabled=true;
+        if(loading || signal.aborted)return;
+        loading=true;next.disabled=true;feedback.textContent='正在读取回复…';
         try{
           const result=await api(`?root=${comment.id}${after?`&after=${after}`:''}`);
-          if(!loaded)clearContent(replies);
-          replies.querySelector('[data-more-replies]')?.remove();
-          result.comments.forEach(c=>replies.append(renderComment(c,false)));
-          after=result.next_after || null;
-          if(after){const next=button('更多回复',()=>{void loadReplies();},'ac-more');next.dataset.moreReplies='';replies.append(next);}
-          loaded=true;replies.hidden=false;toggle.textContent='收起回复';
-        }catch(e){showError(replies,e,()=>{void loadReplies();});replies.hidden=false;}finally{toggle.disabled=false;}
+          if(signal.aborted || !row.isConnected)return;
+          result.comments.forEach(c=>replies.insertBefore(renderComment(c,false),feedback));
+          after=result.next_after || null;next.hidden=!after;feedback.replaceChildren();
+        }catch(e){if(row.isConnected)showError(feedback,e,()=>{void loadReplies();});}
+        finally{loading=false;next.disabled=false;}
       }
-      async function toggleReplies(){if(!loaded) await loadReplies();else{replies.hidden=!replies.hidden;toggle.textContent=replies.hidden?`展开 ${comment.reply_count} 条回复`:'收起回复';}}
-      body.append(toggle,replies);
+      replies.append(feedback,next);body.append(replies);
+      void loadReplies();
     }
     row.append(avatar,body);return row;
   }

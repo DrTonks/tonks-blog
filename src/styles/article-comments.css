@@ -30,7 +30,7 @@
 .ac-quote p{margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .ac-quote.is-expanded p{-webkit-line-clamp:unset}
 .ac-quote.ac-quote--summary{display:flex;align-items:center;gap:.6rem;min-width:0;padding-block:0}
-.ac-quote.ac-quote--summary p{display:block;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-quote.ac-quote--summary p{opacity:.62;display:block;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ac-quote.ac-quote--summary button,.ac-quote.ac-quote--summary small{flex:none;white-space:nowrap;margin:0}
 .ac-section .community-comment-form{animation:ac-inline-in 180ms ease both}
 .ac-section .ac-inline-remember{grid-column:1/-1;display:flex;align-items:center;gap:.5rem;font-size:.75rem}
