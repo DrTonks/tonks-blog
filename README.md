@@ -2,7 +2,7 @@
 
 基于 Astro、Svelte 与 Tailwind CSS 的个人博客。以文章阅读为中心，结合四种主题、段落讨论、静态搜索和集中维护的内容数据。
 
-本项目由 [saicaca/fuwari](https://github.com/saicaca/fuwari) 修改而来，部分设计参考 Mizuki。感谢上游作者。线上站点：[blog.tonks.top](https://blog.tonks.top/)。
+本项目由 [saicaca/fuwari](https://github.com/saicaca/fuwari) 修改而来，部分设计参考 [伏枥之间](https://github.com/LeeHero0803/leehenry-blog)。感谢上游作者。线上站点：[blog.tonks.top](https://blog.tonks.top/)。
 
 > 内容维护从 [src/data/README.md](src/data/README.md) 开始；贡献流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
@@ -53,7 +53,7 @@
 - 移动端文章目录使用系统字体；无文章正文目录的页面隐藏入口。
 - 字体子集与图片优化减少下载体积；构建保留资源引用检查。
 
-### 评论与互动（需要 sleepy 后端）
+### 评论与互动（需要专门的后端，也可以自己迁移到twikoo等系统）
 
 - About / Friends 留言、文章评论与段落评论共用专属后端，不再内置 Twikoo。
 - 非草稿、非加密文章启用评论；段落映射独立生成，不在 Markdown 正文插入标记。
@@ -137,10 +137,8 @@ showCoverInContent: false
 
 ## 维护与贡献
 
-本次移除旧评论、日记、技能页、播放器与看板娘后，其他候选清理项列在 [后续清理清单](docs/cleanup-candidates.md)，并未一并删除。请将新功能和其他清理放在独立 PR 中，便于维护者评审与回退。
-
-借用他人电脑贡献时，使用仓库级 Git 身份，推送自己的 fork 分支，再向原仓库提 PR。具体命令见 [贡献指南](CONTRIBUTING.md)。
+见 [贡献指南](CONTRIBUTING.md)。
 
 ## 致谢与许可
 
-感谢 [Fuwari](https://github.com/saicaca/fuwari)、[Mizuki](https://github.com/matsuzaka-yuki/Mizuki) 及相关开源项目。代码沿用 [MIT License](LICENSE)，保留原始版权声明。文章、照片、插画、字体及其他素材需分别遵守其来源许可，不能将代码许可证视为所有内容的转载授权。
+感谢 [Fuwari](https://github.com/saicaca/fuwari)、[伏枥之间](https://github.com/LeeHero0803/leehenry-blog) 及相关开源项目。代码沿用 [MIT License](LICENSE)，保留原始版权声明。文章、照片、插画、字体及其他素材需分别遵守其来源许可，不能将代码许可证视为所有内容的转载授权。
