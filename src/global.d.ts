@@ -53,9 +53,6 @@ declare global {
 		__hanaleiFontLoadScheduled?: boolean;
 		sakuraInitialized?: boolean;
 		__tonksScrollProtectionInitialized?: boolean;
-		__tonksTwikooInit?: () => void;
-		__tonksTwikooHooksReady?: boolean;
-		__tonksTwikooSwupHookReady?: boolean;
 		scrollProtectionManager?: {
 			disable: () => void;
 			setPageTransitioning: (value: boolean) => void;

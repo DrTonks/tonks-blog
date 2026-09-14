@@ -122,11 +122,6 @@
     display: none;
   }
   
-  /* 平板端优化 */
-  .widget-container[data-widget-type="music-player"] {
-    /* 音乐播放器在平板端紧凑显示 */
-    transform: scale(0.95);
-  }
 }
 
 /* 桌面端样式 (> 1024px) */
@@ -242,20 +237,6 @@
 @media (max-width: 767px) {
   .widget-container[data-widget-type="toc"] {
     display: none;
-  }
-}
-
-/* Music Player 组件 */
-.widget-container[data-widget-type="music-player"] {
-  /* 音乐播放器固定高度 */
-  min-height: 100px;
-  max-height: 150px;
-}
-
-@media (max-width: 767px) {
-  .widget-container[data-widget-type="music-player"] {
-    min-height: 80px;
-    max-height: 120px;
   }
 }
 

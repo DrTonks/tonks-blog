@@ -44,7 +44,6 @@ export const en: Translation = {
 	[Key.publishedAt]: "Published at",
 	[Key.license]: "License",
 	[Key.anime]: "Anime",
-	[Key.diary]: "Diary",
 
 	// Anime Page
 	[Key.animeTitle]: "My Anime List",
@@ -65,15 +64,6 @@ export const en: Translation = {
 	[Key.animeEmptyLocal]:
 		"Please add anime information in src/data/anime.ts file",
 
-	// Diary Page
-	[Key.diarySubtitle]: "Share life anytime, anywhere",
-	[Key.diaryCount]: "diary entries",
-	[Key.diaryImage]: "Image",
-	[Key.diaryReply]: "Reply",
-	[Key.diaryTips]: "Only show the latest 30 diary entries",
-	[Key.diaryMinutesAgo]: "minutes ago",
-	[Key.diaryHoursAgo]: "hours ago",
-	[Key.diaryDaysAgo]: "days ago",
 
 	// 404 Page
 	[Key.notFound]: "404",
@@ -83,7 +73,6 @@ export const en: Translation = {
 	[Key.backToHome]: "Back to Home",
 
 	// Music Player
-	[Key.playlist]: "Playlist",
 
 	// Albums Page
 	[Key.albums]: "Albums",
@@ -142,32 +131,6 @@ export const en: Translation = {
 	[Key.rssCopied]: "RSS link copied to clipboard!",
 	[Key.rssCopyFailed]: "Copy failed, please copy the link manually",
 
-	// Skills Page
-	[Key.skills]: "Skills",
-	[Key.skillsSubtitle]: "My technical skills and expertise",
-	[Key.skillsFrontend]: "Frontend Development",
-	[Key.skillsBackend]: "Backend Development",
-	[Key.skillsDatabase]: "Database",
-	[Key.skillsTools]: "Development Tools",
-	[Key.skillsOther]: "Other Skills",
-	[Key.skillLevel]: "Proficiency",
-	[Key.skillLevelBeginner]: "Beginner",
-	[Key.skillLevelIntermediate]: "Intermediate",
-	[Key.skillLevelAdvanced]: "Advanced",
-	[Key.skillLevelExpert]: "Expert",
-	[Key.skillExperience]: "Experience",
-	[Key.skillYears]: "years",
-	[Key.skillMonths]: "months",
-	[Key.skillsTotal]: "Total Skills",
-	[Key.skillsExpert]: "Expert Level",
-	[Key.skillsAdvanced]: "Advanced",
-	[Key.skillsIntermediate]: "Intermediate",
-	[Key.skillsBeginner]: "Beginner",
-	[Key.skillsAdvancedTitle]: "Professional Skills",
-	[Key.skillsProjects]: "Related Projects",
-	[Key.skillsDistribution]: "Skill Distribution",
-	[Key.skillsByLevel]: "Distribution by Level",
-	[Key.skillsByCategory]: "Distribution by Category",
 
 	// Timeline Page
 	[Key.timeline]: "Timeline",

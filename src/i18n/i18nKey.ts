@@ -42,7 +42,6 @@ enum I18nKey {
 	license = "license",
 	friends = "friends",
 	anime = "anime",
-	diary = "diary",
 
 	// 番剧页面
 	animeTitle = "animeTitle",
@@ -62,14 +61,6 @@ enum I18nKey {
 	animeEmptyLocal = "animeEmptyLocal",
 
 	// 短文页面
-	diarySubtitle = "diarySubtitle",
-	diaryCount = "diaryCount",
-	diaryImage = "diaryImage",
-	diaryReply = "diaryReply",
-	diaryTips = "diaryTips",
-	diaryMinutesAgo = "diaryMinutesAgo",
-	diaryHoursAgo = "diaryHoursAgo",
-	diaryDaysAgo = "diaryDaysAgo",
 
 	// 404页面
 	notFound = "notFound",
@@ -78,7 +69,6 @@ enum I18nKey {
 	backToHome = "backToHome",
 
 	// 音乐播放器
-	playlist = "playlist",
 
 	// 相册页面
 	albums = "albums",
@@ -115,31 +105,6 @@ enum I18nKey {
 	projectsSource = "projectsSource",
 
 	// 技能展示页面
-	skills = "skills",
-	skillsSubtitle = "skillsSubtitle",
-	skillsFrontend = "skillsFrontend",
-	skillsBackend = "skillsBackend",
-	skillsDatabase = "skillsDatabase",
-	skillsTools = "skillsTools",
-	skillsOther = "skillsOther",
-	skillLevel = "skillLevel",
-	skillLevelBeginner = "skillLevelBeginner",
-	skillLevelIntermediate = "skillLevelIntermediate",
-	skillLevelAdvanced = "skillLevelAdvanced",
-	skillLevelExpert = "skillLevelExpert",
-	skillExperience = "skillExperience",
-	skillYears = "skillYears",
-	skillMonths = "skillMonths",
-	skillsTotal = "skillsTotal",
-	skillsExpert = "skillsExpert",
-	skillsAdvanced = "skillsAdvanced",
-	skillsIntermediate = "skillsIntermediate",
-	skillsBeginner = "skillsBeginner",
-	skillsAdvancedTitle = "skillsAdvancedTitle",
-	skillsProjects = "skillsProjects",
-	skillsDistribution = "skillsDistribution",
-	skillsByLevel = "skillsByLevel",
-	skillsByCategory = "skillsByCategory",
 
 	// RSS页面
 	rss = "rss",

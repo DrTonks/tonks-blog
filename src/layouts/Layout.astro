@@ -8,8 +8,6 @@ import AmbientBackground from "@components/AmbientBackground.astro";
 import BuildUpdateNotice from "@components/BuildUpdateNotice.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import LoadingScreen from "@components/LoadingScreen.astro";
-import MusicPlayer from "@components/widget/MusicPlayer.svelte";
-import Pio from "@components/widget/Pio.svelte"; // 使用 Svelte 版本的 Pio 组件
 import { profileConfig, siteConfig } from "@/config";
 import { widgetConfigs } from "../config";
 import {
@@ -111,8 +109,6 @@ if (!banner || typeof banner !== "string" || banner.trim() === "") {
 banner = getDefaultBanner();
 
 const enableBanner = siteConfig.banner.enable;
-const musicPlayerEnabled = Boolean(widgetConfigs.music?.enable);
-const pioEnabled = Boolean(widgetConfigs.pio?.enable);
 
 let pageTitle: string;
 if (title) {
@@ -360,8 +356,6 @@ const bannerOffset =
 			</script>
 		)}
 
-		<!-- Pio 看板娘样式：仅在功能开启时请求 -->
-		{pioEnabled && <link rel="stylesheet" href="/pio/static/pio.css" />}
 
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
@@ -387,8 +381,6 @@ const bannerOffset =
 		<slot />
 		
 		<!-- 可选客户端组件：关闭时不输出，开启时在首屏空闲后水合 -->
-		{musicPlayerEnabled && <MusicPlayer client:idle />}
-		{pioEnabled && <Pio client:idle />}
 		
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" aria-hidden="true"></div>

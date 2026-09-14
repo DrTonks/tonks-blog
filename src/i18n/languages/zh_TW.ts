@@ -44,7 +44,6 @@ export const zh_TW: Translation = {
 	[Key.publishedAt]: "發布於",
 	[Key.license]: "許可協議",
 	[Key.anime]: "追番",
-	[Key.diary]: "日記",
 
 	// 番劇頁面
 	[Key.animeTitle]: "我的追番記錄",
@@ -64,14 +63,6 @@ export const zh_TW: Translation = {
 	[Key.animeEmptyLocal]: "請在 src/data/anime.ts 文件中添加番劇信息",
 
 	// 短文頁面
-	[Key.diarySubtitle]: "隨時隨地，分享生活",
-	[Key.diaryCount]: "條短文",
-	[Key.diaryImage]: "圖片",
-	[Key.diaryReply]: "回復",
-	[Key.diaryTips]: "只展示最近30條日記",
-	[Key.diaryMinutesAgo]: "分鐘前",
-	[Key.diaryHoursAgo]: "小時前",
-	[Key.diaryDaysAgo]: "天前",
 
 	// 404頁面
 	[Key.notFound]: "404",
@@ -80,7 +71,6 @@ export const zh_TW: Translation = {
 	[Key.backToHome]: "返回首頁",
 
 	// 音樂播放器
-	[Key.playlist]: "播放列表",
 
 	// 相冊頁面
 	[Key.albums]: "相冊",
@@ -136,31 +126,6 @@ export const zh_TW: Translation = {
 	[Key.rssCopyFailed]: "複製失敗，請手動複製鏈接",
 
 	// 技能展示頁面
-	[Key.skills]: "技能展示",
-	[Key.skillsSubtitle]: "我的技術技能和專業知識",
-	[Key.skillsFrontend]: "前端開發",
-	[Key.skillsBackend]: "後端開發",
-	[Key.skillsDatabase]: "數據庫",
-	[Key.skillsTools]: "開發工具",
-	[Key.skillsOther]: "其他技能",
-	[Key.skillLevel]: "熟練度",
-	[Key.skillLevelBeginner]: "初學者",
-	[Key.skillLevelIntermediate]: "中級",
-	[Key.skillLevelAdvanced]: "高級",
-	[Key.skillLevelExpert]: "專家",
-	[Key.skillExperience]: "經驗",
-	[Key.skillYears]: "年",
-	[Key.skillMonths]: "個月",
-	[Key.skillsTotal]: "總技能數",
-	[Key.skillsExpert]: "專家級",
-	[Key.skillsAdvanced]: "高級",
-	[Key.skillsIntermediate]: "中級",
-	[Key.skillsBeginner]: "初級",
-	[Key.skillsAdvancedTitle]: "專業技能",
-	[Key.skillsProjects]: "相關項目",
-	[Key.skillsDistribution]: "技能分布",
-	[Key.skillsByLevel]: "按等級分布",
-	[Key.skillsByCategory]: "按分類分布",
 
 	// 時間線頁面
 	[Key.timeline]: "時間線",
