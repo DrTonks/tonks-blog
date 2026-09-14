@@ -1,11 +1,9 @@
 import type {
 	AnnouncementConfig,
-	CommentConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	FullscreenWallpaperConfig,
 	LicenseConfig,
-	MusicPlayerConfig,
 	NavBarConfig,
 	ProfileConfig,
 	SakuraConfig,
@@ -35,11 +33,9 @@ export const siteConfig: SiteConfig = {
 	// 特色页面开关配置(关闭不在使用的页面有助于提升SEO,关闭后直接在顶部导航删除对应的页面就行)
 	featurePages: {
 		anime: false, // 番剧页面开关（维护中，暂时关闭）
-		diary: false, // 日记页面开关
 		friends: true, // 友链页面开关
 		construction: false, // 建设树页面开关（暂不挂载，保留实现供后续重做）
 		projects: true, // 项目页面开关
-		skills: false, // 技能页面开关
 		timeline: true, // 时间线页面开关
 		albums: true, // 相册页面开关
 	},
@@ -209,7 +205,6 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:auto-stories",
 			children: [
 				// LinkPreset.Anime, // 追番模块维护中，暂时移除
-				// LinkPreset.Diary,
 				{
 					name: "相册",
 					url: "/albums/",
@@ -320,14 +315,6 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	theme: "github-dark",
 };
 
-export const commentConfig: CommentConfig = {
-	enable: false, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
-	twikoo: {
-		envId: "https://twikoo.vercel.app",
-		lang: "en", // 设置 Twikoo 评论系统语言为英文
-	},
-};
-
 export const announcementConfig: AnnouncementConfig = {
 	title: "最近更新", // 公告标题
 	content: "“关于本站”页面翻新！", // 公告内容
@@ -338,10 +325,6 @@ export const announcementConfig: AnnouncementConfig = {
 		url: "/about/", // 链接 URL
 		external: false, // 内部链接
 	},
-};
-
-export const musicPlayerConfig: MusicPlayerConfig = {
-	enable: false, // 启用音乐播放器功能
 };
 
 export const footerConfig: FooterConfig = {
@@ -492,37 +475,11 @@ export const sakuraConfig: SakuraConfig = {
 	zIndex: 100, // 层级，确保樱花在合适的层级显示
 };
 
-// Pio 看板娘配置
-export const pioConfig: import("./types/config").PioConfig = {
-	enable: false, // 启用看板娘
-	models: ["/pio/models/pio/model.json"], // 默认模型路径
-	position: "left", // 默认位置在右侧
-	width: 280, // 默认宽度
-	height: 250, // 默认高度
-	mode: "draggable", // 默认为可拖拽模式
-	hiddenOnMobile: true, // 默认在移动设备上隐藏
-	dialog: {
-		welcome: "Welcome to Mizuki Website!", // 欢迎词
-		touch: [
-			"What are you doing?",
-			"Stop touching me!",
-			"HENTAI!",
-			"Don't bully me like that!",
-		], // 触摸提示
-		home: "Click here to go back to homepage!", // 首页提示
-		skin: ["Want to see my new outfit?", "The new outfit looks great~"], // 换装提示
-		close: "QWQ See you next time~", // 关闭提示
-		link: "https://github.com/matsuzaka-yuki/Mizuki", // 关于链接
-	},
-};
-
 // 导出所有配置的统一接口
 export const widgetConfigs = {
 	profile: profileConfig,
 	announcement: announcementConfig,
-	music: musicPlayerConfig,
 	layout: sidebarLayoutConfig,
 	sakura: sakuraConfig,
 	fullscreenWallpaper: fullscreenWallpaperConfig,
-	pio: pioConfig, // 添加 pio 配置
 } as const;

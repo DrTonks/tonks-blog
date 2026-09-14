@@ -44,7 +44,6 @@ export const ja: Translation = {
 	[Key.publishedAt]: "公開日",
 	[Key.license]: "ライセンス",
 	[Key.anime]: "アニメ",
-	[Key.diary]: "日記",
 
 	// アニメページ
 	[Key.animeTitle]: "私のアニメリスト",
@@ -66,14 +65,6 @@ export const ja: Translation = {
 		"src/data/anime.tsファイルにアニメ情報を追加してください",
 
 	// 日記ページ
-	[Key.diarySubtitle]: "いつでもどこでも、生活を共有する",
-	[Key.diaryCount]: "日記エントリ",
-	[Key.diaryImage]: "画像",
-	[Key.diaryReply]: "返信",
-	[Key.diaryTips]: "最新の30件の日記エントリのみを表示",
-	[Key.diaryMinutesAgo]: "分前",
-	[Key.diaryHoursAgo]: "時間前",
-	[Key.diaryDaysAgo]: "日前",
 
 	// 404ページ
 	[Key.notFound]: "404",
@@ -83,7 +74,6 @@ export const ja: Translation = {
 	[Key.backToHome]: "ホームに戻る",
 
 	// 音楽プレーヤー
-	[Key.playlist]: "プレイリスト",
 
 	// アルバムページ
 	[Key.albums]: "アルバム",
@@ -142,31 +132,6 @@ export const ja: Translation = {
 	[Key.rssCopyFailed]: "コピーに失敗しました。手動でリンクをコピーしてください",
 
 	// スキルページ
-	[Key.skills]: "スキル",
-	[Key.skillsSubtitle]: "私の技術スキルと専門知識",
-	[Key.skillsFrontend]: "フロントエンド開発",
-	[Key.skillsBackend]: "バックエンド開発",
-	[Key.skillsDatabase]: "データベース",
-	[Key.skillsTools]: "開発ツール",
-	[Key.skillsOther]: "その他のスキル",
-	[Key.skillLevel]: "熟練度",
-	[Key.skillLevelBeginner]: "初心者",
-	[Key.skillLevelIntermediate]: "中級者",
-	[Key.skillLevelAdvanced]: "上級者",
-	[Key.skillLevelExpert]: "エキスパート",
-	[Key.skillExperience]: "経験",
-	[Key.skillYears]: "年",
-	[Key.skillMonths]: "ヶ月",
-	[Key.skillsTotal]: "スキル合計",
-	[Key.skillsExpert]: "エキスパートレベル",
-	[Key.skillsAdvanced]: "上級者",
-	[Key.skillsIntermediate]: "中級者",
-	[Key.skillsBeginner]: "初心者",
-	[Key.skillsAdvancedTitle]: "専門スキル",
-	[Key.skillsProjects]: "関連プロジェクト",
-	[Key.skillsDistribution]: "スキル分布",
-	[Key.skillsByLevel]: "レベル別分布",
-	[Key.skillsByCategory]: "カテゴリ別分布",
 
 	// タイムラインページ
 	[Key.timeline]: "タイムライン",

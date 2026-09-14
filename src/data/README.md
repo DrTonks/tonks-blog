@@ -9,7 +9,6 @@
 | 项目卡片、状态、技术栈、封面 | [projects.ts](./projects.ts) | 编辑 `projectsData`；列表、统计及首页在建项目贴纸共享这份数据 |
 | 网站建设树记录 | [construction.ts](./construction.ts) | 编辑 `constructionData`；新记录放在数组开头；`stage` 可选 seed/trunk/branch/leaf |
 | 首页贴纸内容、位置及显示规则 | [home-stickers.ts](./home-stickers.ts) | 编辑 `homeStickerDefinitions`；项目封面来源在 projects.ts 维护 |
-| 技能页内容 | [skills.ts](./skills.ts) | 技能与分类配置 |
 | 本地番剧列表 | [anime.ts](./anime.ts) | 本地番剧条目 |
 
 ## 图片放哪里

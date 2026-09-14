@@ -33,11 +33,9 @@ export type SiteConfig = {
 	// 特色页面开关配置
 	featurePages: {
 		anime: boolean; // 番剧页面开关
-		diary: boolean; // 日记页面开关
 		friends: boolean; // 友链页面开关
 		construction: boolean; // 建设树页面开关
 		projects: boolean; // 项目页面开关
-		skills: boolean; // 技能页面开关
 		timeline: boolean; // 时间线页面开关
 		albums: boolean; // 相册页面开关
 	};
@@ -147,10 +145,8 @@ export enum LinkPreset {
 	About = 2,
 	Friends = 3,
 	Anime = 4,
-	Diary = 5,
 
 	Projects = 7,
-	Skills = 8,
 	Timeline = 9,
 }
 
@@ -188,19 +184,6 @@ export type LicenseConfig = {
 	name: string;
 	url: string;
 };
-// 评论配置
-
-export type CommentConfig = {
-	enable: boolean; // 是否启用评论功能
-	twikoo?: TwikooConfig;
-};
-
-type TwikooConfig = {
-	envId: string;
-	region?: string;
-	lang?: string;
-};
-
 export type LIGHT_DARK_MODE =
 	| typeof LIGHT_MODE
 	| typeof DARK_MODE
@@ -243,10 +226,6 @@ export type AnnouncementConfig = {
 	};
 };
 
-export type MusicPlayerConfig = {
-	enable: boolean; // 是否启用音乐播放器功能
-};
-
 export type FooterConfig = {
 	enable: boolean; // 是否启用Footer HTML注入功能
 	customHtml?: string; // 自定义HTML内容，用于添加备案号等信息
@@ -259,8 +238,6 @@ export type WidgetComponentType =
 	| "categories"
 	| "tags"
 	| "toc"
-	| "music-player"
-	| "pio" // 添加 pio 组件类型
 	| "custom";
 
 export type WidgetComponentConfig = {
@@ -345,30 +322,4 @@ export type FullscreenWallpaperConfig = {
 	zIndex?: number; // 层级，确保壁纸在合适的层级显示
 	opacity?: number; // 壁纸透明度，0-1之间
 	blur?: number; // 背景模糊程度，单位px
-};
-
-/**
- * Pio 看板娘配置
- */
-export type PioConfig = {
-	enable: boolean; // 是否启用看板娘
-	models?: string[]; // 模型文件路径数组
-	position?: "left" | "right"; // 看板娘位置
-	width?: number; // 看板娘宽度
-	height?: number; // 看板娘高度
-	mode?: "static" | "fixed" | "draggable"; // 展现模式
-	hiddenOnMobile?: boolean; // 是否在移动设备上隐藏
-	dialog?: {
-		welcome?: string | string[]; // 欢迎词
-		touch?: string | string[]; // 触摸提示
-		home?: string; // 首页提示
-		skin?: [string, string]; // 换装提示 [切换前, 切换后]
-		close?: string; // 关闭提示
-		link?: string; // 关于链接
-		custom?: Array<{
-			selector: string; // CSS选择器
-			type: "read" | "link"; // 类型
-			text?: string; // 自定义文本
-		}>;
-	};
 };
