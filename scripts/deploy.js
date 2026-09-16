@@ -23,6 +23,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import SftpClient from "ssh2-sftp-client";
+import { readCommentManifest, verifyCommentBackend } from './comment-deployment.mjs';
 import { cacheControlFor, collectDeploymentFiles, contentTypeFor, publishInOrder } from "./deploy-plan.mjs";
 import { parseDeployArgs, validateSiteDir, createArchive, runRemote, publishArchive } from "./deploy-archive.mjs";
 
@@ -116,6 +117,7 @@ async function main() {
 	const started = performance.now();
 	const action = parseDeployArgs(process.argv.slice(2));
 	assertPreconditions(action);
+	const commentManifest = ['deploy', 'pack'].includes(action) ? readCommentManifest(LOCAL_DIR) : null;
 	const files = ["deploy", "pack"].includes(action) ? collectDeploymentFiles(LOCAL_DIR, EXCLUDES) : [];
 	const validated = action === "deploy" ? assertDeploymentValidated(process.cwd(), files) : null;
 	if (action === "pack") {
@@ -169,6 +171,8 @@ async function main() {
 				log(`Packed ${files.length} files: ${(archive.manifest.totalBytes / 1048576).toFixed(2)} -> ${(archive.archiveBytes / 1048576).toFixed(2)} MiB in ${archive.seconds.toFixed(2)}s`);
 				const result = await publishArchive(sftp, REMOTE_DIR, archive, { log });
 				log("Release:", JSON.stringify(result));
+				await verifyCommentBackend(commentManifest, fileCfg.publicUrl || process.env.DEPLOY_PUBLIC_URL || 'https://blog.tonks.top/');
+				log(`Comment backend verified: ${commentManifest.articles.length} articles`);
 				log("Current and previous archives retained privately. Apache/PM2 are unchanged.");
 			} finally { try { archive.cleanup(); } catch (cause) { log("Local archive cleanup deferred:", cause.message); } }
 			log(`Deployment total: ${((performance.now() - started) / 1000).toFixed(2)}s`);
