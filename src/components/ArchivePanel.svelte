@@ -1,5 +1,6 @@
 <script lang="ts">
 import { getCategoryIcon } from "../utils/category-icons";
+import {observeArticleCounts} from '../utils/article-counts';
 import { onMount, tick } from "svelte";
 import { fly } from "svelte/transition";
 import I18nKey from "../i18n/i18nKey";
@@ -9,6 +10,8 @@ import { getPostUrlBySlug, pathsEqual, url } from "../utils/url-utils";
 export let tags: string[] = [];
 export let categories: string[] = [];
 export let sortedPosts: Post[] = [];
+export let commentIds: Record<string,string> = {};
+function commentCounters(node:HTMLElement){return {destroy:observeArticleCounts(node)};}
 
 let archiveReady = false;
 let uncategorized = false;
@@ -392,7 +395,7 @@ $: groups = Object.entries(
   </nav>
 
   {#key filterRevision}
-    <div class="archive-results-view" aria-live="polite">
+    <div class="archive-results-view" aria-live="polite" use:commentCounters>
       {#if groups.length > 0}
         <div class="archive-index">
           {#each groups as group, groupIndex}
@@ -410,6 +413,13 @@ $: groups = Object.entries(
                     <time datetime={asDate(post.data.published).toISOString()}>{formatDate(post.data.published)}</time>
                     <span class="entry-node" aria-hidden="true"><i></i></span>
                     <span class="entry-title"><svg class="entry-category-icon" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label={post.data.category || "文章"}><title>{post.data.category || "文章"}</title>{@html getCategoryIcon(post.data.category)}</svg>{post.data.title}</span>
+                    <span class="entry-comment-slot">
+                      {#if commentIds[post.slug]}
+                        <span class="entry-comments" data-article-count={commentIds[post.slug]} hidden aria-label="文章评论数">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7l-4 3V5a1 1 0 0 1 1-1Z" /></svg><span></span>
+                        </span>
+                      {/if}
+                    </span>
                     <span class="entry-tags">{formatTag(post.data.tags)}</span>
                     <span class="entry-arrow" aria-hidden="true">→</span>
                   </a>

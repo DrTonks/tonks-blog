@@ -291,7 +291,7 @@ html:not(.dark) #index-tags a.archive-tag-selected {
   position: relative;
   display: grid;
   min-height: 3.45rem;
-  grid-template-columns: 2rem 3.2rem 1.45rem minmax(0, 1fr) minmax(5rem, 0.36fr) 1.5rem;
+  grid-template-columns: 2rem 3.2rem 1.45rem minmax(0, 1fr) auto minmax(5rem, 0.36fr) 1.5rem;
   align-items: center;
   gap: 0.35rem;
   overflow: hidden;
@@ -332,6 +332,12 @@ html:not(.dark) #index-tags a.archive-tag-selected {
   color: color-mix(in srgb, currentColor 46%, transparent);
   font-size: 0.62rem;
 }
+
+.entry-comment-slot { min-width:0; }
+.entry-comments { display:inline-flex; align-items:center; gap:.25rem; margin-inline:.4rem; color:var(--text-accent,var(--primary)); font:600 .75rem/1 system-ui,sans-serif; white-space:nowrap; transition:color var(--motion-signal-fast) var(--ease-signal); }
+.entry-comments[hidden] { display:none; }
+.entry-comments svg { width:.9rem; height:.9rem; flex-shrink:0; }
+.archive-entry:is(:hover,:focus-visible) .entry-comments { color:inherit; }
 
 .entry-node {
   position: relative;
@@ -444,7 +450,7 @@ html:not(.dark) #index-tags a.archive-tag-selected {
   }
 
   .archive-entry {
-    grid-template-columns: 2.9rem 1.45rem minmax(0, 1fr) 1.2rem;
+    grid-template-columns: 2.9rem 1.45rem minmax(0, 1fr) auto 1.2rem;
     padding-inline: 0.35rem;
   }
 

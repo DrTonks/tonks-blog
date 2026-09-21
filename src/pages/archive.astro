@@ -4,10 +4,12 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPostsList } from "../utils/content-utils";
+import {articleCommentId} from "../utils/article-comment-map.mjs";
 
 const sortedPostsList = await getSortedPostsList();
+const commentIds=Object.fromEntries(sortedPostsList.filter(post=>!post.data.draft&&!post.data.encrypted).map(post=>[post.slug,articleCommentId(post.slug)]));
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)}>
-    <ArchivePanel sortedPosts={sortedPostsList} client:load></ArchivePanel>
+    <ArchivePanel sortedPosts={sortedPostsList} {commentIds} client:load></ArchivePanel>
 </MainGridLayout>
