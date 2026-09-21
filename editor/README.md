@@ -70,7 +70,7 @@
 首次安装/更换电脑：
 
 ```powershell
-npm --prefix editor ci
+npm install --prefix editor
 pnpm editor:build
 pnpm editor:test
 ```
@@ -86,7 +86,7 @@ pnpm editor:test
 
 ## 发布与 Git
 
-把 `editor` 的源码、配置和 package-lock.json 随博客提交；node_modules、生成字体和 dist 已忽略。插件仓库不需要提交博客专属代码。新机器先执行首次安装命令。博客新增格式时同时检查配置、解析和预览，是一次博客提交内的工作，不再跨仓库同步代码。
+把 `editor` 的源码、配置及依赖清单随博客提交；node_modules、生成字体和 dist 已忽略。插件仓库不需要提交博客专属代码。新机器先执行首次安装命令。博客新增格式时同时检查配置、解析和预览，是一次博客提交内的工作，不再跨仓库同步代码。
 
 ## 接口与限制
 

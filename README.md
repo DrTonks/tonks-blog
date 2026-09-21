@@ -4,7 +4,7 @@
 
 本项目由 [saicaca/fuwari](https://github.com/saicaca/fuwari) 修改而来，部分设计参考 [伏枥之间](https://github.com/LeeHero0803/leehenry-blog)。感谢上游作者。线上站点：[blog.tonks.top](https://blog.tonks.top/)。
 
-> 内容维护从 [src/data/README.md](src/data/README.md) 开始；贡献流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+> 内容维护见 [src/data/README.md](src/data/README.md) ；贡献流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 界面预览
 
@@ -33,7 +33,28 @@
 
 </details>
 
-截图使用保持原分辨率的高质量 WebP，来源与维护方式见 [截图说明](docs/screenshots/README.md)。
+## 项目地图
+
+这四个项目共同组成 Tonks 的个人站点与写作工具，各自保留独立仓库、依赖与发布流程。按需要克隆即可，无需额外的总仓库。
+
+| 项目 | 职责 | 使用入口 |
+| --- | --- | --- |
+| [tonks-home](https://github.com/DrTonks/tonks-home) | 个人主页、状态卡片、音乐与桌宠交互 | [tonks.top](https://tonks.top/) |
+| [tonks-blog](https://github.com/DrTonks/tonks-blog) | 文章、主题、静态构建与博客预览适配器 | [blog.tonks.top](https://blog.tonks.top/) |
+| [tonks-home-backend](https://github.com/DrTonks/tonks-home-backend) | 主页与博客共享的状态、统计、评论等 API | 源码目录常用名 `sleepy` |
+| [tonks-obsidianEditor](https://github.com/DrTonks/tonks-obsidianEditor) | Obsidian 格式插入、表单与按需博客预览 | 安装到博客 `src/content/.obsidian/plugins/tonks-blog-tools/` |
+
+```mermaid
+flowchart LR
+    O[Obsidian 插件] -->|编辑 Markdown| C[博客 src/content]
+    B[tonks-blog] -->|配置、样式与预览适配器| O
+    C -->|Astro 构建| W[blog.tonks.top]
+    H[tonks-home] -->|Vite 构建| P[tonks.top]
+    W -->|评论、点赞、统计 API| S[sleepy / tonks-home-backend]
+    P -->|状态、音乐、互动 API| S
+```
+
+博客可单独构建静态页面；动态互动需要后端。Obsidian 插件是可选的本地写作工具，不参与线上服务，也不要求启动 Astro。博客仓库的本地目录沿用 `blogExample`，与 GitHub 上的 `tonks-blog` 是同一个项目。
 
 ## 特色
 
@@ -79,7 +100,7 @@ pnpm dev
 
 `PUBLIC_SLEEPY_API_BASE` 是浏览器直接请求后端的可选方案，需要后端允许本地 Origin 的 CORS。优先使用开发代理。
 
-`pnpm dev:comments-preview` 可使用隔离评论预览服务，但当前脚本要求 `../sleepy/article_comments.py` 存在；仅克隆本仓库时不能直接使用。数据库保存在 `.cache/`，详见评论文档。
+`pnpm dev:comments-preview` 可使用隔离评论预览服务，但当前脚本要求 `../sleepy/sleepy_app/` 存在；仅克隆本仓库时不能直接使用。数据库保存在 `.cache/`，详见评论文档。
 
 | 命令 | 用途 |
 | --- | --- |
@@ -125,13 +146,19 @@ showCoverInContent: false
 
 图片保持现有自动优化链路，不必为清理功能而手动全量改写为 WebP。友链的本地头像机制也保留。参见 [图片优化](docs/image-optimization.md)、[友链头像](docs/friend-avatars.md)。
 
+### 使用 Obsidian 写作（可选）
+
+将 `src/content` 作为 Obsidian 仓库打开，文章仍保存在 `posts/`。安装 [Tonks 博客工具](https://github.com/DrTonks/tonks-obsidianEditor#安装到博客) 后，可以通过右键菜单插入博客格式、填写卡片参数，并在 Obsidian 内切换四种主题预览。
+
+博客负责 `editor/blog-editor.json`、正文 CSS 与本地预览适配器；插件负责菜单、表单和预览容器。新增格式通常在本仓库完成，维护步骤见 [editor/README.md](editor/README.md)。插件与适配产物需要单独安装、构建，不会随克隆博客自动启用。
+
 ## 构建与部署边界
 
 当前步骤见 [维护与发布指南](docs/maintenance.md)；历史执行记录见 [文档索引](docs/README.md)。
 
 `pnpm build` 的静态产物在 `dist/`。发布自己的站点前，应修改 `astro.config.mjs` 中的 `site` / `base`、个人资料、外部链接与后端配置。
 
-正式评论还需要把本次构建的 `dist/community/comment-manifest.json` 同步给后端，不能只上传前端。后端源码不包含在本仓库中。
+正式评论还需要把本次构建的 `dist/community/comment-manifest.json` 同步给后端，不能只上传前端。后端源码见 [tonks-home-backend](https://github.com/DrTonks/tonks-home-backend)。
 
 现有 GitHub Actions 在 main 推送及面向 main 的 PR 上运行 Astro 构建，不自动发布，也不等同于本地 `pnpm build` 的完整字体、搜索和产物验证流程。
 
