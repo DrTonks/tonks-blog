@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "name": "Tonks 博客",
+  "postsPath": "posts",
+  "publicPath": "public",
+  "siteUrl": "https://blog.tonks.top/",
+  "postUrlPrefix": "posts/",
+  "renderer": "editor/dist/adapter.cjs",
+  "styles": [
+    "editor/preview.css",
+    "src/styles/article.css"
+  ],
+  "themes": [
+    {
+      "id": "light-blue",
+      "name": "亮蓝"
+    },
+    {
+      "id": "light-yellow",
+      "name": "亮黄"
+    },
+    {
+      "id": "dark-blue",
+      "name": "暗蓝"
+    },
+    {
+      "id": "dark-yellow",
+      "name": "暗黄"
+    }
+  ],
+  "formats": [
+    {
+      "id": "spoiler",
+      "name": "模糊 / 防剧透",
+      "kind": "container",
+      "directive": "spoiler",
+      "attributes": {
+        "warning": "{{warning}}"
+      },
+      "fields": [
+        {
+          "key": "warning",
+          "label": "警告说明",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "quote",
+      "name": "引用卡片",
+      "kind": "container",
+      "directive": "quote",
+      "attributes": {
+        "author": "{{author}}"
+      },
+      "fields": [
+        {
+          "key": "author",
+          "label": "作者 / 来源",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "fold",
+      "name": "折叠内容",
+      "kind": "container",
+      "directive": "fold",
+      "attributes": {
+        "summary": "{{summary}}"
+      },
+      "fields": [
+        {
+          "key": "summary",
+          "label": "折叠标题",
+          "default": "展开查看"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "name": "音乐 / 音频卡片",
+      "kind": "leaf",
+      "directive": "audio",
+      "attributes": {
+        "src": "{{src}}",
+        "title": "{{title}}"
+      },
+      "fields": [
+        {
+          "key": "src",
+          "label": "音频地址（/assets/… 或 HTTPS）",
+          "default": "",
+          "type": "audio-url",
+          "required": true
+        },
+        {
+          "key": "title",
+          "label": "显示标题",
+          "default": "音频"
+        }
+      ]
+    },
+    {
+      "id": "github",
+      "name": "GitHub 仓库卡片",
+      "kind": "leaf",
+      "directive": "github",
+      "attributes": {
+        "repo": "{{repo}}"
+      },
+      "fields": [
+        {
+          "key": "repo",
+          "label": "owner/repo",
+          "default": "",
+          "type": "repository",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "post",
+      "name": "站内文章卡片",
+      "kind": "leaf",
+      "directive": "post",
+      "attributes": {
+        "slug": "{{slug}}"
+      },
+      "fields": [],
+      "picker": "post"
+    },
+    {
+      "id": "note",
+      "name": "提示块",
+      "kind": "container",
+      "directive": "note",
+      "attributes": {},
+      "fields": []
+    },
+    {
+      "id": "warning",
+      "name": "警告块",
+      "kind": "container",
+      "directive": "warning",
+      "attributes": {},
+      "fields": []
+    },
+    {
+      "id": "signature",
+      "name": "署名",
+      "kind": "container",
+      "directive": "signature",
+      "attributes": {},
+      "fields": []
+    },
+    {
+      "id": "center",
+      "name": "居中文字",
+      "kind": "container",
+      "directive": "div",
+      "attributes": {
+        "class": "article-serif-center"
+      },
+      "fields": []
+    },
+    {
+      "id": "right",
+      "name": "右对齐文字",
+      "kind": "container",
+      "directive": "div",
+      "attributes": {
+        "class": "article-serif-right"
+      },
+      "fields": []
+    }
+  ]
+}

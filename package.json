@@ -20,7 +20,9 @@
 		"lint": "biome check --write ./src",
 		"preinstall": "npx only-allow pnpm",
 		"check:production": "node scripts/validate-production.mjs",
-		"test:production": "node --test scripts/production-validation.test.mjs"
+		"test:production": "node --test scripts/production-validation.test.mjs",
+		"editor:build": "npm --prefix editor run build",
+		"editor:test": "node --test editor/adapter.test.mjs"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.5",
