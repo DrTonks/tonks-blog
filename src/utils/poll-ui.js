@@ -6,6 +6,8 @@ export function mountPoll(card, request, signal) {
   const rows=[...card.querySelectorAll('[data-option]')];
   let ready=false,busy=false,voted=false;
   function render(data) {
+    card.dataset.pollVoted=String(data.voted);
+    card.dispatchEvent(new CustomEvent('poll:state',{bubbles:true,detail:{voted:data.voted}}));
     ready=true;voted=data.voted;fieldset.disabled=voted;button.hidden=voted;
     if(!voted){status.textContent=preview?'离线预览 · 不记录真实投票':'投票后查看比例 · 同一身份仅可投一次';return;}
     card.classList.add('is-voted');

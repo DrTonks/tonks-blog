@@ -159,3 +159,14 @@ div.article-spoiler > .spoiler-content { display: block; }
 @media (prefers-reduced-motion: reduce) {
   .custom-md a { transition: none; }
 }
+
+.custom-md a[data-external-link]:not(:where(.no-styling, .no-styling *, .anchor, .article-post-card, .preview-github, [data-footnote-ref], [data-footnote-backref], .expressive-code *, .katex *)) {
+  color: var(--text-accent, var(--primary));
+  text-decoration-color: currentColor;
+}
+.custom-md a[data-external-link]:not(:where(.no-styling, .no-styling *, .anchor, .article-post-card, .preview-github, [data-footnote-ref], [data-footnote-backref], .expressive-code *, .katex *))::after {
+  content: "\00a0↗";
+  display: inline-block;
+  font: .8em/1 system-ui, sans-serif;
+  text-decoration: none;
+}

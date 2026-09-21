@@ -25,3 +25,10 @@ test('duplicate paragraphs have distinct context, rich content stays excluded',(
   assert.equal(new Set(result.blocks.map(b=>b.id)).size,5);
   assert.equal(result.blocks.length,5);
 });
+
+test('poll discussions bind to stable IDs without including answer or controls',()=>{
+ const html='<section class="article-poll" data-poll-id="stable"><div class="poll-title">标题</div><p>状态</p></section>';
+ const result=map(html);
+ assert.deepEqual(result.blocks,[{id:'poll:stable',text:'标题',kind:'poll'}]);
+ assert.equal(map('<p>插入正文</p>'+html).blocks.at(-1).id,'poll:stable');
+});

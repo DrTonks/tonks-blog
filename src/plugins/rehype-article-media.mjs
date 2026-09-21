@@ -5,6 +5,15 @@ import { visit } from "unist-util-visit";
 export default function articleMedia() {
 	return (tree) => {
 		visit(tree, "element", (node) => {
+            if (node.tagName === "a" && node.properties.href) {
+                try {
+                    const url = new URL(String(node.properties.href), "https://blog.tonks.top/");
+                    const hasMedia = item => ["img", "svg", "picture"].includes(item.tagName) || (item.children || []).some(hasMedia);
+                    if (["http:", "https:"].includes(url.protocol) && url.hostname !== "blog.tonks.top" && !hasMedia(node)) {
+                        node.properties["data-external-link"] = "true";
+                    }
+                } catch { /* Leave malformed links to the existing sanitizer/browser. */ }
+            }
 			if (node.tagName === "fold") {
 				const summary = String(node.properties.summary || "展开查看");
 				const open = node.properties.open === "true" || node.properties.open === true;

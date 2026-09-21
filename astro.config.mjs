@@ -267,7 +267,7 @@ export default defineConfig({
 			remarkMermaid,
 		],
 		rehypePlugins: [tableCards,
-			articleMedia,
+			[articleMedia, {cacheVersion:createHash('sha256').update(readFileSync(new URL('./src/plugins/rehype-article-media.mjs', import.meta.url))).digest('hex')}],
 			rehypeKatex,
 			rehypeSlug,
 			rehypeMermaid,
