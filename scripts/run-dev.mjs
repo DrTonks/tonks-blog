@@ -8,8 +8,8 @@ if(font.status!==0)process.exit(font.status || 1);
 const env={...process.env};
 let backend;
 const preview=process.argv.includes('--comments-preview');
-if(preview && !existsSync(resolve(root,'../sleepy/article_comments.py')))throw new Error('Local article preview backend is missing');
-if(preview && !env.SLEEPY_ARTICLE_DEV_TARGET && existsSync(resolve(root,'../sleepy/article_comments.py'))){
+if(preview && !existsSync(resolve(root,'../sleepy/sleepy_app/community/articles.py')))throw new Error('Local article preview backend is missing');
+if(preview && !env.SLEEPY_ARTICLE_DEV_TARGET && existsSync(resolve(root,'../sleepy/sleepy_app/community/articles.py'))){
   const port=env.SLEEPY_ARTICLE_PREVIEW_PORT || '9012';
   backend=spawn(env.PYTHON || 'python',[resolve(root,'scripts/article-comments-preview.py')],{cwd:root,stdio:'inherit',windowsHide:true,env});
   backend.on('error',e=>console.error('[article preview]',e.message));

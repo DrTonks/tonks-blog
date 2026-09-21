@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { frontmatter, walk, slash } from './image-pipeline-utils.mjs';
+import {omitPollsFromSummary} from './poll-manifest.mjs';
 
 // Use the same slug implementation declared by Astro, including Unicode/punctuation.
 const require = createRequire(import.meta.url);
@@ -87,7 +88,7 @@ export function configFromEnv(env) {
 }
 
 export async function generateSummary(article, examples, config, fetcher = fetch) {
-  const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: JSON.stringify({ examples, article: { title: article.title, body: article.body } }) }];
+  const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: JSON.stringify({ examples, article: { title: article.title, body: omitPollsFromSummary(article.body) } }) }];
   for (let attempt = 0; attempt < 3; attempt++) {
     let response;
     try {

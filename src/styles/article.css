@@ -122,3 +122,40 @@ div.article-spoiler > .spoiler-content { display: block; }
 .custom-md .article-quote > footer { text-align: right; font-size: .85em; color: var(--text-secondary); }
 .custom-md .article-signature { margin-block: 2em; text-align: right; font-size: .9em; color: var(--text-secondary); }
 .custom-md .article-signature::before { content: ''; display: block; width: 3rem; height: 2px; margin: 0 0 1em auto; background: var(--primary); }
+
+.custom-md .article-table-card { margin:1.5rem 0; overflow-x:auto; border:1px solid var(--line-divider); border-radius:12px; background:var(--card-bg); }
+.custom-md .article-table-card table { display:table; width:100%; margin:0; border-collapse:collapse; }
+.custom-md .article-table-card th, .custom-md .article-table-card td { padding:.8rem 1rem; border:0; border-bottom:1px solid var(--line-divider); min-width:7rem; }
+.custom-md .article-table-card th { background:var(--btn-regular-bg); color:var(--text-accent,var(--primary)); }
+.custom-md .article-table-card th:not([align]) { text-align:left; }
+.custom-md .article-table-card [align="left"] { text-align:left; }
+.custom-md .article-table-card [align="center"] { text-align:center; }
+.custom-md .article-table-card [align="right"] { text-align:right; }
+.custom-md .article-table-card tr:last-child td { border-bottom:0; }
+.custom-md .article-table-card:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
+
+/* Shared with the editor preview: semantic emphasis, not card/UI styling. */
+.custom-md :is(strong, b):not(:where(.no-styling *, .article-post-card *, .preview-github *, .expressive-code *, pre *, .katex *)) {
+  color: var(--text-accent);
+}
+.custom-md :is(ul, ol) > li:not(:where(.expressive-code *, pre *, .no-styling *))::marker {
+  color: var(--text-accent);
+}
+.custom-md a:not(:where(.no-styling, .no-styling *, .anchor, .article-post-card, .preview-github, [data-footnote-ref], [data-footnote-backref], .expressive-code *, .katex *)) {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--text-accent) 45%, transparent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .25em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-color 180ms ease, text-decoration-color 180ms ease;
+}
+.custom-md a:not(:where(.no-styling, .no-styling *, .anchor, .article-post-card, .preview-github, [data-footnote-ref], [data-footnote-backref], .expressive-code *, .katex *)):is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--text-accent) 10%, transparent);
+  text-decoration-color: var(--text-accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .custom-md a { transition: none; }
+}

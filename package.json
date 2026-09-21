@@ -22,7 +22,8 @@
 		"check:production": "node scripts/validate-production.mjs",
 		"test:production": "node --test scripts/production-validation.test.mjs",
 		"editor:build": "npm --prefix editor run build",
-		"editor:test": "node --test editor/adapter.test.mjs"
+		"editor:test": "node --test editor/adapter.test.mjs",
+		"test:polls": "pnpm editor:build && node --test scripts/polls.test.mjs"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.5",

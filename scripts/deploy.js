@@ -1,3 +1,4 @@
+import {readPollDeployment,syncPollBackend} from './poll-deployment.mjs';
 /*
   Post-build deployment script
   - Package dist and publish via an isolated, verified directory exchange
@@ -169,7 +170,9 @@ async function main() {
 			try {
 				assertArchiveValidated(archive.manifest, validated);
 				log(`Packed ${files.length} files: ${(archive.manifest.totalBytes / 1048576).toFixed(2)} -> ${(archive.archiveBytes / 1048576).toFixed(2)} MiB in ${archive.seconds.toFixed(2)}s`);
-				const result = await publishArchive(sftp, REMOTE_DIR, archive, { log });
+				const pollManifest = await readPollDeployment(process.cwd());
+                await syncPollBackend(sftp, pollManifest, fileCfg.backendRoot || process.env.DEPLOY_BACKEND_ROOT || '/var/sleepy');
+                const result = await publishArchive(sftp, REMOTE_DIR, archive, { log });
 				log("Release:", JSON.stringify(result));
 				await verifyCommentBackend(commentManifest, fileCfg.publicUrl || process.env.DEPLOY_PUBLIC_URL || 'https://blog.tonks.top/');
 				log(`Comment backend verified: ${commentManifest.articles.length} articles`);

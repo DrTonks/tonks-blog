@@ -15,7 +15,7 @@ export function annotateCommentBlocks(root, slug) {
     if (!node.textContent.trim() || node.querySelector('img, audio, video, button, input')) return false;
     for (let p = node.parentNode; p && p !== root; p = p.parentNode) {
       if (['PRE', 'FIGURE', 'TABLE', 'DETAILS', 'SCRIPT'].includes(p.tagName)) return false;
-      if (/footnote|spoiler|mermaid|expressive-code/.test(p.getAttribute?.('class') || '')) return false;
+      if (/footnote|spoiler|mermaid|expressive-code|article-poll/.test(p.getAttribute?.('class') || '')) return false;
     }
     return true;
   });

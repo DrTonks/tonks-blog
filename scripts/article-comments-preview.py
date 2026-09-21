@@ -12,9 +12,9 @@ from flask import Flask, request, jsonify
 
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root.parent/'sleepy'))
-from community import CommunityStore, CommunityBurstLimiter, CommunityValidationError
-from comment_moderation import ModerationResult
-from article_comments import register_article_comments
+from sleepy_app.community.store import CommunityStore, CommunityBurstLimiter, CommunityValidationError
+from sleepy_app.community.moderation import ModerationResult
+from sleepy_app.community.articles import register_article_comments
 
 class PreviewModerator:
     def moderate(self,**kwargs):
@@ -32,7 +32,7 @@ services={
     'community_comment_limiter':CommunityBurstLimiter(30),
     'comment_moderator':PreviewModerator(),
     'community_qq_number':lambda email:None,
-    'community_gravatar_url':lambda email:'/local-avatar.svg',
+    'community_qq_avatar_url':lambda number:'/local-avatar.svg',
     'community_avatar_svg':lambda email:'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="20" fill="#799bb5"/></svg>',
 }
 register_article_comments(app,services)
@@ -49,6 +49,28 @@ def avatar():
     return Response(services['community_avatar_svg'](''),mimetype='image/svg+xml')
 @app.get('/health')
 def health():return jsonify(preview=True)
+# Same poll implementation, isolated database and local-only definition sync.
+from types import SimpleNamespace
+from sleepy_app.community.polls import register_polls
+register_polls(app, SimpleNamespace(community_store=store, common_security=SimpleNamespace(
+    get_community_owner_hash=services['get_community_owner_hash'],
+    get_community_rate_limit_keys=services['get_community_rate_limit_keys'])),
+    SimpleNamespace(article_manifest=root/'.cache/comment-manifest.json'))
+_poll_stamp = None
+@app.before_request
+def sync_preview_polls():
+    global _poll_stamp
+    if not request.path.startswith('/blog/community/polls/'):
+        return
+    definition_file=root/'.cache/poll-definitions.json'
+    try:
+        stamp=definition_file.stat().st_mtime_ns
+        if stamp != _poll_stamp:
+            app.extensions['article_polls'].sync(json.loads(definition_file.read_text(encoding='utf8')))
+            _poll_stamp=stamp
+    except (OSError, ValueError) as exc:
+        return jsonify(success=False,message='本地投票同步失败：'+str(exc)),400
+
 if __name__=='__main__':
     print('Article comments: LOCAL PREVIEW, isolated DB, no AI calls; admin key: local-preview',flush=True)
     app.run(host='127.0.0.1',port=int(os.environ.get('SLEEPY_ARTICLE_PREVIEW_PORT','9012')),use_reloader=False)

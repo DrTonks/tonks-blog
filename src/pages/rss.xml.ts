@@ -8,6 +8,7 @@ import { parse as htmlParser } from "node-html-parser";
 import sanitizeHtml from "sanitize-html";
 import { siteConfig } from "@/config";
 import { getSortedPosts } from "@/utils/content-utils";
+import { omitPollsFromSummary } from "../../scripts/poll-manifest.mjs";
 
 const markdownParser = new MarkdownIt();
 
@@ -27,7 +28,7 @@ export async function GET(context: APIContext) {
 
 	for (const post of posts) {
 		// convert markdown to html string
-		const body = markdownParser.render(post.body);
+		const body = markdownParser.render(omitPollsFromSummary(post.body));
 		// convert html string to DOM-like structure
 		const html = htmlParser.parse(body);
 		// hold all img tags in variable images

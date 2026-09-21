@@ -1,3 +1,7 @@
+import tableCards from './src/plugins/rehype-table-cards.mjs';
+import {createHash} from 'node:crypto';
+import remarkPolls from './src/plugins/remark-polls.mjs';
+import pollsIntegration from './scripts/polls-integration.mjs';
 import sitemap from "@astrojs/sitemap";
 import articleComments from "./scripts/article-comments-integration.mjs";
 import optimizedImages from "./scripts/optimized-images.mjs";
@@ -90,7 +94,7 @@ const sleepyDevProxyFallback = {
 			}
 
 			try {
-				const target = articleDevTarget && requestUrl.startsWith('/api/blog/community/articles/') ? articleDevTarget : sleepyDevProxyTarget;
+				const target = articleDevTarget && /^\/api\/blog\/community\/(articles|polls)\//.test(requestUrl) ? articleDevTarget : sleepyDevProxyTarget;
 				if (!target) { next(); return; }
 				const upstreamUrl = new URL(requestUrl.replace(/^\/api/, ""), target);
 				const headers = new Headers();
@@ -153,7 +157,7 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 	integrations: [
-		articleComments(),
+		articleComments(), pollsIntegration(),
 		optimizedImages(),
 		buildVersion(),
 		tailwind({
@@ -257,12 +261,12 @@ export default defineConfig({
 			remarkReadingTime,
 			remarkExcerpt,
 			remarkGithubAdmonitionsToDirectives,
-			remarkDirective,
+			remarkDirective, [remarkPolls, {cacheVersion:createHash('sha256').update(readFileSync(new URL('./src/plugins/remark-polls.mjs', import.meta.url))).digest('hex')}],
 			remarkSectionize,
 			parseDirectiveNode,
 			remarkMermaid,
 		],
-		rehypePlugins: [
+		rehypePlugins: [tableCards,
 			articleMedia,
 			rehypeKatex,
 			rehypeSlug,

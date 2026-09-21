@@ -8,7 +8,8 @@
   "renderer": "editor/dist/adapter.cjs",
   "styles": [
     "editor/preview.css",
-    "src/styles/article.css"
+    "src/styles/article.css",
+    "src/styles/polls.css"
   ],
   "themes": [
     {
@@ -173,6 +174,69 @@
         "class": "article-serif-right"
       },
       "fields": []
+    },
+    {
+      "id": "poll",
+      "name": "文章投票",
+      "kind": "container",
+      "directive": "poll",
+      "attributes": {
+        "id": "{{id}}",
+        "title": "{{title}}"
+      },
+      "fields": [
+        {
+          "key": "id",
+          "label": "全站唯一 ID（发布后保持不变）",
+          "required": true,
+          "default": ""
+        },
+        {
+          "key": "title",
+          "label": "问题",
+          "required": true,
+          "default": ""
+        }
+      ],
+      "placeholder": "- [a] 选项一\n- [b] 选项二"
+    },
+    {
+      "id": "quiz",
+      "name": "单选答题",
+      "kind": "container",
+      "directive": "poll",
+      "attributes": {
+        "id": "{{id}}",
+        "title": "{{title}}",
+        "answer": "{{answer}}",
+        "explanation": "{{explanation}}"
+      },
+      "fields": [
+        {
+          "key": "id",
+          "label": "全站唯一 ID（发布后保持不变）",
+          "required": true,
+          "default": ""
+        },
+        {
+          "key": "title",
+          "label": "问题",
+          "required": true,
+          "default": ""
+        },
+        {
+          "key": "answer",
+          "label": "正确选项 ID",
+          "default": "a",
+          "required": true
+        },
+        {
+          "key": "explanation",
+          "label": "答案解析",
+          "default": ""
+        }
+      ],
+      "placeholder": "- [a] 选项一\n- [b] 选项二"
     }
   ]
 }

@@ -1,0 +1,34 @@
+---
+import '../styles/polls.css';
+---
+<script>
+  import {mountPoll} from '../utils/poll-ui.js';
+  import {getCommunityIdentityToken} from '../utils/community-identity';
+  import {getBlogClientId} from '../utils/visitor-id';
+  let lifecycle:AbortController;
+  function setup(){
+    lifecycle?.abort();lifecycle=new AbortController();const signal=lifecycle.signal;
+    const observer=new IntersectionObserver(entries=>{for(const entry of entries){
+      if(!entry.isIntersecting)continue;observer.unobserve(entry.target);
+      const card=entry.target as HTMLElement;
+      mountPoll(card,async(option?:string)=>{
+        const response=await fetch(`/api/blog/community/polls/${encodeURIComponent(card.dataset.pollId!)}?version=${encodeURIComponent(card.dataset.pollVersion!)}`,{
+          method:option?'POST':'GET',signal:AbortSignal.any([signal,AbortSignal.timeout(15000)]),cache:'no-store',
+          headers:{'X-Community-Identity':getCommunityIdentityToken(),'X-Client-ID':getBlogClientId(),...(option?{'Content-Type':'application/json'}:{})},
+          ...(option?{body:JSON.stringify({option})}:{})
+        });
+        if(!response.headers.get('content-type')?.includes('application/json'))throw new Error('投票服务暂未连接，请稍后重试');
+        const data=await response.json();if(!response.ok||!data.success)throw new Error(data.message||'投票失败');return data;
+      },signal);
+    }},{rootMargin:'150px'});
+    document.querySelectorAll('.article-poll').forEach(card=>observer.observe(card));
+    signal.addEventListener('abort',()=>observer.disconnect(),{once:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
+  const hook=()=>{
+    const swup=(window as Window & {swup?:{hooks:{on:(name:string,fn:()=>void)=>void}}}).swup;
+    // Keep the current page usable if a visit fails or is cancelled before replacement.
+    swup?.hooks.on('page:view',setup);swup?.hooks.on('content:replace',()=>lifecycle?.abort());
+  };
+  if((window as Window & {swup?:unknown}).swup)hook();else document.addEventListener('swup:enable',hook,{once:true});
+</script>

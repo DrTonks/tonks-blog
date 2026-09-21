@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {parse} from 'node-html-parser';
 import {annotateCommentBlocks} from '../src/utils/article-comment-map.mjs';
 const map=html=>annotateCommentBlocks(parse(html),'example');
+test('poll status and explanations are controls, not commentable prose',()=>{
+  assert.deepEqual(map('<p>正文</p><section class="article-poll"><p>投票后查看比例</p><p>解析</p></section>').blocks,map('<p>正文</p>').blocks);
+});
 test('insertions and moves preserve unchanged paragraph identity',()=>{
   const old=map('<p>甲段</p><p>乙段</p>');
   const next=map('<p>新增</p><p>乙段</p><p>甲段</p>');
