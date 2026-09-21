@@ -2,6 +2,20 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const en: Translation = {
+	// Atom subscription page
+	[Key.atom]: "Atom",
+	[Key.atomDescription]: "Subscribe to the latest articles via Atom",
+	[Key.atomSubtitle]: "Follow new articles in your feed reader.",
+	[Key.atomLink]: "Atom feed URL",
+	[Key.atomCopyToReader]: "Copy this URL into a feed reader that supports Atom.",
+	[Key.atomCopyLink]: "Copy link",
+	[Key.atomLatestPosts]: "Latest posts",
+	[Key.atomWhatIsAtom]: "What is Atom?",
+	[Key.atomWhatIsAtomDescription]: "Atom is a standard format for publishing website updates. A compatible feed reader lets you:",
+	[Key.atomBenefit1]: "Receive new articles without checking the website manually.",
+	[Key.atomBenefit2]: "Keep subscriptions to different websites in one place.",
+	[Key.atomBenefit3]: "Catch up on updates at your own pace.",
+	[Key.atomBenefit4]: "Read articles in your preferred feed reader.",
 	[Key.home]: "Home",
 	[Key.about]: "About",
 	[Key.archive]: "Archive",
@@ -183,12 +197,6 @@ export const en: Translation = {
 	// Last Modified Time Card
 	[Key.lastModifiedPrefix]: "Time since last edit: ",
 	[Key.lastModifiedOutdated]: "Some information may be outdated",
-	[Key.year]: "Y ",
-	[Key.month]: "M ",
-	[Key.day]: "D ",
-	[Key.hour]: "H ",
-	[Key.minute]: "Min ",
-	[Key.second]: "Sec",
 	[Key.year]: "y",
 	[Key.month]: "m",
 	[Key.day]: "d",

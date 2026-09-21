@@ -2,6 +2,20 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ja: Translation = {
+	// Atom subscription page
+	[Key.atom]: "Atom 購読",
+	[Key.atomDescription]: "Atom で最新の記事を購読",
+	[Key.atomSubtitle]: "フィードリーダーでブログの新着記事を受け取れます。",
+	[Key.atomLink]: "Atom フィード URL",
+	[Key.atomCopyToReader]: "Atom 対応のフィードリーダーにこの URL をコピーしてください。",
+	[Key.atomCopyLink]: "リンクをコピー",
+	[Key.atomLatestPosts]: "最新の記事",
+	[Key.atomWhatIsAtom]: "Atom とは？",
+	[Key.atomWhatIsAtomDescription]: "Atom はウェブサイトの更新を配信する標準形式です。対応するリーダーを使うと、次のことができます。",
+	[Key.atomBenefit1]: "サイトに直接アクセスせずに新着記事を受け取る。",
+	[Key.atomBenefit2]: "複数のサイトの購読を一か所で管理する。",
+	[Key.atomBenefit3]: "自分のペースで更新を確認する。",
+	[Key.atomBenefit4]: "好みのフィードリーダーで記事を読む。",
 	[Key.home]: "ホーム",
 	[Key.about]: "について",
 	[Key.archive]: "アーカイブ",

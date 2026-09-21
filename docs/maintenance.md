@@ -12,13 +12,14 @@
 ## 提交前验证
 
 ```bash
+pnpm check
 pnpm build
 pnpm test:production
 pnpm preview
 git diff --check
 ```
 
-`pnpm build` 完成 Astro、字体子集、Pagefind 和资源 / 样式 / 来源指纹检查。构建期间不要改源文件；修改后必须重新构建。`pnpm check` 可辅助排查类型问题，但项目仍有历史诊断，不能把它的现状写成全量通过。
+`pnpm check` 检查 Astro / TypeScript 类型，CI 会在构建前执行，类型错误必须修复后再提交。`pnpm build` 完成 Astro、字体子集、Pagefind 和资源 / 样式 / 来源指纹检查。构建期间不要改源文件；修改后必须重新构建。类型问题的基线与修复见 [Astro check 修复记录](astro-check-fixes.md)。
 
 预览时检查首页、文章、About / Friends，以及受改动影响的页面；外观修改再覆盖亮暗主题、移动视口和站内切换。自动检查不能证明所有视觉、动态 API 与缓存场景正确。
 

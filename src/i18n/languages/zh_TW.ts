@@ -2,6 +2,20 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const zh_TW: Translation = {
+	// Atom subscription page
+	[Key.atom]: "Atom 訂閱",
+	[Key.atomDescription]: "透過 Atom 訂閱最新文章",
+	[Key.atomSubtitle]: "在訂閱閱讀器中接收部落格的新文章。",
+	[Key.atomLink]: "Atom 訂閱連結",
+	[Key.atomCopyToReader]: "將連結複製到支援 Atom 的訂閱閱讀器中。",
+	[Key.atomCopyLink]: "複製連結",
+	[Key.atomLatestPosts]: "最新文章",
+	[Key.atomWhatIsAtom]: "什麼是 Atom？",
+	[Key.atomWhatIsAtomDescription]: "Atom 是一種發布網站更新的標準格式。透過支援 Atom 的閱讀器，你可以：",
+	[Key.atomBenefit1]: "接收新文章，無需手動造訪網站。",
+	[Key.atomBenefit2]: "在同一個閱讀器中管理多個網站的訂閱。",
+	[Key.atomBenefit3]: "按照自己的步調查看更新。",
+	[Key.atomBenefit4]: "使用喜歡的訂閱閱讀器閱讀文章。",
 	[Key.home]: "首頁",
 	[Key.about]: "關於我們",
 	[Key.archive]: "歸檔",

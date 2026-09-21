@@ -23,6 +23,7 @@ git switch -c cleanup/my-change upstream/main
 git status --short
 git diff --stat
 git diff
+pnpm check
 pnpm build
 pnpm test:production
 git diff --check

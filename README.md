@@ -111,7 +111,7 @@ pnpm dev
 | `pnpm font:subset` | 生成字体子集 |
 | `pnpm test:production` | 生产验证脚本测试 |
 | `pnpm check:production` | 检查当前构建产物与来源一致性 |
-| `pnpm check` | Astro / TypeScript 检查，仍存在历史诊断 |
+| `pnpm check` | Astro / TypeScript 检查（CI 必须通过） |
 
 `pnpm ship` 会执行发布流程，不是普通构建命令。贡献者无需运行，也不应使用原维护者的服务器凭据。
 
@@ -160,7 +160,7 @@ showCoverInContent: false
 
 正式评论还需要把本次构建的 `dist/community/comment-manifest.json` 同步给后端，不能只上传前端。后端源码见 [tonks-home-backend](https://github.com/DrTonks/tonks-home-backend)。
 
-现有 GitHub Actions 在 main 推送及面向 main 的 PR 上运行 Astro 构建，不自动发布，也不等同于本地 `pnpm build` 的完整字体、搜索和产物验证流程。
+现有 GitHub Actions 在 main 推送及面向 main 的 PR 上运行 `pnpm check` 与 Astro 构建，不自动发布，也不等同于本地 `pnpm build` 的完整字体、搜索和产物验证流程。
 
 ## 维护与贡献
 

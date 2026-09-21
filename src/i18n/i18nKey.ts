@@ -1,4 +1,19 @@
 enum I18nKey {
+	// Atom subscription page
+	atom = "atom",
+	atomDescription = "atomDescription",
+	atomSubtitle = "atomSubtitle",
+	atomLink = "atomLink",
+	atomCopyToReader = "atomCopyToReader",
+	atomCopyLink = "atomCopyLink",
+	atomLatestPosts = "atomLatestPosts",
+	atomWhatIsAtom = "atomWhatIsAtom",
+	atomWhatIsAtomDescription = "atomWhatIsAtomDescription",
+	atomBenefit1 = "atomBenefit1",
+	atomBenefit2 = "atomBenefit2",
+	atomBenefit3 = "atomBenefit3",
+	atomBenefit4 = "atomBenefit4",
+
 	home = "home",
 	about = "about",
 	archive = "archive",

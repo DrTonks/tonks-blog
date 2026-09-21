@@ -34,7 +34,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The project has known legacy type errors, so CI verifies the production
-      # Astro build instead of requiring `astro check` to be clean.
+      - name: Check Astro and TypeScript
+        run: pnpm check
+
       - name: Build Astro site
         run: pnpm astro build

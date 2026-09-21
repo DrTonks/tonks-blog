@@ -15,6 +15,7 @@
 
 | 记录 | 内容 |
 | --- | --- |
+| [2026-09-21 Astro check 修复](astro-check-fixes.md) | 51 条初始错误、API 适配及验证结果 |
 | [2026-09-09 发布记录](archive/deployment-2026-09-09.md) | 当次发布范围及其后续样式故障更正 |
 | [2026-09-09 图片链路修复](archive/image-pipeline-fix-2026-09-09.md) | 路径、缓存、监听与图片生成修复 |
 | [2026-09-09 样式故障](archive/style-build-incident-2026-09-09.md) | 图片 glob 与隐式样式依赖故障 |

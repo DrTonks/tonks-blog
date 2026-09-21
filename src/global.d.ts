@@ -1,24 +1,5 @@
-interface SwupHookRegistry {
-	before<TVisit = unknown>(event: string, handler: (visit: TVisit) => void, options?: { priority?: number }): void;
-	on<TVisit = unknown>(event: string, handler: (visit: TVisit) => void, options?: { priority?: number }): void;
-}
-
-interface SwupRuntime {
-	findPlugin(name: 'SwupScrollPlugin'): {
-		getCachedScrollPositions(url: string): { window: { top: number } } | undefined;
-	} | undefined;
-	findPlugin(name: 'SwupHeadPlugin'): {
-		options: {
-			persistTags: boolean | string | ((tag: Element) => boolean);
-		};
-	} | undefined;
-    scrollTo?: (target: number, animate?: boolean) => void;
-	getAnchorElement(hash: string): Element | null;
-	hooks: SwupHookRegistry;
-	options: {
-		animateHistoryBrowsing: boolean;
-	};
-}
+// The Swup integration supplies Window.swup and plugin augmentations.
+import type {} from "@swup/astro/client";
 
 declare global {
 	interface HTMLElementTagNameMap {
@@ -28,7 +9,6 @@ declare global {
 	}
 
 	interface Window {
-		swup: SwupRuntime;
 		dataLayer?: Array<Record<string, unknown>>;
 		pagefind: {
 			search: (query: string) => Promise<{

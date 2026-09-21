@@ -810,6 +810,7 @@ const bannerOffset =
 </style>
 
 <script>
+import type { Swup, SwupHeadPlugin, SwupScrollPlugin } from "@swup/astro/client";
 import { animationManager } from '../utils/animation-utils';
 import { installSiteVisits } from '../utils/site-visits';
 import { installVisibilityTitle } from '../utils/visibility-title';
@@ -1319,6 +1320,8 @@ function initCarousel() {
 
 
 const setup = () => {
+	const swup = window.swup;
+	if (!swup) return;
 	// ScriptsPlugin 会在内容替换后再次执行布局脚本。只注册一次全局钩子，
 	// 避免多次文章切换后相同的延迟操作不断叠加。
 	if (window.__tonksLayoutSwupHooksReady) return;
@@ -1327,7 +1330,7 @@ const setup = () => {
 	// Vite owns injected styles and their HMR lifecycle. Swup must not remove
 	// them: retained islands and cached modules will not inject them again.
 	if (import.meta.env.DEV) {
-		const headPlugin = window.swup.findPlugin('SwupHeadPlugin');
+		const headPlugin = (swup.findPlugin('SwupHeadPlugin') as SwupHeadPlugin | undefined);
 		if (headPlugin) {
 			const previous = headPlugin.options.persistTags;
 			headPlugin.options.persistTags = (tag: Element) =>
@@ -1337,10 +1340,10 @@ const setup = () => {
 		}
 	}
 
-	const navigationHead = window.swup.findPlugin('SwupHeadPlugin');
+	const navigationHead = (swup.findPlugin('SwupHeadPlugin') as SwupHeadPlugin | undefined);
 	if (navigationHead) navigationHead.options.awaitAssets = true;
 	// Fetch styles while the old page is still visible, not in the blank interval.
-	window.swup.hooks.on('page:load', async (_visit, { page }) => {
+	swup.hooks.on('page:load', async (_visit, { page }) => {
 		if (!page || import.meta.env.DEV) return;
 		const incoming = new DOMParser().parseFromString(page.html, 'text/html');
 		const existing = new Set(Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(link => link.href));
@@ -1360,7 +1363,7 @@ const setup = () => {
 
 	// @swup/astro 1.x 没有透传该核心选项；运行时启用后，鼠标侧键、
 	// 浏览器前进/后退也会使用页面过渡。ScrollPlugin 负责恢复原滚动位置。
-	window.swup.options.animateHistoryBrowsing = true;
+	swup.options.animateHistoryBrowsing = true;
 	window.history.scrollRestoration = 'manual';
 	let scrollRestoreInputController: AbortController | null = null;
 	const stopWatchingScrollRestore = () => {
@@ -1375,24 +1378,24 @@ const setup = () => {
     let pendingBannerVisit: {to: {url: string}} | null = null;
     let earlyBannerTarget: number | null = null;
     let destinationGridOffset = 0;
-    let scrollAnchor: string | undefined;
+    let scrollAnchor: string | false | undefined;
     const bannerNavigation = createBannerNavigation(scrollFunction);
     window.addEventListener('resize', () => {
         earlyBannerTarget = null;
         if (bannerNavigation.prepared) bannerNavigation.finish();
     }, { passive: true });
-    const resetScrollCancellation = (visit: {to: {hash?: string}; scroll: {target?: string}}) => {
+    const resetScrollCancellation = (visit: Swup["visit"]) => {
         navigationScrollCancelled = false;
         pendingPageScroll = false;
         scrollAnchor = visit.scroll.target ?? visit.to.hash;
     };
-    window.swup.hooks.before('link:self', resetScrollCancellation);
-    window.swup.hooks.before('link:anchor', resetScrollCancellation);
-    window.swup.scrollTo = (target: number, animate = true) => {
+    swup.hooks.before('link:self', resetScrollCancellation);
+    swup.hooks.before('link:anchor', resetScrollCancellation);
+    swup.scrollTo = (target: number, animate = true) => {
         if (navigationScrollCancelled) return;
         const smooth = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (bannerNavigation.prepared) {
-            const anchor = scrollAnchor ? window.swup.getAnchorElement(scrollAnchor) : null;
+            const anchor = scrollAnchor ? swup.getAnchorElement(scrollAnchor) : null;
             const grid = document.getElementById('main-grid');
             if (anchor && grid?.contains(anchor)) {
                 // ScrollPlugin measured the anchor while its parent was held at
@@ -1442,7 +1445,7 @@ const setup = () => {
         scrollFunction();
     };
 
-	window.swup.hooks.on('link:click', () => {
+	swup.hooks.on('link:click', () => {
 		// Remove the delay for the first time page load
 		document.documentElement.style.setProperty('--content-delay', '0ms')
 
@@ -1510,7 +1513,7 @@ const setup = () => {
     const sidebarLayoutTransition = createSidebarLayoutTransition();
     window.addEventListener('tonks:sidebar:before-layout', () => sidebarLayoutTransition.capture());
     window.addEventListener('tonks:sidebar:after-layout', () => sidebarLayoutTransition.restore());
-    window.swup.hooks.before('content:replace', () => {
+    swup.hooks.before('content:replace', () => {
         sidebarLayoutTransition.capture();
         pendingPageScroll = true;
         const panel = document.getElementById('main-panel-wrapper');
@@ -1519,7 +1522,7 @@ const setup = () => {
         // Keep the old position until the new content's destination is known.
         document.body.style.minHeight = String(document.documentElement.scrollHeight) + 'px';
     }, { priority: -100 });
-    window.swup.hooks.on('content:replace', async () => {
+    swup.hooks.on('content:replace', async () => {
         const archive = document.querySelector<HTMLElement>('[data-archive-ready]');
         if (!archive || archive.dataset.archiveReady === 'true') return;
         // Static archive HTML contains all posts. Wait for the query filter's
@@ -1534,16 +1537,16 @@ const setup = () => {
             if (archive.dataset.archiveReady === 'true') finish();
         });
     }, { priority: 100 });
-    window.swup.hooks.on('content:replace', () => sidebarLayoutTransition.restore(), { priority: 200 });
-    window.swup.hooks.before('animation:in:start', scrollFunction);
-    window.swup.hooks.before('content:scroll', (scrollVisit: {to: {hash?: string}; scroll: {target?: string}}) => {
+    swup.hooks.on('content:replace', () => sidebarLayoutTransition.restore(), { priority: 200 });
+    swup.hooks.before('animation:in:start', scrollFunction);
+    swup.hooks.before('content:scroll', (scrollVisit) => {
         scrollAnchor = scrollVisit.scroll.target ?? scrollVisit.to.hash;
         if (!pendingBannerVisit) return;
         const visit = pendingBannerVisit;
         pendingBannerVisit = null;
         destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit));
     }, { priority: -100 });
-    window.swup.hooks.on('content:scroll', () => {
+    swup.hooks.on('content:scroll', () => {
         // ScrollPlugin may skip restoration (e.g. the user scrolled while the
         // next page loaded). Still finish the banner without taking the wheel.
         // ScrollPlugin schedules ordinary restoration in its own next frame.
@@ -1557,14 +1560,14 @@ const setup = () => {
         // Styles and the persistent sidebar are settled now. Establish the new
         // container's initial style and start its entrance without Swup's extra
         // nextTick gap; Swup still awaits and finalizes the running transition.
-        if (window.swup.visit.animation.animate) {
+        if (swup.visit.animation.animate) {
             document.getElementById('swup-container')?.getBoundingClientRect();
-            window.swup.classes.remove('is-animating');
+            swup.classes.remove('is-animating');
 
         }
         scrollFunction();
     });
-	window.swup.hooks.on('content:replace', () => {
+	swup.hooks.on('content:replace', () => {
 		// 只处理新的katex元素的滚动条，使用原生CSS滚动条
 		initCustomScrollbar();
 		
@@ -1600,12 +1603,7 @@ const setup = () => {
 			}
 		}
 	})
-	window.swup.hooks.on('visit:start', (visit: {
-		to: {url: string; hash?: string};
-		history: {popstate: boolean};
-		animation: {wait: boolean};
-		scroll: {reset: boolean; animate?: boolean; target?: string};
-	}) => {
+	swup.hooks.on('visit:start', (visit) => {
 		navigationScrollCancelled = false;
 		earlyBannerTarget = null;
 		pendingPageScroll = false;
@@ -1650,7 +1648,7 @@ const setup = () => {
 			} else {
 				pendingBannerVisit = null;
 				const cached = visit.history.popstate
-					? window.swup.findPlugin('SwupScrollPlugin')?.getCachedScrollPositions(visit.to.url) : undefined;
+					? (swup.findPlugin('SwupScrollPlugin') as SwupScrollPlugin | undefined)?.getCachedScrollPositions(visit.to.url) : undefined;
 				earlyBannerTarget = visit.scroll.reset ? cached?.window.top ?? 0 : window.scrollY;
 				// Preserve the scroll range while the outgoing layout is still in
 				// place, including history destinations beyond this page's height.
@@ -1674,7 +1672,7 @@ const setup = () => {
 			toc.classList.add('toc-not-ready')
 		}
 	}, { priority: 2 }); // ScrollPlugin caches the outgoing position at priority 1.
-	window.swup.hooks.on('page:view', () => {
+	swup.hooks.on('page:view', () => {
 		// 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
 		const storedTheme = getStoredTheme();
 		const isDark = isThemeDark(storedTheme);
@@ -1705,7 +1703,7 @@ const setup = () => {
 			}
 		}, 300);
 	});
-	window.swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
+	swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
 		window.__tonksBannerPageTransitionPaused = false;
 		const currentCarousel = document.getElementById('banner-carousel');
 		const carouselRuntime = window.__tonksBannerCarouselRuntime;
@@ -1823,216 +1821,66 @@ import { Fancybox } from "@fancyapps/ui";
 import type { FancyboxOptions } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 
-type TonksFancyboxOptions = Partial<FancyboxOptions> & {
-  animated?: boolean;
-  caption?: boolean;
-  fitToView?: boolean;
-  preload?: number;
-  Panzoom?: {
-    maxScale?: number;
-    minScale?: number;
-  };
-  Thumbs?: {
-    autoStart?: boolean;
-    showOnStart?: string;
-  };
-  Toolbar?: {
-    display?: {
-      left?: string[];
-      middle?: string[];
-      right?: string[];
-    };
-  };
-  source?: (element: HTMLElement) => string | null;
-};
+// Load the v6 Carousel plugin option augmentations without adding runtime imports.
+import type {} from "@fancyapps/ui/dist/carousel/carousel.thumbs";
+import type {} from "@fancyapps/ui/dist/carousel/carousel.toolbar";
+import type {} from "@fancyapps/ui/dist/carousel/carousel.lazyload";
+import type {} from "@fancyapps/ui/dist/carousel/carousel.zoomable";
 
-function bindFancybox(selector: string, options: TonksFancyboxOptions) {
-  // Fancybox v6 still accepts these plugin options at runtime, but its
-  // published type omits several plugin-specific fields.
-  Fancybox.bind(selector, options as Partial<FancyboxOptions>);
+function imageViewerOptions(): Partial<FancyboxOptions> {
+  return {
+    dragToClose: true,
+    zoomEffect: true,
+    fadeEffect: true,
+    keyboard: {
+      Escape: "close",
+      Delete: "close",
+      Backspace: "close",
+      PageUp: "next",
+      PageDown: "prev",
+      ArrowUp: "next",
+      ArrowDown: "prev",
+      ArrowRight: "next",
+      ArrowLeft: "prev",
+    },
+    Carousel: {
+      infinite: true,
+      transition: "slide",
+      formatCaption: () => "",
+      Thumbs: { showOnStart: true },
+      Toolbar: {
+        display: {
+          left: ["counter"],
+          middle: ["zoomIn", "zoomOut", "toggle1to1", "rotateCCW", "rotateCW", "flipX", "flipY"],
+          right: ["autoplay", "thumbs", "close"],
+        },
+      },
+      Lazyload: { preload: 2 },
+      Zoomable: { Panzoom: { maxScale: 3, minScale: 1 } },
+    },
+  };
 }
 
 function initFancybox() {
-  // 销毁现有的 Fancybox 实例（如果存在）
   Fancybox.close();
-  
-  // 为相册图片添加 Fancybox 支持
-  bindFancybox(".custom-md img:not(.article-post-card img):not(.article-spoiler:not(.is-revealed) img):not([data-footnotes] img), #post-cover img, .moment-images img", {
+
+  Fancybox.bind(".custom-md img:not(.article-post-card img):not(.article-spoiler:not(.is-revealed) img):not([data-footnotes] img), #post-cover img, .moment-images img", {
+    ...imageViewerOptions(),
     groupAll: true,
-    Thumbs: {
-      autoStart: true,
-      showOnStart: "yes",
-    },
-    // 添加自定义按钮
-    Toolbar: {
-      display: {
-        left: ["infobar"],
-        middle: [
-          "zoomIn",
-          "zoomOut",
-          "toggle1to1",
-          "rotateCCW",
-          "rotateCW",
-          "flipX",
-          "flipY",
-        ],
-        right: ["slideshow", "thumbs", "close"],
-      },
-    },
-    // 动画效果
-    animated: true,
-    // 是否支持拖拽
-    dragToClose: true,
-    // 是否支持键盘导航
-    keyboard: {
-      Escape: "close",
-      Delete: "close",
-      Backspace: "close",
-      PageUp: "next",
-      PageDown: "prev",
-      ArrowUp: "next",
-      ArrowDown: "prev",
-      ArrowRight: "next",
-      ArrowLeft: "prev",
-    },
-    // 自适应图片大小
-    fitToView: true,
-    // 图片预加载
-    preload: 3,
-    // 循环浏览
-    infinite: true,
-    // 智能图片适配
-    Panzoom: {
-      maxScale: 3,
-      minScale: 1,
-    },
-    // 幻灯片设置
-    Carousel: {
-      transition: "slide",
-      preload: 2,
-    },
-    // 禁用标题显示
-    caption: false
   });
-  
-  // 为相册中的链接添加 Fancybox 支持
-  bindFancybox(".moment-images a[data-fancybox]", {
-    Thumbs: {
-      autoStart: true,
-      showOnStart: "yes",
-    },
-    // 工具栏配置
-    Toolbar: {
-      display: {
-        left: ["infobar"],
-        middle: [
-          "zoomIn",
-          "zoomOut",
-          "toggle1to1",
-          "rotateCCW",
-          "rotateCW",
-          "flipX",
-          "flipY",
-        ],
-        right: ["slideshow", "thumbs", "close"],
-      },
-    },
-    // 动画效果
-    animated: true,
-    // 是否支持拖拽
-    dragToClose: true,
-    // 是否支持键盘导航
-    keyboard: {
-      Escape: "close",
-      Delete: "close",
-      Backspace: "close",
-      PageUp: "next",
-      PageDown: "prev",
-      ArrowUp: "next",
-      ArrowDown: "prev",
-      ArrowRight: "next",
-      ArrowLeft: "prev",
-    },
-    // 自适应图片大小
-    fitToView: true,
-    // 图片预加载
-    preload: 3,
-    // 循环浏览
-    infinite: true,
-    // 智能图片适配
-    Panzoom: {
-      maxScale: 3,
-      minScale: 1,
-    },
-    // 自定义源获取
-    source: (el) => {
-      return el.getAttribute("data-src") || el.getAttribute("href");
-    },
-    // 禁用标题显示
-    caption: false
-  });
-  
-  // 为单独的 fancybox 图片添加支持
-  bindFancybox("[data-fancybox]:not(.moment-images a)", {
-    // 自定义选项
-    Thumbs: {
-      autoStart: true,
-      showOnStart: "yes",
-    },
-    // 工具栏配置
-    Toolbar: {
-      display: {
-        left: ["infobar"],
-        middle: [
-          "zoomIn",
-          "zoomOut",
-          "toggle1to1",
-          "rotateCCW",
-          "rotateCW",
-          "flipX",
-          "flipY",
-        ],
-        right: ["slideshow", "thumbs", "close"],
-      },
-    },
-    // 动画效果
-    animated: true,
-    // 是否支持拖拽
-    dragToClose: true,
-    // 是否支持键盘导航
-    keyboard: {
-      Escape: "close",
-      Delete: "close",
-      Backspace: "close",
-      PageUp: "next",
-      PageDown: "prev",
-      ArrowUp: "next",
-      ArrowDown: "prev",
-      ArrowRight: "next",
-      ArrowLeft: "prev",
-    },
-    // 自适应图片大小
-    fitToView: true,
-    // 图片预加载
-    preload: 3,
-    // 循环浏览
-    infinite: true,
-    // 智能图片适配
-    Panzoom: {
-      maxScale: 3,
-      minScale: 1,
-    },
-    // 禁用标题显示
-    caption: false
-  });
+  // v6 resolves data-src / href itself; no legacy source callback is needed.
+  Fancybox.bind(".moment-images a[data-fancybox]", imageViewerOptions());
+  Fancybox.bind("[data-fancybox]:not(.moment-images a)", imageViewerOptions());
 }
 
 const setup = () => {
+  const swup = window.swup;
+  if (!swup) return;
   // 初始化 Fancybox
   initFancybox();
   
   // 在页面视图更改时重新初始化
-  window.swup.hooks.on("page:view", () => {
+  swup.hooks.on("page:view", () => {
     // 等待 DOM 更新后初始化
     setTimeout(() => {
       initFancybox();
