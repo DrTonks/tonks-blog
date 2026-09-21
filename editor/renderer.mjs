@@ -30,7 +30,7 @@ export async function renderMarkdown(text){
  const {data,body}=splitFrontmatter(text);
  const html=String(await processor.process(body));
  return {data,html:sanitize(html,{
-  allowedTags:[...sanitize.defaults.allowedTags,'section','form','fieldset','legend','label','input','img','figure','figcaption','audio','source','button','details','summary','post-reference','github','math','semantics','annotation','mrow','mi','mo','mn','mtext','msup','msub','mfrac','msqrt','mtable','mtr','mtd','mspace','mover','munder','munderover','mpadded','msubsup','menclose'],
+  allowedTags:[...sanitize.defaults.allowedTags,'del','section','form','fieldset','legend','label','input','img','figure','figcaption','audio','source','button','details','summary','post-reference','github','math','semantics','annotation','mrow','mi','mo','mn','mtext','msup','msub','mfrac','msqrt','mtable','mtr','mtd','mspace','mover','munder','munderover','mpadded','msubsup','menclose'],
   allowedAttributes:{'*':['class','id','title','aria-*','data-*','hidden','tabindex','role'],img:['src','alt','width','height','loading','decoding'],a:['href','rel'],audio:['src','controls','preload'],source:['src','type'],th:['align'],td:['align'],input:['type','name','value','required'],button:['type','aria-expanded'],details:['open'],'post-reference':['slug'],github:['repo'],span:['class','style','aria-hidden','inert'],div:['class','style','aria-hidden','inert'],math:['xmlns','display'],annotation:['encoding'],mo:['stretchy','fence','separator','lspace','rspace']},
   allowedSchemes:['https','http','mailto'],allowedSchemesByTag:{img:['http','https','data'],audio:['http','https'],source:['http','https']},allowProtocolRelative:false
  })};

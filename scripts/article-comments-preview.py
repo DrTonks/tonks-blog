@@ -60,7 +60,7 @@ _poll_stamp = None
 @app.before_request
 def sync_preview_polls():
     global _poll_stamp
-    if not request.path.startswith('/blog/community/polls/'):
+    if not request.path.startswith('/blog/community/'):
         return
     definition_file=root/'.cache/poll-definitions.json'
     try:

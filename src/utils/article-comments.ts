@@ -8,7 +8,7 @@ import './community-markdown.css';
 type Block = {id:string; text:string};
 type ArticleMap = {id:string; slug:string; version:string; blocks:Block[]};
 type Comment = {id:number; parent_id:number|null; root_id:number; block_id:string|null; quote:string; content:string; nickname:string; website:string; created_at:string; status:string; is_admin:boolean; reply_count?:number; reply_to_name?:string};
-type Result = {success:boolean; message?:string; comments:Comment[]; counts?:Record<string,number>; count?:number; next_before?:number|null; next_after?:number|null; status?:string};
+type Result = {success:boolean; message?:string; comments:Comment[]; counts?:Record<string,number>; count?:number; locked_blocks?:string[]; next_before?:number|null; next_after?:number|null; status?:string};
 const base = (import.meta.env.PUBLIC_SLEEPY_API_BASE || '/api').replace(/\/$/,'');
 let teardown: (()=>void)|undefined;
 const bubble = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20 11.5c0 4.4-3.6 7.5-8 7.5H9l-4 3v-5C3.1 15.6 2 13.7 2 11.5 2 7.1 6 4 11 4s9 3.1 9 7.5Z"/></svg>';
@@ -46,6 +46,7 @@ export function initializeArticleComments() {
   const discussion=q<HTMLElement>('[data-ac-discussion]'), quote=q<HTMLElement>('[data-ac-quote]');
   const title=q<HTMLElement>('#ac-dialog-title'), status=q<HTMLElement>('[data-ac-status]');
   let activeBlock:string|null=null, reply:Comment|null=null, mainCursor:number|null=null, cursor:number|null=null;
+  let lockedBlocks=new Set<string>();
   let counts:Record<string,number>={}, total=0, requestGeneration=0, mainGeneration=0, closingTimer:ReturnType<typeof setTimeout>|undefined;
   let profile:CommunityProfile=getCommunityProfile(), ephemeral=false, focusReturn:HTMLElement|null=null;
   let oldOverflow='', locked=false, sending=false, secret='';
@@ -77,6 +78,7 @@ export function initializeArticleComments() {
   }
   function updateCounts(result:Result) {
     if(!result.counts) return;
+    lockedBlocks=new Set(result.locked_blocks || []);
     counts=result.counts; total=result.count || 0;
     section!.querySelector('[data-ac-total]')!.textContent=total?String(total):'';
     document.querySelectorAll<HTMLButtonElement>('.ac-paragraph-button').forEach(b=>{
@@ -84,11 +86,12 @@ export function initializeArticleComments() {
       b.dataset.count=String(n); b.querySelector('span')!.textContent=n?String(n):'';
       b.setAttribute('aria-label',n?`查看本段 ${n} 条评论`:'评论这一段');
     });
+    updatePollControls();
     updateTitle();
   }
   function updateTitle() {
     if(discussion.hidden) return;
-    title.replaceChildren(document.createTextNode(activeBlock?'本段评论':'文章留言'));
+    title.replaceChildren(document.createTextNode(activeBlock?(activeBlock.startsWith('poll:')?'投票讨论':'本段评论'):'文章留言'));
     const n=activeBlock?(counts[activeBlock] || 0):total;
     if(n) title.append(element('span','',String(n)));
   }
@@ -131,11 +134,11 @@ export function initializeArticleComments() {
     }
     host.classList.toggle('ac-quote--summary',jump);
     if(block && !blocks.has(block)) host.append(element('small','','原文已更新或移除'));
-    else if(jump && block) host.append(button('查看段落 ↗',()=>{
+    else if(jump && block) host.append(button(block.startsWith('poll:')?'查看投票 ↗':'查看段落 ↗',()=>{
       const target=document.querySelector<HTMLElement>(`[data-comment-block="${CSS.escape(block)}"]`);
       if(!target) return;
       if(dialog!.open)close(true);
-      target.querySelector<HTMLButtonElement>('.ac-paragraph-button')?.focus({preventScroll:true});
+      target.querySelector<HTMLButtonElement>('.ac-paragraph-button, .poll-discussion')?.focus({preventScroll:true});
       revealParagraph(target);
     }));
   }
@@ -279,6 +282,7 @@ export function initializeArticleComments() {
     showDiscussion();q('[data-ac-start]').hidden=true;form.hidden=false;profileName();input.focus();
   }
   function open(block:string|null=null,target:Comment|null=null,compose=false){
+    if(block && lockedBlocks.has(block))return;
     if(dialog!.open) drafts.set(draftKey(),input.value);
     activeBlock=block;reply=target;status.textContent='';cursor=null;
     q('[data-ac-reply-label]').textContent=reply?`回复 ${reply.nickname}`:'';
@@ -336,9 +340,23 @@ export function initializeArticleComments() {
     try{await api('',{},next);secret=next;try{localStorage.setItem('admin_secret',next);}catch{}showDiscussion();void refresh();}
     catch(e){q('[data-ac-admin-status]').textContent=(e as Error).message;}
   },{signal});
+  function updatePollControls(){
+    for(const control of document.querySelectorAll<HTMLButtonElement>('.poll-discussion')){
+      const id=control.dataset.block!;const isLocked=lockedBlocks.has(id);
+      control.disabled=isLocked;control.textContent=isLocked?'作答后解锁讨论':(counts[id]?`讨论 · ${counts[id]}`:'参与讨论');
+    }
+  }
+  document.addEventListener('poll:state',event=>{
+    const card=event.target as HTMLElement;
+    if(card.dataset.pollVoted==='true')void refresh();
+  },{signal});
   const paragraphButtons:HTMLButtonElement[]=[];
   for(const block of article.blocks){
     const paragraph=document.querySelector<HTMLElement>(`[data-comment-block="${CSS.escape(block.id)}"]`);if(!paragraph)continue;
+    if(block.id.startsWith('poll:')){
+      const control=button('正在读取讨论…',()=>open(block.id),'poll-discussion');control.dataset.block=block.id;control.disabled=true;
+      paragraph.append(control);paragraphButtons.push(control);continue;
+    }
     const control=button('',()=>open(block.id), 'ac-paragraph-button');control.innerHTML=bubble+'<span></span>';control.dataset.block=block.id;control.dataset.count='0';control.dataset.pagefindIgnore='';control.setAttribute('aria-label','评论这一段');
     paragraph.append(control);paragraphButtons.push(control);
     paragraph.addEventListener('click',e=>{

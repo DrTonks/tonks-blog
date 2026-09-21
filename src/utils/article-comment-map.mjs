@@ -40,6 +40,12 @@ export function annotateCommentBlocks(root, slug) {
     if (!node.getAttribute('id')) node.setAttribute('id', `paragraph-${id}`);
     blocks.push({ id, text });
   });
+  for (const card of root.querySelectorAll('.article-poll[data-poll-id]')) {
+    const id = `poll:${card.getAttribute('data-poll-id')}`;
+    const text = card.querySelector('.poll-title')?.textContent.trim() || '投票';
+    card.setAttribute('data-comment-block', id);
+    blocks.push({id, text, kind:'poll'});
+  }
   return { id: articleCommentId(slug), slug, version: hash(JSON.stringify(blocks)), blocks };
 }
 
