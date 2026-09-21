@@ -21,3 +21,22 @@ test('external text links are marked without changing internal, mail, or image l
  assert.equal((html.match(/data-external-link="true"/g)||[]).length,1);
  assert.match(html,/<a href="https:\/\/example.com" data-external-link="true">外链<\/a>/);
 });
+
+test('live blocks map to exact source after frontmatter, including wrapped tables and directives',async()=>{
+ const text='\uFEFF---\r\ntitle: Live\r\n---\r\n\r\n正文[^a]\r\n\r\n:::quote{author="作者"}\r\n引用\r\n:::\r\n\r\n| a | b |\r\n| - | - |\r\n| 1 | 2 |\r\n\r\n[^a]: 注解';
+ const {html}=await renderMarkdown(text,{sourceMap:true});
+ const ranges=[...html.matchAll(/data-preview-from="(\d+)" data-preview-to="(\d+)"/g)].map(m=>text.slice(Number(m[1]),Number(m[2])));
+ assert.equal(ranges[0],'正文[^a]');assert.ok(ranges.includes(':::quote{author="作者"}\r\n引用\r\n:::'));assert.ok(ranges.some(t=>t.startsWith('| a | b |')));
+ assert.equal(ranges.length,3);assert.doesNotMatch((await renderMarkdown(text)).html,/data-preview-from/);
+});
+
+test('display math keeps exact source ranges after KaTeX replaces the root',async()=>{
+ for(const body of ['$$\nx^2\n$$','```math\nx^2\n```','$$\n\\invalidcommand\n$$']){
+  const text='---\ntitle: Math\n---\n\n'+body;
+  const {html}=await renderMarkdown(text,{sourceMap:true});
+  const ranges=[...html.matchAll(/data-preview-from="(\d+)" data-preview-to="(\d+)"/g)];
+  assert.equal(ranges.length,1);assert.equal(text.slice(Number(ranges[0][1]),Number(ranges[0][2])),body);
+  assert.match(html,/katex/);
+  assert.doesNotMatch((await renderMarkdown(text)).html,/data-preview-from/);
+ }
+});

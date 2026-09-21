@@ -34,7 +34,9 @@ div.article-spoiler > .spoiler-content { display: block; }
 .article-warning .confirm { background: var(--primary); color: var(--card-bg); }
 .article-footnote-popup { position: fixed; z-index: 1000; width: min(360px, calc(100vw - 24px)); max-height: min(320px, calc(100vh - 24px)); overflow: auto; padding: 18px 20px; font: 15px/1.8 "Segoe UI", "Microsoft YaHei", sans-serif; color: var(--btn-content); background: var(--card-bg); border: 1px solid var(--signal-line); border-radius: 12px; box-shadow: 0 12px 40px #0003; }
 .article-footnote-popup a { color: var(--primary); text-decoration: underline; }
-.custom-md a[data-footnote-ref] { text-decoration: none; padding: 2px 4px; font-size: .8em; font-weight: 650; }
+.custom-md a[data-footnote-ref] { color: var(--primary); text-decoration: none; padding: 2px 4px; font-size: .8em; font-weight: 650; white-space: nowrap; }
+.custom-md a[data-footnote-ref]::before { content: "["; }
+.custom-md a[data-footnote-ref]::after { content: "]"; }
 .custom-md .article-audio { padding: 18px 22px; border: 1px solid var(--signal-line); border-radius: 12px; background: linear-gradient(115deg, color-mix(in srgb, var(--primary) 7%, var(--card-bg)), var(--card-bg)); }
 .custom-md .article-audio figcaption { display: grid; gap: 5px; margin: 0 0 12px; }
 .audio-label, .post-card-label { font: 11px/1.5 "Segoe UI", sans-serif; letter-spacing: .12em; color: var(--primary); }
@@ -126,6 +128,7 @@ div.article-spoiler > .spoiler-content { display: block; }
 .custom-md .article-table-card { margin:1.5rem 0; overflow-x:auto; border:1px solid var(--line-divider); border-radius:12px; background:var(--card-bg); }
 .custom-md .article-table-card table { display:table; width:100%; margin:0; border-collapse:collapse; }
 .custom-md .article-table-card th, .custom-md .article-table-card td { padding:.8rem 1rem; border:0; border-bottom:1px solid var(--line-divider); min-width:7rem; }
+.custom-md .article-table-card td + td { border-left:1px solid var(--line-divider); }
 .custom-md .article-table-card th { background:var(--btn-regular-bg); color:var(--text-accent,var(--primary)); }
 .custom-md .article-table-card th:not([align]) { text-align:left; }
 .custom-md .article-table-card [align="left"] { text-align:left; }
