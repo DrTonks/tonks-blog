@@ -34,15 +34,12 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const MAX_AI_SUMMARY_LENGTH = 180;
 const authoredSummary = findAuthoredSummary(manualSummaries, entry.slug, entry.id);
-const summarySource = authoredSummary || entry.data.description || entry.data.title;
-const summaryCharacters = Array.from(summarySource.trim());
-const aiSummary = {
+// Even explicitly generated private summaries must never enter public HTML.
+const aiSummary = entry.data.encrypted ? undefined : {
 	slug: entry.slug,
-	summary: summaryCharacters.length > MAX_AI_SUMMARY_LENGTH
-		? `${summaryCharacters.slice(0, MAX_AI_SUMMARY_LENGTH).join("")}…`
-		: summaryCharacters.join(""),
+	summary: authoredSummary?.summary || entry.data.description?.trim() || entry.data.title.trim(),
+	model: authoredSummary?.model,
 };
 const { Content, headings } = await entry.render();
 const showCoverInContent = Boolean(

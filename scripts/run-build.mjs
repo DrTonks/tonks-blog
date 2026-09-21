@@ -24,6 +24,7 @@ try {
     if (result.status !== 0) throw new Error(`${file} failed (${result.status ?? result.signal})`);
   };
   console.log(`[version] ${bump ? 'Upgrade requested' : 'Keeping existing version'}: ${id}`);
+  if (deploy) run('scripts/run-ai-summary.mjs');
   const buildInputs = sourceInventory(root);
   const buildSource = fingerprint(buildInputs);
   run('node_modules/astro/astro.js', ['build']);

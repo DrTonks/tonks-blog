@@ -58,8 +58,9 @@ function startTyping() {
 		if (!host || !sidebar || !profile || !panel) return;
 		const payload = document.getElementById("ai-summary-data");
 		const summary = payload?.dataset.summary || "";
+		const model = payload?.dataset.model || "";
 		const isArticle = Boolean(payload);
-        const nextKey = isArticle ? summary : 'profile';
+        const nextKey = isArticle ? JSON.stringify([payload?.dataset.slug, summary, model]) : 'profile';
         const changed = host.dataset.contentKey !== nextKey;
         if (changed) {
             host.dataset.contentKey = nextKey;
@@ -74,6 +75,17 @@ function startTyping() {
 		sidebar.classList.toggle("sidebar-article-mode", isArticle);
 		const card = panel.querySelector(".ai-summary-card");
 		card?.classList.remove("is-typing");
+		const label = model ? "AI摘要" : "文章简介";
+		const title = panel.querySelector("#ai-summary-title");
+		if (title) title.textContent = label;
+		const source = panel.querySelector("[data-ai-summary-source]");
+		if (source) source.textContent = model ? ` · 由 ${model} 生成` : " · 文章简介";
+		const toggle = panel.querySelector<HTMLButtonElement>("[data-ai-summary-toggle]");
+		if (toggle) {
+			const actionLabel = `${toggle.getAttribute("aria-expanded") === "false" ? "展开" : "收起"} ${label}`;
+			toggle.setAttribute("aria-label", actionLabel);
+			toggle.title = actionLabel;
+		}
 		for (const element of panel.querySelectorAll('[data-ai-summary-accessible]')) element.textContent = summary;
         if (changed) {
             stopTyping();

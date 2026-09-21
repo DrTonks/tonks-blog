@@ -32,7 +32,7 @@ interface Props {
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 	headings?: MarkdownHeading[];
-	aiSummary?: { slug: string; summary: string };
+	aiSummary?: { slug: string; summary: string; model?: string };
 }
 
 // 类型守卫函数
@@ -417,7 +417,7 @@ const transparentClass = shouldEnableTransparency
             {(mobileShowSidebar || tabletShowSidebar || desktopShowSidebar) && <SideBar class={`${sidebarClass} ${transparentClass}`} headings={headings} aiSummary={aiSummary}></SideBar>}
 
             <main id="swup-container" class={mainContentClass}>
-				{aiSummary && <div id="ai-summary-data" hidden data-slug={aiSummary.slug} data-summary={aiSummary.summary}></div>}
+				{aiSummary && <div id="ai-summary-data" hidden data-slug={aiSummary.slug} data-summary={aiSummary.summary} data-model={aiSummary.model}></div>}
                 <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->

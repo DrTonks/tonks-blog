@@ -10,6 +10,8 @@
 		"build": "node scripts/run-build.mjs",
 		"font:subset": "node scripts/run-font-subset.js",
 		"ship": "node scripts/run-build.mjs --deploy",
+		"ai:summary": "node scripts/run-ai-summary.mjs",
+		"test:ai-summary": "node --test scripts/ai-summary.test.mjs",
 		"preview": "astro preview",
 		"astro": "astro",
 		"type-check": "tsc --noEmit --isolatedDeclarations",

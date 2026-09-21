@@ -17,7 +17,7 @@ import WidgetLayout from "./WidgetLayout.astro";
 interface Props {
 	class?: string;
 	headings?: MarkdownHeading[];
-	aiSummary?: { slug: string; summary: string };
+	aiSummary?: { slug: string; summary: string; model?: string };
 }
 
 const { class: className, headings, aiSummary } = Astro.props;
@@ -74,7 +74,7 @@ function renderComponent(component: any, index: number, _components: any[]) {
 					return <>
 						<SidebarPrimaryWidget mode={aiSummary ? "summary" : "profile"}>
 							<Profile slot="profile" {...props} />
-							<AISummary slot="summary" summary={aiSummary?.summary} />
+							<AISummary slot="summary" summary={aiSummary?.summary} model={aiSummary?.model} />
 						</SidebarPrimaryWidget>
 						{siteConfig.toc.enable && <div class="sidebar-inline-toc hidden md:block" hidden={!showSidebarToc} data-sidebar-motion-item>
 							<WidgetLayout id="sidebar-toc-card" name={i18n(I18nKey.tableOfContents)} titleClass="font-hanalei">
@@ -451,8 +451,10 @@ function renderComponent(component: any, index: number, _components: any[]) {
 				}
 			}
 			toggle.setAttribute("aria-expanded", String(!collapsed));
-			toggle.setAttribute("aria-label", collapsed ? "展开 AI 摘要" : "收起 AI 摘要");
-			toggle.title = collapsed ? "展开 AI 摘要" : "收起 AI 摘要";
+			const label = card.querySelector("#ai-summary-title")?.textContent || "文章简介";
+			const actionLabel = `${collapsed ? "展开" : "收起"} ${label}`;
+			toggle.setAttribute("aria-label", actionLabel);
+			toggle.title = actionLabel;
 		});
 	}
 

@@ -1,28 +1,177 @@
 {
-	"2024a08/a08": "本文为服创大赛A08赛题项目总结。采用YOLOv5s检测+轻量化SAM-Adapter分割的混合架构，结合SE/CBAM注意力机制与SimCLR自监督学习实现钢材表面缺陷检测。前端Vue3+TensorFlow.js端侧AI拦截，后端Spring Boot异步检测，Docker容器化部署。",
-	"bianyiyuanli1": "本文为编译原理LR(0)与SLR(1)文法学习笔记。讲解项目、闭包、Goto转换与DFA构造步骤，分析两种方法的填表规则与冲突判定，核心区别在于SLR(1)使用Follow集限制规约范围，能解决部分LR(0)的移进-规约冲突。",
-	"calculator/calculator": "本文描述了基于Vue3+TypeScript的金融教学计算器：涵盖等额本息/等额本金还款、提前还款模拟、NPV/IRR投资分析、折旧计算及蒙特卡洛信用风险模拟（VaR），结果以ECharts可视化展示并支持CSV导出。",
-	"codexissue1/codex-desktop-sqlite-log-churn": "本文是针对Codex Desktop的logs_2.sqlite高频写入TRACE/DEBUG/INFO日志的诊断与缓解方案。通过BEFORE INSERT trigger黑名单过滤低级别日志，保留WARN/ERROR。附带Python诊断脚本，实测WAL增长下降约99.86%。",
-	"dashboard/dash": "本文描述了基于Vue3+Three.js的贷款平台3D数据大屏。解析GeoJSON构建中国地图，通过棱柱高度与颜色映射各省指标，结合Raycaster点击交互、CSS2DRenderer标签和粒子特效，实现省份级数据可视化的完整方案。",
-	"es6": "本文是ECMAScript学习笔记。涵盖对象操作、Map/Set集合、Array方法、箭头函数、class类（私有属性#、getter/setter、继承extends/super），以及数组与对象的解构赋值和扩展运算符用法。",
-	"fingerprint": "本文提出了贷款风控平台的用户设备指纹库设计。在UniApp中收集设备特征与行为特征，建立准唯一设备标识。包含用户授权合规流程、AES加密传输及跨平台兼容处理方案。",
-	"git": "本文为GitHub Actions部署网站的问题记录。包括yml中需将master改为main、PowerShell执行pnpm的策略限制，以及因国内访问GitHub Pages速度慢而放弃该方案的决策过程。",
-	"loanbackendmodel": "本文是对贷款风控后端两大模型的设计描述。评分卡基于实名认证、收入、存款等计算信用分，审批模型综合信用分、金额占比、资料完整度等输出风险分与建议，附ML迁移路线。",
-	"loanwebend": "本文为贷款平台Web管理端（Vue3+Element Plus）的需求文档。涵盖JWT登录、用户管理、贷款产品CRUD、申请审批工作流、还款逾期监控与邮件提醒、仪表盘统计等功能，含完整API清单、数据字段定义与验收标准。",
-	"lunbotucss": "本文是一项CSS+JS动画名片轮播图练习。利用CSS transition实现滑动过渡，通过JS的appendChild/prepend移动DOM节点完成轮播切换，配合@keyframes实现模糊+平移的内容展示动画。",
-	"music/tonks-home-music-system": "本文是个人网站音乐系统技术实现博客。包括LRC歌词解析、Canvas环形频谱、桌宠唱歌状态机，以及Galaxy/魔法环双主题背景音频联动。",
-	"searchbar": "本文描述了动态搜索框实现：用JS事件监听替代CSS :hover控制搜索栏展开/收起，避免中文输入法候选框导致的hover丢失问题；附带基于filter的客户端搜索逻辑与结果动态渲染。",
-	"tailwindcss": "本文是Tailwind CSS的入门笔记：介绍工具优先理念、常用类（布局/间距/颜色/排版）、响应式断点前缀、状态变体（hover/focus/group-hover）、tailwind.config.js自定义配置及PurgeCSS生产优化。",
-	"yuyifenxi/yuyifenxi": "本文整理了编译原理语义分析笔记：讲解属性文法中综合属性（自底向上）与继承属性（自顶向下）的计算规则，以及S-属性文法和L-属性文法在LR/LL分析器中的翻译实现。",
-	"zato729/zato": "本文为视觉小说《Z.A.T.O.》的读后感，从“爱”的理解出发，通过分析作品中各个角色的塑造，探讨作品的超展开、\"不解决问题\"的叙事哲学与作者的创作理念。",
-	"2026a13/a13": "本文为第17届服创大赛的赛后随笔，记录微光职引智能体——基于Spring Boot AI+千问大模型的职业规划Agent——的参赛历程，最终获国家级二等奖。作者同时分享了西安区域赛与无锡国赛的答辩提问与心得，以及AI时代下的个人反思。",
-	"kaifa02/tonks-home-desktop-system": "本文记录桌宠接入大模型并赋予工具调用能力的实现。后端用白名单筛选需AI回答的问题并做频率控制，按两套独立人设组装上下文与安全边界；仅开放web_search工具核实作品信息，目标是把桌宠从会动的宠物变成有记忆的角色。",
-	"kaifa03/tonks-home-comment-system": "本文记录评论系统的设计思路：添加“番茄小说式”式的段落评论，并把主页评论区做成三栏QQ群聊界面，进行访客身份识别；同时加入表情包、MD预览与GitHub issue式反馈卡片，复用大模型审核识别灌水广告，并说明自建而非用Twikoo/Waline的理由。",
-	"agent907/model-as-agent": "本文探讨“模型即Agent”范式下Harness是否会消亡。作者结合GPT-5.6自由格式工具调用等现象，论证格式解析等基础能力正被模型内化；但约束、验证、纠正等工程复杂度不会消失，只会从“补丁”进化为“基础设施”，并以 DSH/Pi Agent 的插件化探讨 Harness 的未来形态。",
-	"memory/memory": "本文是一篇生活随笔。作者从散落的童年记忆切入，写外婆离世时迟来的悲伤，反思记忆的不可靠；又借手术经历、对“飞机失事”的想象谈自己的唯我论死亡观，最终由史铁生的《命若琴弦》引向标题“寻找闪闪发亮的东西”——即使无激情与梦想，也要有把日子过好的勇气，珍惜当下。",
-	"writing-guide/index": "本文是网站文章样式的备忘清单，整理了 Markdown 渲染支持的各组件用法：基础 Markdown、五种提示块、折叠块、卡片（站内文章/GitHub仓库/音频）、图片图注、脚注、隐藏内容、视频嵌入、落款署名，以及自定义字体 @font-face 的引用方法，供后续写作查阅。",
-	"agent516/agent02": "本文记录开发“微光职引智能体”时提高大模型缓存命中率以降低成本的实践。讲解前缀匹配原理，指出 COLD/WARM/HOT 分区装填顺序，分享系统提示词加时间导致命中率归零的教训，并讨论 Compaction 压缩会破坏缓存、命中率监控等取舍。",
-	"agent410/agent01": "本文记录“微光职引”智能体的技术选型与记忆设计。作者比较 Spring AI 与 Pi 后决定侧重研究 Agent 本身，讲解短期记忆（上下文窗口）与长期记忆（外部系统）的区分，引用“给 Agent 地图而不是说明书”的情境管理原则，并规划用 Mem0 管理学生长期记忆、用 pgvector 与 RAG 构建岗位知识库。",
-	"agent702/agent03": "本文讲解“微光职引”的总控加四大专家（画像、人岗匹配、路径规划、生涯报告）多智能体架构。探讨拆分为多 Agent 的上下文边界与信息隔离价值、总控按需委派而非全量激活，介绍 Pi 中“Agent as a tool”的委派方式，并强调交接任务包需含索引与关键约束、专家不直接改写长期记忆。",
-	"airespect/do-ai-need-thanks": "本文探讨AI是否“需要尊严”。作者观察多 agent 协作中 Astra 对子 agent 说“感谢分析”，指出模型生成礼貌语言形式并不需要对应的人类动机；在 HumanEval/LiveCodeBench 实测“日常礼貌”与“直接要求”的差异，结论是礼貌不带来提效或省钱，但人类协作中仍值得保持礼貌。"
+	"git": {
+		"summary": "本文为GitHub Actions部署网站的问题记录。包括yml中需将master改为main、PowerShell执行pnpm的策略限制，以及因国内访问GitHub Pages速度慢而放弃该方案的决策过程。",
+		"model": "deepseek-flash",
+		"generatedAt": "2024-09-21T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"es6": {
+		"summary": "本文是ECMAScript学习笔记。涵盖对象操作、Map/Set集合、Array方法、箭头函数、class类（私有属性#、getter/setter、继承extends/super），以及数组与对象的解构赋值和扩展运算符用法。",
+		"model": "deepseek-flash",
+		"generatedAt": "2024-10-01T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"searchbar": {
+		"summary": "本文描述了动态搜索框实现：用JS事件监听替代CSS :hover控制搜索栏展开/收起，避免中文输入法候选框导致的hover丢失问题；附带基于filter的客户端搜索逻辑与结果动态渲染。",
+		"model": "deepseek-flash",
+		"generatedAt": "2024-10-01T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"lunbotucss": {
+		"summary": "本文是一项CSS+JS动画名片轮播图练习。利用CSS transition实现滑动过渡，通过JS的appendChild/prepend移动DOM节点完成轮播切换，配合@keyframes实现模糊+平移的内容展示动画。",
+		"model": "deepseek-flash",
+		"generatedAt": "2024-11-02T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"2024a08/a08": {
+		"summary": "本文为服创大赛A08赛题项目总结。采用YOLOv5s检测+轻量化SAM-Adapter分割的混合架构，结合SE/CBAM注意力机制与SimCLR自监督学习实现钢材表面缺陷检测。前端Vue3+TensorFlow.js端侧AI拦截，后端Spring Boot异步检测，Docker容器化部署。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-05-15T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"bianyiyuanli1": {
+		"summary": "本文为编译原理LR(0)与SLR(1)文法学习笔记。讲解项目、闭包、Goto转换与DFA构造步骤，分析两种方法的填表规则与冲突判定，核心区别在于SLR(1)使用Follow集限制规约范围，能解决部分LR(0)的移进-规约冲突。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-09-30T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"loanbackendmodel": {
+		"summary": "本文是对贷款风控后端两大模型的设计描述。评分卡基于实名认证、收入、存款等计算信用分，审批模型综合信用分、金额占比、资料完整度等输出风险分与建议，附ML迁移路线。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-10-08T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"loanwebend": {
+		"summary": "本文为贷款平台Web管理端（Vue3+Element Plus）的需求文档。涵盖JWT登录、用户管理、贷款产品CRUD、申请审批工作流、还款逾期监控与邮件提醒、仪表盘统计等功能，含完整API清单、数据字段定义与验收标准。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-10-10T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"tailwindcss": {
+		"summary": "本文是Tailwind CSS的入门笔记：介绍工具优先理念、常用类（布局/间距/颜色/排版）、响应式断点前缀、状态变体（hover/focus/group-hover）、tailwind.config.js自定义配置及PurgeCSS生产优化。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-10-10T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"calculator/calculator": {
+		"summary": "本文描述了基于Vue3+TypeScript的金融教学计算器：涵盖等额本息/等额本金还款、提前还款模拟、NPV/IRR投资分析、折旧计算及蒙特卡洛信用风险模拟（VaR），结果以ECharts可视化展示并支持CSV导出。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-10-20T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"dashboard/dash": {
+		"summary": "本文描述了基于Vue3+Three.js的贷款平台3D数据大屏。解析GeoJSON构建中国地图，通过棱柱高度与颜色映射各省指标，结合Raycaster点击交互、CSS2DRenderer标签和粒子特效，实现省份级数据可视化的完整方案。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-10-23T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"fingerprint": {
+		"summary": "本文提出了贷款风控平台的用户设备指纹库设计。在UniApp中收集设备特征与行为特征，建立准唯一设备标识。包含用户授权合规流程、AES加密传输及跨平台兼容处理方案。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-11-11T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"yuyifenxi/yuyifenxi": {
+		"summary": "本文整理了编译原理语义分析笔记：讲解属性文法中综合属性（自底向上）与继承属性（自顶向下）的计算规则，以及S-属性文法和L-属性文法在LR/LL分析器中的翻译实现。",
+		"model": "deepseek-flash",
+		"generatedAt": "2025-11-22T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"writing-guide/index": {
+		"summary": "本文是网站文章样式的备忘清单，整理了 Markdown 渲染支持的各组件用法：基础 Markdown、五种提示块、折叠块、卡片（站内文章/GitHub仓库/音频）、图片图注、脚注、隐藏内容、视频嵌入、落款署名，以及自定义字体 @font-face 的引用方法，供后续写作查阅。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-03-01T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"agent410/agent01": {
+		"summary": "本文记录“微光职引”智能体的技术选型与记忆设计。作者比较 Spring AI 与 Pi 后决定侧重研究 Agent 本身，讲解短期记忆（上下文窗口）与长期记忆（外部系统）的区分，引用“给 Agent 地图而不是说明书”的情境管理原则，并规划用 Mem0 管理学生长期记忆、用 pgvector 与 RAG 构建岗位知识库。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-04-10T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"agent516/agent02": {
+		"summary": "本文记录开发“微光职引智能体”时提高大模型缓存命中率以降低成本的实践。讲解前缀匹配原理，指出 COLD/WARM/HOT 分区装填顺序，分享系统提示词加时间导致命中率归零的教训，并讨论 Compaction 压缩会破坏缓存、命中率监控等取舍。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-05-16T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"music/tonks-home-music-system": {
+		"summary": "本文是个人网站音乐系统技术实现博客。包括LRC歌词解析、Canvas环形频谱、桌宠唱歌状态机，以及Galaxy/魔法环双主题背景音频联动。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-06-13T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"agent702/agent03": {
+		"summary": "本文讲解“微光职引”的总控加四大专家（画像、人岗匹配、路径规划、生涯报告）多智能体架构。探讨拆分为多 Agent 的上下文边界与信息隔离价值、总控按需委派而非全量激活，介绍 Pi 中“Agent as a tool”的委派方式，并强调交接任务包需含索引与关键约束、专家不直接改写长期记忆。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-07-02T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"codexissue1/codex-desktop-sqlite-log-churn": {
+		"summary": "本文是针对Codex Desktop的logs_2.sqlite高频写入TRACE/DEBUG/INFO日志的诊断与缓解方案。通过BEFORE INSERT trigger黑名单过滤低级别日志，保留WARN/ERROR。附带Python诊断脚本，实测WAL增长下降约99.86%。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-07-23T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"zato729/zato": {
+		"summary": "本文为视觉小说《Z.A.T.O.》的读后感，从“爱”的理解出发，通过分析作品中各个角色的塑造，探讨作品的超展开、\"不解决问题\"的叙事哲学与作者的创作理念。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-07-29T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"2026a13/a13": {
+		"summary": "本文为第17届服创大赛的赛后随笔，记录微光职引智能体——基于Spring Boot AI+千问大模型的职业规划Agent——的参赛历程，最终获国家级二等奖。作者同时分享了西安区域赛与无锡国赛的答辩提问与心得，以及AI时代下的个人反思。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-08-22T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"kaifa02/tonks-home-desktop-system": {
+		"summary": "本文记录桌宠接入大模型并赋予工具调用能力的实现。后端用白名单筛选需AI回答的问题并做频率控制，按两套独立人设组装上下文与安全边界；仅开放web_search工具核实作品信息，目标是把桌宠从会动的宠物变成有记忆的角色。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-08-31T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"agent907/model-as-agent": {
+		"summary": "本文探讨“模型即Agent”范式下Harness是否会消亡。作者结合GPT-5.6自由格式工具调用等现象，论证格式解析等基础能力正被模型内化；但约束、验证、纠正等工程复杂度不会消失，只会从“补丁”进化为“基础设施”，并以 DSH/Pi Agent 的插件化探讨 Harness 的未来形态。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-09-06T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"memory/memory": {
+		"summary": "本文是一篇生活随笔。作者从散落的童年记忆切入，写外婆离世时迟来的悲伤，反思记忆的不可靠；又借手术经历、对“飞机失事”的想象谈自己的唯我论死亡观，最终由史铁生的《命若琴弦》引向标题“寻找闪闪发亮的东西”——即使无激情与梦想，也要有把日子过好的勇气，珍惜当下。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-09-11T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	},
+	"kaifa03/tonks-home-comment-system": {
+		"summary": "本文记录评论系统的设计思路：添加“番茄小说”式的段落评论，并把主页评论区做成三栏QQ群聊界面，进行访客身份识别；同时加入表情包、MD预览与GitHub issue式反馈卡片，复用大模型审核识别灌水广告，并说明自建而非用Twikoo/Waline的理由。",
+		"model": "deepseek-flash",
+		"generatedAt": "2026-09-17T00:00:00.000Z",
+		"generatedAtSource": "article-published",
+		"promptVersion": "legacy"
+	}
 }
