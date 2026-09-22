@@ -18,6 +18,7 @@ async function initializeDailyRead() {
 	const button = query<HTMLButtonElement>("[data-daily-refresh]");
 	const title = query<HTMLElement>("[data-daily-title]");
 	const summary = query<HTMLElement>("[data-daily-summary]");
+	const avatar = query<HTMLImageElement>("[data-daily-avatar]");
 	let articles: FriendArticle[] = [];
 	let currentFeed: string | undefined;
 	function syncRefreshAvailability() {
@@ -29,6 +30,8 @@ async function initializeDailyRead() {
 		const friend = article && configured.get(article.feedUrl);
 		if (!article || !friend) {
 			currentFeed = undefined;
+			avatar.hidden = true;
+			avatar.removeAttribute("src");
 			title.textContent = "这周，朋友们还没有新文章";
 			summary.textContent = "这里留给最近 7 天的新文字，过几天再来翻翻吧。";
 			button.disabled = true;
@@ -38,6 +41,8 @@ async function initializeDailyRead() {
 			return;
 		}
 		currentFeed = article.feedUrl;
+		avatar.hidden = !friend.avatar;
+		if (friend.avatar) avatar.src = friend.avatar;
 		title.textContent = article.title;
 		summary.textContent = article.summary;
 		for (const anchor of card!.querySelectorAll<HTMLAnchorElement>("[data-daily-link], [data-daily-read-link]")) {
@@ -60,6 +65,9 @@ async function initializeDailyRead() {
 			const content = query<HTMLElement>("[data-daily-content]");
 			content.getAnimations().forEach(animation => animation.cancel());
 			content.animate([{ opacity: .3, transform: "translateY(3px)" }, { opacity: 1, transform: "none" }], { duration: 200 });
+			const decoration = query<HTMLElement>(".daily-read__decoration");
+			decoration.getAnimations().forEach(animation => animation.cancel());
+			decoration.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250 });
 		}
 	}
 	button.addEventListener("click", () => render(true));

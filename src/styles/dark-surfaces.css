@@ -1,0 +1,75 @@
+/* Dark decorative surfaces are neutral in every accent palette.
+ * Explicit priority also covers Astro/Svelte scoped rules. Keep solid accents,
+ * borders and semantic foreground colors in their component styles.
+ */
+:root.dark {
+  --signal-soft: rgb(255 255 255 / 7%) !important;
+  --project-accent-soft: rgb(255 255 255 / 6%) !important;
+  --project-accent-surface: rgb(43 44 46 / 88%) !important;
+  --project-accent-glow: rgb(255 255 255 / 7%) !important;
+  --timeline-ghost-fill: rgb(255 255 255 / 2.5%) !important;
+  --timeline-ghost-line: rgb(255 255 255 / 13%) !important;
+  --timeline-ghost-line-mobile: rgb(255 255 255 / 9%) !important;
+  --timeline-card-shadow: rgb(0 0 0 / 12%) !important;
+  --timeline-active-shadow: rgb(0 0 0 / 28%) !important;
+}
+
+/* Article surfaces; the quotation mark keeps the component accent color. */
+:root.dark .custom-md blockquote.article-quote {
+  background: color-mix(in srgb, var(--card-bg) 98.5%, white) !important;
+  box-shadow: 5px 5px 0 rgb(255 255 255 / 1%) !important;
+}
+:root.dark .custom-md details.article-fold { background: color-mix(in srgb, var(--card-bg) 97%, white) !important; }
+:root.dark .custom-md .article-post-card { background: color-mix(in srgb, var(--card-bg) 97%, white) !important; }
+:root.dark .custom-md .article-post-card:hover { background: color-mix(in srgb, var(--card-bg) 94%, white) !important; }
+:root.dark .custom-md .article-audio { background: linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 95%, white), var(--card-bg)) !important; }
+:root.dark .article-figure.is-loading::after { background: rgb(255 255 255 / 7%) !important; }
+:root.dark .custom-md a:not(:where(.no-styling, .no-styling *, .anchor, .article-post-card, .preview-github, [data-footnote-ref], [data-footnote-backref], .expressive-code *, .katex *)):is(:hover, :focus-visible) { background-color: rgb(255 255 255 / 7%) !important; }
+
+/* Timeline: keep the colored rail, nodes and perimeter; neutralize their light. */
+:root.dark .timeline-rail span { box-shadow: 0 0 1rem rgb(255 255 255 / 12%) !important; }
+:root.dark .timeline-card:not(.active) .timeline-node { background: color-mix(in srgb, var(--card-bg) 95%, white) !important; }
+:root.dark .timeline-card.active .timeline-node {
+  box-shadow: 0 0 0 .35rem color-mix(in srgb, var(--card-bg) 92%, transparent), 0 0 1.25rem rgb(255 255 255 / 14%) !important;
+}
+:root.dark .timeline-card.active .timeline-card__body {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 94%, white), color-mix(in srgb, var(--card-bg) 98%, white)) !important;
+  box-shadow: 0 .95rem 2.5rem rgb(0 0 0 / 28%), 0 0 2rem rgb(255 255 255 / 5%), inset 0 0 0 1px color-mix(in srgb, var(--signal-line) 12%, transparent) !important;
+}
+
+/* Ambient light and AI summary. */
+:root.dark .ambient-pointer-glow { background: radial-gradient(circle 18rem at var(--ambient-x, 50vw) var(--ambient-y, 50vh), rgb(255 255 255 / 4%), transparent 72%) !important; }
+:root.dark .ai-summary-card::before { background: radial-gradient(circle at 100% 0%, rgb(255 255 255 / 7%), transparent 42%) !important; }
+:root.dark .ai-summary-icon,
+:root.dark .ai-summary-toggle,
+:root.dark .ai-summary-orbit span:nth-child(3) { background: rgb(255 255 255 / 6%) !important; }
+:root.dark .ai-summary-toggle:hover { background: rgb(255 255 255 / 10%) !important; }
+
+/* Sidebar category cards and TOC; retain their colored symbols and count badges. */
+:root.dark .index-category { background: color-mix(in srgb, var(--card-bg) 97%, white) !important; box-shadow: 2px 3px 0 rgb(255 255 255 / 5%) !important; }
+:root.dark .index-category:hover { background: color-mix(in srgb, var(--card-bg) 94%, white) !important; }
+:root.dark .index-category::before { background: repeating-linear-gradient(120deg, transparent 0 3px, rgb(255 255 255 / 7%) 3px 5px), color-mix(in srgb, var(--card-bg) 90%, white) !important; }
+:root.dark .index-count { box-shadow: 0 2px 4px rgb(0 0 0 / 22%) !important; }
+:root.dark #sidebar-toc > a:hover { background: rgb(255 255 255 / 7%) !important; }
+:root.dark #sidebar-toc > a:active { background: rgb(255 255 255 / 11%) !important; }
+:root.dark .article-poll .poll-option:has(input:checked),
+:root.dark .article-poll .poll-option:focus-within { background: rgb(255 255 255 / 6%) !important; }
+:root.dark .article-poll .poll-fill { background: rgb(255 255 255 / 10%) !important; }
+:root.dark .btn-gradient-primary { box-shadow: 0 2px 4px rgb(0 0 0 / 24%) !important; }
+:root.dark .btn-gradient-primary:hover { box-shadow: 0 4px 8px rgb(0 0 0 / 30%) !important; }
+:root.dark .btn-gradient-primary:active { box-shadow: 0 2px 4px rgb(0 0 0 / 24%) !important; }
+
+/* Project chips have independent technology hues: neutralize their fills too,
+   while retaining colored per-technology outlines. Opaque gray behind photo
+   labels protects their contrast over both bright and dark cover images. */
+:root.dark .project-card .tech-chip,
+:root.dark .stack-list .tech-chip {
+  background: color-mix(in srgb, var(--industrial-surface) 95%, white) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%) !important;
+}
+:root.dark .project-card .tech-chip:is(:hover, :focus-visible),
+:root.dark .stack-list .tech-chip:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--industrial-surface) 91%, white) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 9%), 0 0 .8rem rgb(255 255 255 / 4%) !important;
+}
+:root.dark .project-card .status-completed { background: rgb(255 255 255 / 6%) !important; }
