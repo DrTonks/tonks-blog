@@ -17,7 +17,7 @@
 /* Article surfaces; the quotation mark keeps the component accent color. */
 :root.dark .custom-md blockquote.article-quote {
   background: color-mix(in srgb, var(--card-bg) 98.5%, white) !important;
-  box-shadow: 5px 5px 0 rgb(255 255 255 / 1%) !important;
+  box-shadow: 5px 5px 0 rgb(0 0 0 / 24%) !important;
 }
 :root.dark .custom-md details.article-fold { background: color-mix(in srgb, var(--card-bg) 97%, white) !important; }
 :root.dark .custom-md .article-post-card { background: color-mix(in srgb, var(--card-bg) 97%, white) !important; }
