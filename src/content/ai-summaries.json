@@ -173,5 +173,13 @@
 		"generatedAt": "2026-09-17T00:00:00.000Z",
 		"generatedAtSource": "article-published",
 		"promptVersion": "legacy"
+	},
+	"airespect/do-ai-need-thanks": {
+		"summary": "文章从是否该对AI说“请”“谢谢”切入，讨论AI味、伪人感与AI主体性，认为去除AI味常制造更强伪人感，提示词只能有限赋予人格。作者观察AI间协作并做礼貌对照实验，结果未发现礼貌显著提升模型表现；结论是日常可照习惯使用礼貌，不必为效果刻意客气或故意粗鲁。",
+		"model": "deepseek-flash",
+		"requestedModel": "deepseek-flash",
+		"generatedAt": "2026-09-22T15:08:46.894Z",
+		"promptVersion": "1",
+		"contentHash": "c95d05ac68f58d92f13afc53a9942e60c38571b02cd886de0c2260c5b9e0069f"
 	}
 }

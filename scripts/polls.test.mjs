@@ -85,4 +85,8 @@ test('private sync writes only to SSH stdin and requires positive backend acknow
  }
  await assert.rejects(syncPollBackend({client:{exec(_cmd,callback){callback(new Error('connection failed'));}}},{schema:1,polls}));
  await assert.rejects(syncPollBackend(transport(0,'POLL_SYNC_OK:1'),{schema:1,polls},'/var/../bad'));
+ await assert.rejects(syncPollBackend(transport(1,'POLL_SYNC_CONFLICT:'+JSON.stringify({id:'quiz-test',fields:['options','answer']})),{schema:1,polls}),error=>error.message.includes('quiz-test')&&error.message.includes('选项 ID 或文案')&&error.message.includes('正确答案'));
+ for(const payload of [{id:'PRIVATE_EXPLANATION!',fields:['answer']},{id:'quiz-test',fields:['PRIVATE_EXPLANATION']},null]){
+  await assert.rejects(syncPollBackend(transport(1,'POLL_SYNC_CONFLICT:'+JSON.stringify(payload)),{schema:1,polls}),error=>!error.message.includes('PRIVATE_EXPLANATION'));
+ }
 });
