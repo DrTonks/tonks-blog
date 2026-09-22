@@ -177,7 +177,15 @@ export function initializeArticleComments() {
       const replies=element('div','ac-replies');
       const feedback=element('div');
       const next=button('加载更多回复',()=>{void loadReplies();},'ac-more');next.hidden=true;
-      let after:number|null=null,loading=false;
+      let after:number|null=null,loading=false,loaded=false;
+      replies.hidden=true;
+      const toggle=button(`展开 ${comment.reply_count} 条回复`,()=>{
+        replies.hidden=!replies.hidden;
+        toggle.setAttribute('aria-expanded',String(!replies.hidden));
+        toggle.textContent=replies.hidden?`展开 ${comment.reply_count} 条回复`:'收起回复';
+        if(!replies.hidden && !loaded)void loadReplies();
+      },'ac-replies-toggle');
+      toggle.setAttribute('aria-expanded','false');
       async function loadReplies(){
         if(loading || signal.aborted)return;
         loading=true;next.disabled=true;feedback.textContent='正在读取回复…';
@@ -185,12 +193,11 @@ export function initializeArticleComments() {
           const result=await api(`?root=${comment.id}${after?`&after=${after}`:''}`);
           if(signal.aborted || !row.isConnected)return;
           result.comments.forEach(c=>replies.insertBefore(renderComment(c,false),feedback));
-          after=result.next_after || null;next.hidden=!after;feedback.replaceChildren();
+          loaded=true;after=result.next_after || null;next.hidden=!after;feedback.replaceChildren();
         }catch(e){if(row.isConnected)showError(feedback,e,()=>{void loadReplies();});}
         finally{loading=false;next.disabled=false;}
       }
-      replies.append(feedback,next);body.append(replies);
-      void loadReplies();
+      replies.append(feedback,next);body.append(toggle,replies);
     }
     row.append(avatar,body);return row;
   }

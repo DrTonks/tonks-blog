@@ -26,6 +26,12 @@
 .ac-replies{padding-left:.75rem;border-left:1px solid var(--signal-line);margin-top:.65rem}
 .ac-replies .ac-comment{grid-template-columns:24px minmax(0,1fr);gap:.5rem;padding:.7rem 0}
 .ac-replies .ac-avatar{width:24px;height:24px;font-size:.7rem}
+.ac-section .ac-replies .ac-comment,.ac-dialog .ac-replies .ac-comment{grid-template-columns:24px minmax(0,1fr);gap:.5rem;padding:.55rem 0}
+.ac-section .ac-replies .ac-avatar{width:24px;height:24px}
+.ac-section .ac-replies .ac-comment-name,.ac-dialog .ac-replies .ac-comment-name{font-size:.72rem;gap:.3rem .45rem;flex-wrap:wrap}
+.ac-section .ac-replies .ac-comment-body,.ac-dialog .ac-replies .ac-comment-body{font-size:.78rem;line-height:1.6;margin:.2rem 0}
+.ac-section .ac-replies .ac-comment-actions button,.ac-dialog .ac-replies .ac-comment-actions button{font-size:.68rem}
+.ac-section .ac-replies-toggle,.ac-dialog .ac-replies-toggle{display:block;padding:.2rem 0;margin-top:.35rem;font-size:.72rem;color:var(--primary)}
 .ac-quote{margin:0;border-left:2px solid var(--primary);padding:.2rem .8rem;font-size:.82rem;line-height:1.7;color:color-mix(in srgb,currentColor 65%,transparent);overflow-wrap:anywhere}
 .ac-quote p{margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .ac-quote.is-expanded p{-webkit-line-clamp:unset}
@@ -82,6 +88,8 @@
 .ac-section .ac-comment-actions{color:var(--signal-line)}
 .ac-section .ac-badge{background:var(--signal);color:var(--signal-ink);padding:.12rem .3rem;border-radius:.2rem}
 .ac-composer.community-comments{margin:0;background:var(--industrial-surface);overflow:auto;max-height:55dvh;min-height:0;flex-shrink:1;scrollbar-width:thin}
+.ac-dialog .ac-scroll,.ac-dialog .ac-composer,.ac-dialog .ac-quote,.ac-dialog .ac-identity{scrollbar-width:none}
+.ac-dialog .ac-scroll::-webkit-scrollbar,.ac-dialog .ac-composer::-webkit-scrollbar,.ac-dialog .ac-quote::-webkit-scrollbar,.ac-dialog .ac-identity::-webkit-scrollbar{display:none}
 .ac-scroll{min-height:3rem}
 .dark .ac-dialog{color-scheme:dark}
 .ac-composer .community-emoji-grid{max-height:10rem}

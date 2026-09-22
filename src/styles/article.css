@@ -95,6 +95,29 @@ div.article-spoiler > .spoiler-content { display: block; }
 .custom-md .article-fold > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: -4px; }
 .custom-md .article-fold[open] > summary { border-bottom: 1px solid var(--line-divider); }
 .custom-md .article-fold-body { padding: .2em 1.1em; }
+/* Standard Markdown quotations share the same treatment in the site and editor. */
+.custom-md blockquote:not(.article-quote, .admonition) {
+  margin-inline: 0;
+  padding: .65em 1em;
+  border: 0;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: inherit;
+  font-style: normal;
+}
+.dark .custom-md blockquote:not(.article-quote, .admonition) {
+  background: rgb(255 255 255 / 6%);
+}
+.custom-md blockquote:not(.article-quote, .admonition)::before {
+  content: none;
+}
+#post-container .custom-md blockquote:not(.article-quote, .admonition) > :first-child {
+  margin-top: 0;
+}
+#post-container .custom-md blockquote:not(.article-quote, .admonition) > :last-child {
+  margin-bottom: 0;
+}
 .custom-md blockquote.article-quote {
   margin-inline: 0;
   padding: 1.1em 1.4em;
@@ -149,6 +172,7 @@ div.article-spoiler > .spoiler-content { display: block; }
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--text-accent) 45%, transparent);
   text-decoration-thickness: 2px;
+  text-decoration-skip-ink: none;
   text-underline-offset: .25em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
