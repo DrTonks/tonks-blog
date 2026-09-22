@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { scanFriendAvatars, resolveFriendAvatar } from "../../scripts/friend-avatars.mjs";
 import Markdown from "@components/misc/Markdown.astro";
 import { Icon } from "astro-icon/components";
+import DailyRead from "../components/DailyRead.astro";
 import BlogLike from "../components/community/BlogLike.astro";
 import CommunityComments from "../components/community/CommunityComments.astro";
 import FriendApplyDialog from "../components/community/FriendApplyDialog.astro";
@@ -65,6 +66,8 @@ const cardAngles = [
 			</div>
 		</header>
 
+		<DailyRead friends={friendsData} />
+
 		<div class="friend-wall__rule" aria-hidden="true">
 			<span>PINNED CONNECTIONS</span>
 		</div>
@@ -102,6 +105,7 @@ const cardAngles = [
 							<p>{friend.description}</p>
 						</div>
 						<Icon name="fa6-solid:arrow-up-right-from-square" class="friend-sticker__arrow" />
+						{friend.rss && <time class="friend-sticker__updated" data-friend-feed={friend.rss}>最近更新 · 待获取</time>}
 					</div>
 				</a>
 			))}
@@ -429,6 +433,8 @@ const cardAngles = [
 		border-radius: 999px;
 		background: #22c55e;
 	}
+
+	.friend-sticker__updated { position: absolute; right: .9rem; top: .4rem; padding: 0 .25rem; border-radius: 2px; background: var(--industrial-surface); font-size: .62rem; line-height: 1.4; color: var(--text-muted); white-space: nowrap; }
 
 	.friend-sticker__body { position: relative; z-index: 1; min-width: 0; }
 

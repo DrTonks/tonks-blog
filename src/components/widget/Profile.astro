@@ -40,28 +40,28 @@ import ThemeAvatar from "./ThemeAvatar.astro";
 			) : profileConfig.bio}
 		</div>
 		<div class="flex gap-2 justify-center mb-1">
-			{profileConfig.links.length > 1 && profileConfig.links.map((item) => (
-				<a {...profileLinkAttributes(item, Astro.site!)} aria-label={item.name} href={item.url} class="btn-regular rounded-lg h-10 w-10 active:scale-90">
+			{profileConfig.links.map((item) => item.action === "copy-rss" ? (
+				<button type="button" data-copy-rss={new URL(item.url, Astro.site).href} aria-label="复制 RSS 订阅地址" title="复制 RSS 订阅地址" class="btn-regular rounded-lg h-10 w-10 active:scale-90">
 					<Icon name={item.icon} class="text-[1.5rem]" />
+				</button>
+			) : (
+				<a {...profileLinkAttributes(item, Astro.site!)} aria-label={item.name} href={item.url} class:list={["btn-regular rounded-lg h-10 active:scale-90", profileConfig.links.length === 1 ? "gap-2 px-3 font-bold" : "w-10"]}>
+					<Icon name={item.icon} class="text-[1.5rem]" />
+					{profileConfig.links.length === 1 && item.name}
 				</a>
 			))}
-			{profileConfig.links.length === 1 && (
-				<a
-					{...profileLinkAttributes(profileConfig.links[0], Astro.site!)}
-					aria-label={profileConfig.links[0].name}
-					href={profileConfig.links[0].url}
 
-					class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95"
-				>
-					<Icon name={profileConfig.links[0].icon} class="text-[1.5rem]" />
-					{profileConfig.links[0].name}
-				</a>
-			)}
 		</div>
+		<p data-rss-feedback role="status" class="rss-feedback" hidden></p>
 	</div>
 </div>
 
+<script>
+	import "../../scripts/copy-rss";
+</script>
+
 <style>
+	.rss-feedback { font-family: system-ui, sans-serif; font-size: .75rem; line-height: 1.5; overflow-wrap: anywhere; color: var(--text-secondary); text-align: center; margin-top: .5rem; }
 	/* Keep the avatar's z-50 hover overlay below the sibling signature (z-index: 1). */
 	.profile-avatar { z-index: 0; }
 	.profile-avatar::after {

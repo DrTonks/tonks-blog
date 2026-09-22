@@ -65,6 +65,7 @@ flowchart LR
 - 文章 AI 摘要使用预生成数据，不在每次访问时调用模型；正文目录与摘要分开。
 - Pagefind 静态全文搜索、RSS / Atom、站点地图和 Open Graph。
 - 关于、友链、项目、历程和相册页面；结构化内容集中在 `src/data/` 维护。
+- 友链“每日一读”：笔记页样式、最新文章加权抽选和更新时间；RSS 由 sleepy 每日缓存，接入见 [好友 RSS](docs/friend-rss.md)。
 
 ### 外观与交互
 

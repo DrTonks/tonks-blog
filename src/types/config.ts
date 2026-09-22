@@ -169,6 +169,7 @@ export type ProfileConfig = {
 	bio?: string;
 	links: {
 		identity?: boolean;
+		action?: "copy-rss";
 		name: string;
 		url: string;
 		icon: string;

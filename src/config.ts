@@ -298,7 +298,8 @@ export const profileConfig: ProfileConfig = {
 		{
 			name: "RSS 订阅",
 			icon: "material-symbols:rss-feed",
-			url: "/rss/",
+			url: "/rss.xml",
+			action: "copy-rss",
 		},
 	],
 };
