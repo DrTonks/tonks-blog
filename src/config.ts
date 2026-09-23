@@ -293,7 +293,7 @@ export const profileConfig: ProfileConfig = {
 		{
 			name: "邮箱",
 			icon: "material-symbols:mail-outline",
-			url: "mailto:3064517736@qq.com",
+			url: "mailto:drtonks@qq.com",
 		},
 		{
 			name: "RSS 订阅",
