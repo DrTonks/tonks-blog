@@ -1094,17 +1094,29 @@ const transparentClass = shouldEnableTransparency
 	animation-play-state: paused !important;
 }
 
-/* Keep the upper image opaque; the static bottom strip shares the waves' depth.
-   A 1px overlap avoids fractional-pixel seams. Both layers use alpha/add. */
-:global(html:not([data-waves="on"])) #banner-wrapper {
-	mask-image:
-		linear-gradient(to bottom, #000 calc(100% - var(--banner-edge-height) + 1px), transparent 0),
-		url('/assets/banner-edge-mask.svg');
-	mask-size: 100% 100%, 100% var(--banner-edge-height);
-	mask-position: top, bottom;
-	mask-repeat: no-repeat;
-	mask-mode: alpha;
-	mask-composite: add;
+/* Match the former SVG edge's smoothstep alpha curve without the fullscreen
+   Chrome paint gap caused by its two-layer composite mask. */
+:global(html:not([data-waves="on"])) #banner-wrapper::after {
+	content: "";
+	position: absolute;
+	z-index: 15;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: var(--banner-edge-height);
+	pointer-events: none;
+	background: linear-gradient(to bottom,
+		transparent 20%,
+		color-mix(in srgb, var(--page-bg) 2.8%, transparent) 25%,
+		color-mix(in srgb, var(--page-bg) 10.4%, transparent) 30%,
+		color-mix(in srgb, var(--page-bg) 21.6%, transparent) 35%,
+		color-mix(in srgb, var(--page-bg) 35.2%, transparent) 40%,
+		color-mix(in srgb, var(--page-bg) 50%, transparent) 45%,
+		color-mix(in srgb, var(--page-bg) 64.8%, transparent) 50%,
+		color-mix(in srgb, var(--page-bg) 78.4%, transparent) 55%,
+		color-mix(in srgb, var(--page-bg) 89.6%, transparent) 60%,
+		color-mix(in srgb, var(--page-bg) 97.2%, transparent) 65%,
+		var(--page-bg) 70%);
 }
 
 @media (prefers-reduced-motion: reduce) {
