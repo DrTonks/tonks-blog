@@ -24,17 +24,35 @@ export interface Project {
 
 export const projectsData: Project[] = [
 	{
+		"id": "deepseedian",
+		"title": "Deepseedian",
+		"description": "让 DeepSeek Harness 在 Obsidian 的笔记上下文中工作；在侧栏与本地 DSH 运行时对话，查看模型返回的思考、工具执行和会话轨迹。",
+		"image": "/images/projects/deepsidian.png",
+		"category": "web",
+		"techStack": [
+			"TypeScript",
+			"Agent"
+		],
+		"status": "in-progress",
+		"startDate": "2026-09-10",
+		"tags": [
+			"DSH",
+			"Obsidian",
+			"插件",
+			"Agent"
+		],
+		"sourceCode": "https://github.com/DrTonks/deepseedian"
+	},
+	{
 		"id": "career-planner-2026",
 		"title": "“微光职引”大学生职业规划智能体",
 		"description": "旨在让大学生快速了解当前就业市场对于应届生招聘岗位的能力要求，清晰并准确的分析出自身就业能力、就业意愿。",
 		"image": "/images/projects/fc2026-1.jpg",
 		"category": "web",
 		"techStack": [
-			"AI",
-			"LLM",
 			"Agent",
 			"Vue3",
-			"Springboot"
+			"SpringAI"
 		],
 		"status": "completed",
 		"startDate": "2026-06-01",
@@ -51,8 +69,8 @@ export const projectsData: Project[] = [
 	},
 	{
 		"id": "tianchi-polardb-2025",
-		"title": "PG数据库创新设计",
-		"description": "对pgvector的HNSW算法向量检索优化，性能排名44/3529，进入决赛第二阶段，未入围前20。",
+		"title": "PGSQL——pgvector调优",
+		"description": "对pgvector的HNSW算法向量检索优化，性能排名49/3529，进入决赛第二阶段，未入围前20。",
 		"image": "/images/projects/tianchi.png",
 		"category": "web",
 		"techStack": [
@@ -73,17 +91,14 @@ export const projectsData: Project[] = [
 	},
 	{
 		"id": "tonks-home",
-		"title": "Tonks-Home",
-		"description": "基于sleepy后端的个人主页，展示日常状态和项目活动，实现音乐播放与桌宠系统。",
+		"title": "Tonks-Home/Blog",
+		"description": "个人主页与博客，基于Fuwari深度改造，支持AI摘要/后端管理统计等功能；主页展示日常状态和活动，实现音乐播放与桌宠系统。",
 		"image": "/images/projects/personalWebsite.png",
 		"category": "web",
 		"techStack": [
 			"Vue3",
-			"TypeScript",
-			"Tailwind CSS",
-			"Python",
 			"Flask",
-			"SQLite"
+			"Fuwari"
 		],
 		"status": "in-progress",
 		"startDate": "2025-5-16",
@@ -102,11 +117,8 @@ export const projectsData: Project[] = [
 		"category": "web",
 		"techStack": [
 			"Vue3",
-			"JavaScript",
-			"Tailwind CSS",
 			"TensorFlow",
-			"MySQL",
-			"Spring Boot"
+			"MySQL"
 		],
 		"status": "completed",
 		"startDate": "2024-12-20",
@@ -127,7 +139,6 @@ export const projectsData: Project[] = [
 		"image": "/images/projects/calculator.png",
 		"category": "web",
 		"techStack": [
-			"Vue3",
 			"lodash",
 			"TypeScript",
 			"Tailwind CSS"
@@ -175,11 +186,9 @@ export const projectsData: Project[] = [
 			"Uniapp",
 			"TypeScript",
 			"Vue3",
-			"Node.js",
 			"Tailwind CSS",
 			"MySQL",
 			"Docker",
-			"Express"
 		],
 		"status": "in-progress",
 		"startDate": "2025-09-01",
@@ -192,26 +201,6 @@ export const projectsData: Project[] = [
 		"links": "https://loanriskctl-webend.tonks.top"
 	},
 	{
-		"id": "myblog",
-		"title": "Tonks-Blog",
-		"description": "基于fuwari的个人博客，深度改造，支持AI摘要/后端统计/首屏加载/主题切换等功能。",
-		"image": "/images/projects/myblog2.png",
-		"category": "web",
-		"techStack": [
-			"Astro",
-			"TypeScript",
-			"Tailwind CSS",
-			"Node.js"
-		],
-		"status": "in-progress",
-		"startDate": "2024-12-01",
-		"tags": [
-			"blog"
-		],
-		"sourceCode": "https://github.com/DrTonks/tonks-blog",
-		"links": "https://blog.tonks.top"
-	},
-	{
 		"id": "weiguang",
 		"title": "微光工作室招新系统",
 		"description": "微光工作室25届招新已完成，参与维护官网、招新网站。计划重构为管理端/用户端分离的集成系统。",
@@ -221,8 +210,6 @@ export const projectsData: Project[] = [
 			"HTML",
 			"CSS",
 			"JavaScript",
-			"Vue3",
-			"Pinia"
 		],
 		"status": "completed",
 		"startDate": "2024-10-01",
