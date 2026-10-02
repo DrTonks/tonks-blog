@@ -215,8 +215,17 @@
 	:global(.ambient-document-stars__base) {
 		position: absolute;
 		inset: 0;
+		/* Sparse white-blue star rays; keep most stars as quiet points of light. */
 		background:
-			radial-gradient(circle at 4% 9%, rgb(255 255 255 / 100%) 0 1.25px, rgb(190 220 255 / 32%) 1.5px, transparent 3px),
+			radial-gradient(ellipse 1px 6px at 4% 9%, rgb(240 246 255 / 72%), rgb(220 235 255 / 24%) 38%, transparent 100%),
+			radial-gradient(ellipse 4.5px .8px at 4% 9%, rgb(240 246 255 / 65%), rgb(220 235 255 / 18%) 38%, transparent 100%),
+			radial-gradient(ellipse 1px 6px at 34% 17%, rgb(240 246 255 / 72%), rgb(220 235 255 / 24%) 38%, transparent 100%),
+			radial-gradient(ellipse 4.5px .8px at 34% 17%, rgb(240 246 255 / 65%), rgb(220 235 255 / 18%) 38%, transparent 100%),
+			radial-gradient(ellipse 1px 6px at 65% 12%, rgb(240 246 255 / 72%), rgb(220 235 255 / 24%) 38%, transparent 100%),
+			radial-gradient(ellipse 4.5px .8px at 65% 12%, rgb(240 246 255 / 65%), rgb(220 235 255 / 18%) 38%, transparent 100%),
+			radial-gradient(ellipse 1px 6px at 87% 26%, rgb(240 246 255 / 72%), rgb(220 235 255 / 24%) 38%, transparent 100%),
+			radial-gradient(ellipse 4.5px .8px at 87% 26%, rgb(240 246 255 / 65%), rgb(220 235 255 / 18%) 38%, transparent 100%),
+			radial-gradient(circle at 4% 9%, rgb(255 255 255 / 100%) 0 1.25px, rgb(190 220 255 / 24%) 1.5px, transparent 5px),
 			radial-gradient(circle at 13% 31%, rgb(188 222 255 / 92%) 0 1.35px, rgb(135 190 255 / 28%) 1.7px, transparent 3.2px),
 			radial-gradient(circle at 23% 67%, rgb(255 255 255 / 50%) 0 0.8px, transparent 1.5px),
 			radial-gradient(circle at 34% 17%, rgb(235 244 255 / 98%) 0 1.2px, rgb(175 210 255 / 30%) 1.5px, transparent 3px),
@@ -237,7 +246,14 @@
 		content: "";
 		position: absolute;
 		inset: 0;
+		/* Sparse white-blue star rays; keep most stars as quiet points of light. */
 		background:
+			radial-gradient(ellipse 1px 6px at 8% 54%, rgb(240 246 255 / 72%), rgb(220 235 255 / 24%) 38%, transparent 100%),
+			radial-gradient(ellipse 4.5px .8px at 8% 54%, rgb(240 246 255 / 65%), rgb(220 235 255 / 18%) 38%, transparent 100%),
+			radial-gradient(ellipse 1px 6px at 61% 91%, rgb(240 246 255 / 72%), rgb(220 235 255 / 24%) 38%, transparent 100%),
+			radial-gradient(ellipse 4.5px .8px at 61% 91%, rgb(240 246 255 / 65%), rgb(220 235 255 / 18%) 38%, transparent 100%),
+			radial-gradient(ellipse 1px 6px at 83% 74%, rgb(240 246 255 / 72%), rgb(220 235 255 / 24%) 38%, transparent 100%),
+			radial-gradient(ellipse 4.5px .8px at 83% 74%, rgb(240 246 255 / 65%), rgb(220 235 255 / 18%) 38%, transparent 100%),
 			radial-gradient(circle at 8% 54%, rgb(255 255 255 / 98%) 0 1.2px, rgb(183 216 255 / 30%) 1.5px, transparent 3px),
 			radial-gradient(circle at 19% 88%, rgb(154 203 255 / 56%) 0 1px, transparent 1.8px),
 			radial-gradient(circle at 31% 45%, rgb(255 255 255 / 62%) 0 0.8px, transparent 1.5px),
@@ -258,7 +274,7 @@
 	:global(html.dark) .ambient-stars { opacity: 0; }
 
 	@keyframes ambient-twinkle {
-		from { opacity: 0.08; }
+		from { opacity: 0.32; }
 		to { opacity: 1; }
 	}
 
