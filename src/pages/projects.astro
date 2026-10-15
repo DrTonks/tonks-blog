@@ -1,15 +1,9 @@
 ---
 import ProjectsClient from "../components/ProjectsClient.svelte";
-import { projectsData, getAllTechStack, getProjectStats } from "../data/projects";
+import { projectsData } from "../data/projects";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-
-const { lang } = Astro.props;
-
-// 获取项目统计信息
-const stats = getProjectStats();
-const allTechStack = getAllTechStack();
 
 const title = i18n(I18nKey.projects);
 const subtitle = i18n(I18nKey.projectsSubtitle);
@@ -20,37 +14,12 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
     <div class="card-base z-10 px-5 py-6 md:px-9 relative w-full">
       <header class="project-intro">
         <div class="project-intro__copy">
-          <span class="project-intro__kicker">PROJECT DATABASE / {String(stats.total).padStart(2, "0")}</span>
           <h1 class="font-hanalei text-4xl font-bold text-black/90 dark:text-white/90 mb-2">
           {i18n(I18nKey.projects)}
           </h1>
           <p class="page-intro-caption">{i18n(I18nKey.projectsSubtitle)}</p>
         </div>
-        <div class="project-intro__mark" aria-hidden="true"><span>OC</span><small>WORKS</small></div>
       </header>
-
-      <div class="project-stats" aria-label="项目统计">
-        <div class="project-stat">
-          <span>01 / TOTAL</span>
-          <strong>{stats.total}</strong>
-          <small>{i18n(I18nKey.projectsTotal)}</small>
-        </div>
-        <div class="project-stat">
-          <span>02 / COMPLETE</span>
-          <strong>{stats.byStatus.completed}</strong>
-          <small>{i18n(I18nKey.projectsCompleted)}</small>
-        </div>
-        <div class="project-stat project-stat--signal">
-          <span>03 / ACTIVE</span>
-          <strong>{stats.byStatus.inProgress}</strong>
-          <small>{i18n(I18nKey.projectsInProgress)}</small>
-        </div>
-        <div class="project-stat">
-          <span>04 / STACK</span>
-          <strong>{allTechStack.length}</strong>
-          <small>{i18n(I18nKey.projectsTechStack)}</small>
-        </div>
-      </div>
 
       <!-- Cards, statistics and home stickers share the same build-time data. -->
       <ProjectsClient projects={projectsData} client:load />
@@ -59,166 +28,10 @@ const subtitle = i18n(I18nKey.projectsSubtitle);
 </MainGridLayout>
 
 <style>
-  .project-shell {
-    color: rgba(0, 0, 0, 0.9);
-  }
-
-  :global(html.dark) .project-shell {
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .project-intro {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1.5rem;
-    padding-bottom: 1.5rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--project-accent-line);
-  }
-
-  .project-intro__copy p {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 1rem;
-  }
-
-  .project-intro__kicker,
-  .project-intro__mark,
-  .project-stat {
-    font-family: "JetBrains Mono Variable", monospace;
-  }
-
-  .project-intro__kicker {
-    display: block;
-    margin-bottom: 0.6rem;
-    color: var(--project-accent);
-    font-size: 0.66rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-  }
-
-  .project-intro__mark {
-    display: grid;
-    width: 4.4rem;
-    height: 4.4rem;
-    flex: 0 0 auto;
-    place-items: center;
-    color: var(--project-accent-strong);
-    border: 1px solid var(--project-accent-line);
-    border-radius: 1rem;
-    background: var(--project-accent-surface);
-    box-shadow:
-      inset 0 0 1.2rem color-mix(in srgb, var(--project-accent-glow) 58%, transparent),
-      0 0.4rem 1.5rem color-mix(in srgb, var(--project-accent-glow) 48%, transparent);
-  }
-
-  :global(html.dark) .project-intro__mark {
-    box-shadow: inset 0 1px 0 var(--project-panel-highlight), 0 0.4rem 1.5rem var(--project-panel-shadow);
-  }
-
-  .project-intro__mark span {
-    align-self: end;
-    font-size: 1.45rem;
-    font-weight: 900;
-    line-height: 1;
-  }
-
-  .project-intro__mark small {
-    align-self: start;
-    font-size: 0.54rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-  }
-
-  .project-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .project-stat {
-    position: relative;
-    display: grid;
-    min-height: 6rem;
-    align-content: space-between;
-    padding: 0.75rem;
-    overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--project-accent-line) 54%, transparent);
-    border-radius: 1rem;
-    background:
-      radial-gradient(circle at 88% 14%, color-mix(in srgb, var(--project-accent-soft) 78%, transparent), transparent 40%),
-      linear-gradient(145deg, color-mix(in srgb, var(--project-accent-surface) 40%, transparent), transparent 56%),
-      var(--industrial-surface);
-    transition:
-      border-color var(--motion-signal-fast) ease,
-      box-shadow var(--motion-signal-fast) ease;
-  }
-
-  :global(html.dark) .project-stat {
-    background: var(--industrial-surface);
-  }
-
-  .project-stat > span,
-  .project-stat > small {
-    color: var(--text-muted);
-    font-size: 0.58rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-  }
-
-  .project-stat strong {
-    width: fit-content;
-    min-width: 2.5rem;
-    padding: 0.42rem 0.72rem;
-    color: var(--project-accent-strong);
-    border: 1px solid var(--project-accent-line);
-    border-radius: 999px;
-    background: var(--project-accent-surface);
-    box-shadow: inset 0 0 0.8rem color-mix(in srgb, var(--project-accent-glow) 42%, transparent);
-    font-size: 1.6rem;
-    line-height: 1;
-  }
-
-  .project-stat:hover,
-  .project-stat--signal {
-    border-color: var(--project-accent-line);
-    box-shadow: 0 0.55rem 1.5rem color-mix(in srgb, var(--project-accent-glow) 58%, transparent);
-  }
-
-  :global(html.dark) .project-stat strong {
-    box-shadow: inset 0 1px 0 var(--project-panel-highlight);
-  }
-
-  :global(html.dark) .project-stat:hover,
-  :global(html.dark) .project-stat--signal {
-    box-shadow: inset 0 1px 0 var(--project-panel-highlight), 0 0.55rem 1.5rem var(--project-panel-shadow);
-  }
-
-  .project-stat--signal {
-    background:
-      radial-gradient(circle at 88% 20%, var(--project-accent-soft), transparent 42%),
-      color-mix(in srgb, var(--industrial-surface) 82%, var(--project-accent-soft));
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .project-stat {
-      transition: none;
-    }
-  }
-
-  @media (min-width: 769px) {
-    .project-stats {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 520px) {
-    .project-intro__mark {
-      display: none;
-    }
-  }
+  .project-shell { color: rgba(0, 0, 0, 0.9); }
+  :global(html.dark) .project-shell { color: rgba(255, 255, 255, 0.9); }
+  .project-intro { padding-bottom: 1.25rem; }
+  .project-intro__copy p { margin: 0; color: var(--text-secondary); font-size: 1rem; }
 </style>
 
 <style>
