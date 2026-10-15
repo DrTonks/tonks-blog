@@ -7,14 +7,14 @@ import MessageBoardHeader from './MessageBoardHeader.astro';
 <section id="article-comments" class="ac-section community-comments card-base" data-article-comments aria-labelledby="article-comments-title" data-pagefind-ignore>
   <MessageBoardHeader article titleId="article-comments-title" />
   <CommunityCommentForm article />
-  <div class="community-comments__rule"><span>PUBLIC MESSAGES</span></div>
+  <div class="community-comments__rule" aria-hidden="true"></div>
   <div data-ac-main-list class="ac-list community-comments__list" aria-live="polite"><p class="ac-muted">正在读取留言…</p></div>
   <button type="button" class="ac-more" data-ac-main-more hidden>更多讨论</button>
   <noscript>启用 JavaScript 后可以查看留言和参与段落讨论。</noscript>
 </section>
 <dialog class="ac-dialog" data-ac-dialog aria-labelledby="ac-dialog-title" data-community-overlay-root data-pagefind-ignore>
   <div class="ac-dialog-shell">
-    <header class="ac-dialog-header"><div><span class="ac-kicker">CONVERSATION</span><div class="ac-heading" role="heading" aria-level="2" id="ac-dialog-title" tabindex="-1">本段评论 <span data-ac-dialog-count></span></div></div><button type="button" data-ac-close class="ac-close" aria-label="关闭评论">×</button></header>
+    <header class="ac-dialog-header"><div><div class="ac-heading" role="heading" aria-level="2" id="ac-dialog-title" tabindex="-1">本段评论 <span data-ac-dialog-count></span></div></div><button type="button" data-ac-close class="ac-close" aria-label="关闭评论">×</button></header>
     <div data-ac-discussion class="ac-discussion">
       <blockquote data-ac-quote class="ac-quote" hidden></blockquote>
       <div class="ac-scroll"><div data-ac-dialog-list class="ac-list" aria-live="polite"></div><button type="button" class="ac-more" data-ac-dialog-more hidden>更多讨论</button></div>

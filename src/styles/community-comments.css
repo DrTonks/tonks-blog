@@ -15,9 +15,9 @@
 
 	html.dark .community-comments { color: rgba(255, 255, 255, 0.9); }
 
-	.community-comments__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
+	.community-comments__header { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
 	.community-comments__heading { min-width: 0; }
-	.community-comments__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 0.85rem; margin-top: 0.55rem; }
+	.community-comments__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem 0.85rem; margin-top: 0; }
 	.community-comments__header h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); }
 	.community-comments__header p { max-width: 40rem; margin: 0.4rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.78rem; line-height: 1.6; }
 	.community-comments__header p[hidden],

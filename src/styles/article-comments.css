@@ -2,7 +2,6 @@
 .dark .ac-section,.dark .ac-dialog{--ac-text:#e0e3e8}
 .ac-section{padding:clamp(1.25rem,3vw,2rem);margin-bottom:1rem}
 .ac-section-header,.ac-dialog-header,.ac-actions,.ac-editor-footer,.ac-composer-meta{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
-.ac-kicker{display:block;font:600 9px/1.5 'JetBrains Mono Variable',monospace;letter-spacing:.22em;color:var(--primary)}
 .ac-section .ac-heading,.ac-dialog .ac-heading{font-size:1.3rem;font-weight:700;line-height:1.5;margin:.25rem 0 0}
 .ac-section .ac-heading span,.ac-dialog .ac-heading span{font-size:.8rem;color:color-mix(in srgb,currentColor 50%,transparent);font-weight:400;margin-left:.4rem}
 .ac-section button,.ac-dialog button{font:inherit;cursor:pointer;border-radius:.5rem;padding:.45rem .7rem;transition:background-color 160ms ease,color 160ms ease,opacity 160ms ease,transform 160ms ease}

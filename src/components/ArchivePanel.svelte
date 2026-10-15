@@ -341,7 +341,6 @@ $: groups = Object.entries(
 <div class="archive-shell card-base" data-archive-ready={archiveReady ? "true" : "false"}>
   <header class="archive-header">
     <div class="archive-heading">
-      <span class="archive-kicker">ARCHIVE / CHRONOLOGICAL INDEX</span>
       <h1>{i18n(I18nKey.archive)}</h1>
       <p>拾光落墨，旧事归藏。</p>
     </div>
@@ -379,13 +378,12 @@ $: groups = Object.entries(
       {/if}
     </div>
     <div class="archive-summary" aria-label="归档统计">
-      <span><strong>{String(filteredPosts.length).padStart(2, "0")}</strong><small>ENTRIES</small></span>
-      <span><strong>{String(groups.length).padStart(2, "0")}</strong><small>YEARS</small></span>
+      <span><strong>{String(filteredPosts.length).padStart(2, "0")}</strong><small>篇文章</small></span>
+      <span><strong>{String(groups.length).padStart(2, "0")}</strong><small>年</small></span>
     </div>
   </header>
 
   <nav class="archive-category-bar" aria-label="按分类浏览归档">
-    <span class="archive-category-bar__label">CATEGORIES</span>
     <div class="archive-category-bar__scroll">
       <button type="button" aria-pressed={categories.length === 0 && !uncategorized} class:active={categories.length === 0 && !uncategorized} on:click={() => selectCategory("")}>全部 <small>{taggedPosts.length}</small></button>
       {#each categoryOptions as category}

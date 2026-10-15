@@ -43,7 +43,6 @@ const cardAngles = [
 	<section class="friend-wall card-base" aria-labelledby="friend-wall-title">
 		<header class="friend-wall__header">
 			<div class="friend-wall__copy">
-				<span class="signal-kicker">COMMUNITY / FRIEND WALL</span>
 				<div class="friend-wall__title-wrap">
 					<span class="friend-wall__tape" aria-hidden="true"></span>
 					<h1 id="friend-wall-title" class="font-hanalei">友链墙</h1>
@@ -60,7 +59,7 @@ const cardAngles = [
 			</div>
 			</div>
 			<div class="friend-wall__counter" aria-label={`共 ${friendsData.length} 个友链`}>
-				<span>LINKS</span>
+				<span>友链</span>
 				<strong>{String(friendsData.length).padStart(2, "0")}</strong>
 				<small>持续收集中</small>
 			</div>
@@ -69,7 +68,6 @@ const cardAngles = [
 		<DailyRead friends={friendsData.map(friend => ({ ...friend, avatar: resolveFriendAvatar(friend, localAvatars) }))} />
 
 		<div class="friend-wall__rule" aria-hidden="true">
-			<span>PINNED CONNECTIONS</span>
 		</div>
 
 		<div class="friend-board">
@@ -227,7 +225,7 @@ const cardAngles = [
 	.friend-wall__title-wrap {
 		position: relative;
 		display: inline-grid;
-		margin-top: 1.4rem;
+		margin-top: 0.5rem;
 		padding: 1rem 1.6rem 0.85rem;
 		place-items: center;
 		border: 1px solid var(--signal-line);
@@ -281,7 +279,7 @@ const cardAngles = [
 		display: flex;
 		align-items: center;
 		gap: 0.8rem;
-		margin: 2rem 0 1.5rem;
+		margin: 1.25rem 0 1rem;
 		color: var(--text-accent);
 		font: 800 0.62rem/1 "JetBrains Mono Variable", monospace;
 		letter-spacing: 0.12em;

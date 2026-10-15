@@ -16,7 +16,6 @@ const label = model ? "AI摘要" : "文章简介";
 		<div class="ai-summary-icon"><Icon name="material-symbols:auto-awesome-rounded" /></div>
 		<div>
 			<div id="ai-summary-title" class="ai-summary-title" role="heading" aria-level="2">{label}</div>
-			<p>ARTICLE BRIEF</p>
 		</div>
 		<button type="button" class="ai-summary-toggle" data-ai-summary-toggle aria-expanded="true" aria-controls="ai-summary-content" aria-label={`收起 ${label}`} title={`收起 ${label}`}>
 			<Icon name="material-symbols:keyboard-arrow-up-rounded" class="ai-summary-toggle__icon" />
@@ -57,7 +56,6 @@ const label = model ? "AI摘要" : "文章简介";
 
 	header { position: relative; z-index: 2; display: flex; align-items: center; gap: 0.7rem; }
 	.ai-summary-title { margin: 0; color: var(--primary); font-size: 1.22rem; font-weight: 800; line-height: 1.15; }
-	header p { margin: 0.2rem 0 0; color: var(--meta-divider); font: 700 0.62rem/1 ui-monospace, Consolas, monospace; letter-spacing: 0.14em; }
 	.ai-summary-icon { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border-radius: 0.75rem; color: var(--primary); background: color-mix(in oklch, var(--primary) 13%, transparent); font-size: 1.25rem; }
 	.ai-summary-toggle { position: relative; z-index: 3; display: grid; width: 2.5rem; height: 2.5rem; margin-left: auto; place-items: center; border: 1px solid color-mix(in oklch, var(--primary) 24%, transparent); border-radius: 0.75rem; color: var(--primary); background: color-mix(in oklch, var(--primary) 10%, transparent); cursor: pointer; transition: background-color 180ms ease, border-color 180ms ease, transform 120ms ease; }
 	.ai-summary-toggle:hover { border-color: color-mix(in oklch, var(--primary) 46%, transparent); background: color-mix(in oklch, var(--primary) 18%, transparent); }

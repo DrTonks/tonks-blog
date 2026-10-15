@@ -16,7 +16,7 @@ const { page } = Astro.props;
 
 	<CommunityCommentForm />
 
-	<div class="community-comments__rule"><span>PUBLIC MESSAGES</span></div>
+	<div class="community-comments__rule" aria-hidden="true"></div>
 	<div class="community-comments__list" data-comment-list aria-live="polite">
 		<p class="community-comments__loading">正在读取留言…</p>
 	</div>
@@ -25,7 +25,6 @@ const { page } = Astro.props;
 		<form class="community-admin-form" data-admin-form>
 			<div class="community-admin-form__heading">
 				<div>
-					<span class="signal-kicker">ACCESS CONTROL / ADMIN</span>
 					<h3 id={`admin-dialog-title-${page}`}>管理员模式</h3>
 				</div>
 				<button type="button" class="community-admin-form__close" data-close-admin aria-label="关闭管理员弹窗">×</button>

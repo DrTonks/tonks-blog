@@ -39,9 +39,6 @@
     return groups;
   }, []);
 
-  $: yearRange = yearGroups.length > 0
-    ? `${yearGroups[yearGroups.length - 1].year}—${yearGroups[0].year}`
-    : '—';
 
   onMount(async () => {
     await tick();
@@ -242,16 +239,6 @@
   }
 </script>
 <div class="timeline-shell card-base">
-  <header class="timeline-register">
-    <div>
-      <span class="timeline-register__eyebrow">CHRONOLOGICAL INDEX</span>
-      <strong>{activeYear || yearGroups[0]?.year}</strong>
-    </div>
-    <div class="timeline-register__meta">
-      <span>{yearRange}</span>
-      <span>{String(allTimelineItems.length).padStart(2, '0')} ENTRIES</span>
-    </div>
-  </header>
 
   <div class="timeline-sequence" bind:this={containerEl} style={`--timeline-progress: ${scrollProgress}%`}>
     <div class="timeline-rail" aria-hidden="true"><span></span></div>
@@ -365,43 +352,10 @@
   }
 
   :global(.dark) .timeline-shell { color: rgba(244, 248, 255, 0.9); }
-
-  .timeline-register {
-    position: relative;
-    z-index: 8;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1.25rem 2.25rem 1rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--signal-line) 28%, transparent);
-    background: color-mix(in srgb, var(--card-bg) 94%, transparent);
-  }
-
-  .timeline-register > div:first-child { display: flex; align-items: baseline; gap: 0.8rem; }
-
-  .timeline-register__eyebrow,
-  .timeline-register__meta,
   .timeline-year__code,
   .timeline-year__count {
     font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
     letter-spacing: 0.12em;
-  }
-
-  .timeline-register__eyebrow { color: var(--meta-divider); font-size: 0.7rem; font-weight: 800; }
-
-  .timeline-register strong {
-    color: var(--primary);
-    font: 800 1.35rem/1 "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-    transition: color 180ms ease;
-  }
-
-  .timeline-register__meta {
-    display: flex;
-    gap: 1rem;
-    color: var(--meta-divider);
-    font-size: 0.66rem;
-    font-weight: 700;
   }
 
   .timeline-sequence {
@@ -453,9 +407,6 @@
     user-select: none;
     pointer-events: none;
   }
-
-  :global(.dark) .timeline-register__eyebrow,
-  :global(.dark) .timeline-register__meta,
   :global(.dark) .timeline-year__header {
     color: rgba(221, 233, 247, 0.5);
   }
@@ -677,9 +628,6 @@
   .timeline-links a:focus-visible { border-radius: 0.25rem; outline: 2px solid var(--primary); outline-offset: 3px; }
 
   @media (max-width: 720px) {
-    .timeline-register { align-items: flex-start; padding: 1rem 1.1rem 0.85rem; }
-    .timeline-register > div:first-child { display: grid; gap: 0.35rem; }
-    .timeline-register__meta { display: grid; justify-items: end; gap: 0.3rem; font-size: 0.6rem; }
     .timeline-sequence { --rail-left: 2.35rem; padding-inline: 1rem; padding-bottom: 4.5rem; }
     .timeline-rail { top: 6.5rem; bottom: 5.5rem; }
     .timeline-year { padding-bottom: 2.25rem; }
@@ -731,7 +679,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .timeline-register strong,
     .timeline-rail span,
     .timeline-year__header,
     .timeline-node,

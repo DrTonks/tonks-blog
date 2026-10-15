@@ -25,7 +25,6 @@ const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
 	<section class="construction-tree card-base" aria-labelledby="construction-title">
 		<header class="construction-hero">
 			<div class="construction-hero__copy">
-				<span class="signal-kicker">SITE GROWTH / BUILD LOG</span>
 				<h1 id="construction-title" class="font-hanalei">建设树</h1>
 				<p>把每次重构、修补和新想法，记录成这棵树的一圈年轮。</p>
 			</div>
@@ -36,13 +35,12 @@ const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
 		</header>
 
 		<div class="construction-stats" aria-label="建设树统计">
-			<div><span>01 / NODES</span><strong>{String(constructionData.length).padStart(2, "0")}</strong><small>建设节点</small></div>
-			<div><span>02 / RINGS</span><strong>{String(yearCount).padStart(2, "0")}</strong><small>生长年轮</small></div>
-			<div><span>03 / LATEST</span><strong>{latest.date.slice(5).replace("-", ".")}</strong><small>最近更新</small></div>
+			<div><strong>{String(constructionData.length).padStart(2, "0")}</strong><small>建设节点</small></div>
+			<div><strong>{String(yearCount).padStart(2, "0")}</strong><small>生长年轮</small></div>
+			<div><strong>{latest.date.slice(5).replace("-", ".")}</strong><small>最近更新</small></div>
 		</div>
 
 		<div class="tree-crown" aria-hidden="true">
-			<span>GROWING</span>
 			<i></i><i></i><i></i><i></i><i></i>
 		</div>
 
@@ -65,7 +63,6 @@ const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
 		</ol>
 
 		<footer class="tree-root">
-			<span>ROOT / 仍在继续生长</span>
 			<p>下一次更新，会从这里再长出一根新枝。</p>
 		</footer>
 	</section>
@@ -137,7 +134,7 @@ const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
 
 	.construction-stats > div {
 		display: grid;
-		min-height: 5.8rem;
+		min-height: 4.4rem;
 		align-content: space-between;
 		padding: 0.75rem;
 		border: 1px solid color-mix(in srgb, var(--signal-line) 55%, transparent);
@@ -146,7 +143,6 @@ const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
 		font-family: "JetBrains Mono Variable", monospace;
 	}
 
-	.construction-stats span,
 	.construction-stats small { color: color-mix(in srgb, currentColor 48%, transparent); font-size: 0.58rem; font-weight: 800; letter-spacing: 0.08em; }
 	.construction-stats strong { color: var(--primary); font-size: 1.55rem; line-height: 1; }
 
@@ -159,16 +155,6 @@ const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
 		place-items: center;
 	}
 
-	.tree-crown span {
-		z-index: 2;
-		padding: 0.45rem 0.8rem;
-		color: var(--signal-ink);
-		border: 1px solid var(--signal-line);
-		border-radius: 999px;
-		background: var(--signal);
-		font: 900 0.62rem/1 "JetBrains Mono Variable", monospace;
-		letter-spacing: 0.12em;
-	}
 
 	.tree-crown i {
 		position: absolute;
@@ -286,8 +272,7 @@ const stageMeta: Record<ConstructionStage, { label: string; icon: string }> = {
 		background: var(--industrial-surface);
 	}
 
-	.tree-root span { color: var(--primary); font: 900 0.62rem/1 "JetBrains Mono Variable", monospace; letter-spacing: 0.1em; }
-	.tree-root p { margin: 0.45rem 0 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.82rem; }
+	.tree-root p { margin: 0; color: color-mix(in srgb, currentColor 58%, transparent); font-size: 0.82rem; }
 
 	@media (max-width: 720px) {
 		.construction-hero { align-items: flex-start; }
