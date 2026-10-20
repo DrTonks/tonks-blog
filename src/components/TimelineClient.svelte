@@ -1,7 +1,8 @@
 <script lang="ts">
   import { optimizedImage } from '../utils/optimized-image';
   import { onDestroy, onMount, tick } from 'svelte';
-  import Icon from '@iconify/svelte';
+  import Icon, { type IconifyIcon } from '@iconify/svelte/dist/OfflineIcon.svelte';
+  import { getTypeIcon } from '../utils/timeline-icon-name';
   import { i18n } from '../i18n/translation';
   import I18nKey from '../i18n/i18nKey';
 
@@ -14,6 +15,7 @@
   };
 
   export let initialItems: TimelineItem[];
+  export let nodeIcons: Record<string, IconifyIcon>;
 
   let items: TimelineItem[] = initialItems.map(normalizeItem);
   let activeId: string | null = null;
@@ -203,17 +205,6 @@
     }
   }
 
-  function getTypeIcon(type: string) {
-    switch (type) {
-      case 'education': return 'material-symbols:school';
-      case 'love': return 'material-symbols:favorite';
-      case 'work': return 'material-symbols:work';
-      case 'project': return 'material-symbols:code';
-      case 'achievement': return 'material-symbols:emoji-events';
-      default: return 'material-symbols:event';
-    }
-  }
-
   function getBadgeText(type: string) {
     if (type === 'education') return i18n(I18nKey.timelineEducation);
     if (type === 'work') return i18n(I18nKey.timelineWork);
@@ -263,7 +254,7 @@
               aria-current={activeId === item.id ? 'step' : undefined}
             >
               <div class="timeline-node" style={`--node-color: ${item.color || 'rgb(99 102 241)'}`} aria-hidden="true">
-                <Icon icon={item.icon || getTypeIcon(item.type)} class="timeline-node__icon" color="currentColor" />
+                <Icon icon={nodeIcons[item.icon || getTypeIcon(item.type)]} class="timeline-node__icon" color="currentColor" />
               </div>
 
               <div class="timeline-card__body">

@@ -4,6 +4,9 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { timelineData } from "../data/timeline";
+import { resolveTimelineIcons } from '../utils/timeline-icons.server';
+
+const nodeIcons = resolveTimelineIcons(timelineData);
 
 // Render the complete timeline in HTML; Svelte adds scroll-state enhancement after hydration.
 
@@ -17,7 +20,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
     <p class="page-intro-caption">{subtitle}</p>
   </section>
 
-  <TimelineClient initialItems={timelineData} client:load />
+  <TimelineClient initialItems={timelineData} nodeIcons={nodeIcons} client:load />
 </MainGridLayout>
 
 <style>

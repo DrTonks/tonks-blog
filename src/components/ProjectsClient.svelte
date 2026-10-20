@@ -115,6 +115,7 @@
     {#each visibleProjects as project (project.id)}
       {@const cardUrl = getCardUrl(project)}
       {@const sourceUrl = getSourceUrl(project)}
+      {@const previewUrl = getPreviewUrl(project)}
       {@const start = projectDate(project.startDate)}
       {@const end = projectDate(project.endDate)}
       <div class="project-item">
@@ -127,14 +128,31 @@
           {#if project.image}
             <img src={optimizedImage(project.image)} alt={project.title} class="project-image" loading="lazy" />
           {/if}
-          {#if hasAward(project)}
-            <div class="project-award">
+          {#if hasAward(project) || previewUrl}
+            <div class="project-award" class:has-preview={!!previewUrl && hasAward(project)}>
               <span class="award-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M8 3h8v6a4 4 0 0 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4M12 13v5m-4 3h8m-6-3h4v3h-4z" />
+                  {#if hasAward(project)}
+                    <path d="M8 3h8v6a4 4 0 0 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4M12 13v5m-4 3h8m-6-3h4v3h-4z" />
+                  {:else}
+                    <path d="M14 3h7v7m0-7L10 14M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" />
+                  {/if}
                 </svg>
               </span>
-              <span class="award-text"><span class="sr-only">获奖：</span>{project.award}</span>
+              {#if hasAward(project)}
+                <span class="award-text"><span class="sr-only">获奖：</span>{project.award}</span>
+              {:else if previewUrl}
+                <a class="award-text preview-label" href={previewUrl} target="_blank" rel="noopener noreferrer"
+                  aria-label={`在线预览 ${project.title}`}>在线预览</a>
+              {/if}
+              {#if previewUrl && hasAward(project)}
+                <a class="project-preview" href={previewUrl} target="_blank" rel="noopener noreferrer"
+                  aria-label={`在线预览 ${project.title}`} title="在线预览">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 3h7v7m0-7L10 14M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" />
+                  </svg>
+                </a>
+              {/if}
             </div>
           {/if}
         </div>
@@ -227,6 +245,7 @@
     display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); align-items: start;
     color: var(--project-accent-strong); pointer-events: none;
   }
+  .project-award.has-preview { grid-template-columns: 2.25rem minmax(0, 1fr) 2.75rem; }
   .project-award::before {
     content: ""; position: absolute; inset: 0 auto auto 0;
     width: 2.25rem; height: 2.25rem;
@@ -237,6 +256,21 @@
   }
   .award-icon { position: relative; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; }
   .award-icon svg { width: 1.15rem; height: 1.15rem; }
+  .project-preview {
+    position: relative; display: grid; place-items: center; align-self: stretch;
+    min-height: 2.75rem; color: inherit; border-radius: .5rem;
+    opacity: 0; pointer-events: none; transition: opacity 160ms ease;
+  }
+  .project-preview svg { width: 1.15rem; height: 1.15rem; }
+  .preview-label { pointer-events: none; text-decoration: none; }
+  .project-preview:hover, .preview-label:hover { color: var(--project-accent); }
+  .project-preview:focus-visible, .preview-label:focus-visible {
+    outline: 2px solid var(--project-accent); outline-offset: -3px;
+  }
+  .project-card:hover .project-preview, .project-card:focus-within .project-preview {
+    opacity: 1; pointer-events: auto;
+  }
+  .project-card:hover .preview-label, .project-card:focus-within .preview-label { pointer-events: auto; }
   .award-text {
     position: relative; align-self: center; padding: .5rem .65rem .5rem 0;
     font-size: .75rem; font-weight: 700; line-height: 1.25rem;
@@ -248,6 +282,8 @@
   @media (hover: none), (pointer: coarse) {
     .project-award::before { width: 100%; height: 100%; }
     .award-text { opacity: 1; transform: none; }
+    .project-preview { opacity: 1; pointer-events: auto; }
+    .preview-label { pointer-events: auto; }
   }
   .project-content { padding: 1rem; }
   .project-title-row { display: flex; flex-direction: column; align-items: flex-start; gap: .45rem; margin-bottom: .65rem; }
@@ -291,7 +327,7 @@
   :global(.dark) .tech-chip { background: rgb(255 255 255 / 3%); }
   .project-empty { padding: 2rem 0; text-align: center; color: var(--text-secondary); }
   @media (prefers-reduced-motion: reduce) {
-    .project-card, .project-image, .project-award::before, .award-text, .project-filters button { transition: none; }
+    .project-card, .project-image, .project-award::before, .award-text, .project-preview, .project-filters button { transition: none; }
     .project-card:hover .award-text, .project-card:focus-within .award-text { transition-delay: 0ms; }
     .project-card:hover .project-image, .project-card:focus-within .project-image { transform: none; }
   }
