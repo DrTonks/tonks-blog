@@ -270,7 +270,7 @@ export default defineConfig({
 			[articleMedia, {cacheVersion:createHash('sha256').update(readFileSync(new URL('./src/plugins/rehype-article-media.mjs', import.meta.url))).digest('hex')}],
 			rehypeKatex,
 			rehypeSlug,
-			rehypeMermaid,
+			[rehypeMermaid, {cacheVersion:createHash('sha256').update(readFileSync(new URL('./src/plugins/rehype-mermaid.mjs', import.meta.url))).digest('hex')}],
 			[
 				rehypeComponents,
 				{

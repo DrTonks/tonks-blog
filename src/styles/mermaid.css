@@ -1,0 +1,26 @@
+.custom-md .mermaid-diagram {
+  margin: 1.75em 0; min-width: 0; max-width: 100%; overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--card-bg));
+  border-radius: 12px; background: var(--card-bg);
+  font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px; line-height: 1.5;
+}
+.mermaid-status { padding: 12px 16px; color: var(--tw-prose-body); font-size: 12px; }
+.mermaid-diagram .mermaid-retry { margin: 0 16px 12px; border: 1px solid var(--primary); border-radius: 5px; padding: 3px 9px; font: inherit; color: var(--tw-prose-body); background: var(--card-bg); cursor: pointer; }
+.mermaid-viewport { overflow: auto; overscroll-behavior-x: contain; padding: 24px 16px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
+.mermaid-viewport:focus-visible, .mermaid-source summary:focus-visible, .mermaid-diagram button:focus-visible { outline: 2px solid var(--primary); outline-offset: -3px; }
+.mermaid-canvas { width: 100%; }
+/* Mermaid measures SVG transforms while laying out nodes. Site-wide theme
+   transitions must not interpolate those transforms and corrupt the viewBox. */
+.mermaid-render-stage *, .mermaid-canvas svg, .mermaid-canvas svg * {
+  transition: none !important;
+  animation: none !important;
+}
+.mermaid-canvas svg { display: block; margin: 0 auto; overflow: visible; font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+.custom-md .mermaid-canvas svg p { margin: 0 !important; line-height: 1.5; }
+.mermaid-source { border-top: 1px solid var(--line-divider); }
+.mermaid-source summary { padding: 10px 16px; cursor: pointer; color: var(--tw-prose-body); font-size: 12px; }
+.custom-md .mermaid-source pre { margin: 0; padding: 16px; border-radius: 0; background: var(--btn-regular-bg); color: var(--tw-prose-body); overflow: auto; white-space: pre; font: 13px/1.7 ui-monospace, Consolas, monospace; }
+.custom-md .mermaid-source code { padding: 0; background: none; color: inherit; font: inherit; }
+.custom-md .mermaid-source code::before, .custom-md .mermaid-source code::after { content: none; }
+@media (max-width: 767px) { .mermaid-viewport { padding: 16px 12px; } }

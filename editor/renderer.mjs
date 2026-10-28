@@ -1,5 +1,7 @@
 import remarkPolls from '@blog/src/plugins/remark-polls.mjs';
 import tableCards from '@blog/src/plugins/rehype-table-cards.mjs';
+import {remarkMermaid} from '@blog/src/plugins/remark-mermaid.js';
+import {rehypeMermaid} from '@blog/src/plugins/rehype-mermaid.mjs';
 import {unified} from 'unified';
 import parse from 'remark-parse';
 import gfm from 'remark-gfm';
@@ -44,7 +46,7 @@ function sourceBlocks(){return (tree,file)=>{
   node.properties['data-preview-to']=position.end.offset+file.data.bodyOffset;
  }
 };}
-const processor=unified().use(parse).use(gfm).use(math).use(directive).use(remarkPolls,{preview:true}).use(parseDirectiveNode).use(toHast,{allowDangerousHtml:true}).use(raw).use(slug).use(components).use(articleMedia).use(tableCards).use(positionedMath).use(sourceBlocks).use(stringify);
+const processor=unified().use(parse).use(gfm).use(math).use(directive).use(remarkPolls,{preview:true}).use(parseDirectiveNode).use(remarkMermaid).use(toHast,{allowDangerousHtml:true}).use(raw).use(rehypeMermaid).use(slug).use(components).use(articleMedia).use(tableCards).use(positionedMath).use(sourceBlocks).use(stringify);
 export function splitFrontmatter(text){
  const match=text.replace(/^\uFEFF/,'').match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
  return match?{data:yaml(match[1])||{},body:text.replace(/^\uFEFF/,'').slice(match[0].length)}:{data:{},body:text};

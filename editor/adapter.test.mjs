@@ -3,6 +3,25 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import fs from 'node:fs';
 const {renderMarkdown}=createRequire(import.meta.url)('./dist/adapter.cjs');
+test('Mermaid shares the blog markup, retains exact source and live-edit positions',async()=>{
+ const source='flowchart TD\n  A[用户任务] --> B[领域专家]\n  B --> C[交付]';
+ const fence='```mermaid\n'+source+'\n```';
+ const text='---\ntitle: 图表\n---\n\n'+fence;
+ const {html}=await renderMarkdown(text,{sourceMap:true});
+ assert.match(html,/class="mermaid-diagram"/);
+ assert.match(html,/data-mermaid-code="flowchart TD/);
+ assert.match(html,/class="mermaid-source"/);
+ assert.doesNotMatch(html,/<script|expressive-code/);
+ const match=html.match(/data-preview-from="(\d+)" data-preview-to="(\d+)"/);
+ assert.ok(match);assert.equal(text.slice(Number(match[1]),Number(match[2])),fence);
+ assert.match(html,/<code>flowchart TD\n  A\[用户任务\] --&gt; B\[领域专家\]/);
+});
+
+test('Mermaid labels cannot escape into executable article markup',async()=>{
+ const {html}=await renderMarkdown('```mermaid\nflowchart TD\nA["</script><img src=x onerror=alert(1)>"]\n```');
+ assert.doesNotMatch(html,/<script|<img/);
+ assert.match(html,/&lt;\/script&gt;&lt;img/);
+});
 test('blog preview uses blog directives and strips executable article markup',async()=>{
  const {html}=await renderMarkdown(':::quote{author="作者"}\n正文\n:::\n\n:::spoiler\n隐藏\n:::\n\n<script>alert(1)</script>');
  assert.match(html,/article-quote/);assert.match(html,/spoiler-content/);assert.doesNotMatch(html,/<script/);

@@ -1,4 +1,5 @@
-import mermaidRuntimeUrl from "../plugins/mermaid-render-script.js?url";
+import { mountMermaid } from "../utils/mermaid-runtime.js";
+import "../styles/mermaid.css";
 
 let cleanup: (() => void) | undefined;
 
@@ -8,19 +9,11 @@ export function initializeArticle() {
 	const { signal } = controller;
 	const root = document.querySelector<HTMLElement>(".custom-md");
 	if (!root) return;
-	if (
-		root.querySelector(".mermaid") &&
-		!document.querySelector("script[data-article-mermaid]")
-	) {
-		const script = document.createElement("script");
-		script.src = mermaidRuntimeUrl;
-		script.dataset.articleMermaid = "true";
-		script.onerror = () => script.remove();
-		document.head.append(script);
-	}
+	const cleanupMermaid = mountMermaid(root);
 	const temporary: HTMLElement[] = [];
 	let closeTimer = 0;
 	cleanup = () => {
+		cleanupMermaid();
 		controller.abort();
 		clearTimeout(closeTimer);
 		temporary.forEach((node) => node.remove());

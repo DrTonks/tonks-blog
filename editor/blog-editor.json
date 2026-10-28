@@ -9,7 +9,8 @@
   "styles": [
     "editor/preview.css",
     "src/styles/article.css",
-    "src/styles/polls.css"
+    "src/styles/polls.css",
+    "src/styles/mermaid.css"
   ],
   "themes": [
     {

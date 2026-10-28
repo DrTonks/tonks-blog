@@ -1,52 +1,23 @@
 import { h } from "hastscript";
 import { visit } from "unist-util-visit";
-import mermaidRenderScript from "./mermaid-render-script.js?raw";
 
+// Shared by Astro and the offline editor. Article source is text, never script.
 export function rehypeMermaid() {
 	return (tree) => {
 		visit(tree, "element", (node) => {
-			if (
-				node.tagName === "div" &&
-				node.properties &&
-				node.properties.className &&
-				node.properties.className.includes("mermaid-container")
-			) {
-				const mermaidCode = node.properties["data-mermaid-code"] || "";
-				const mermaidId = `mermaid-${Math.random().toString(36).slice(-6)}`;
-
-				// 创建 Mermaid 容器
-				const mermaidContainer = h(
-					"div",
-					{
-						class: "mermaid-wrapper",
-						id: mermaidId,
-					},
-					[
-						h(
-							"div",
-							{
-								class: "mermaid",
-								"data-mermaid-code": mermaidCode,
-							},
-							mermaidCode,
-						),
-					],
-				);
-
-				// 创建客户端渲染脚本
-				const renderScript = h(
-					"script",
-					{
-						type: "text/javascript",
-					},
-					mermaidRenderScript,
-				);
-
-				// 替换原始节点
-				node.tagName = "div";
-				node.properties = { class: "mermaid-diagram-container" };
-				node.children = [mermaidContainer, renderScript];
-			}
+			if (!node.properties?.className?.includes("mermaid-container")) return;
+			const code = node.properties["data-mermaid-code"] ?? node.properties.dataMermaidCode ?? "";
+			node.tagName = "div";
+			node.properties = { className: ["mermaid-diagram"], "data-mermaid-code": code };
+			node.children = [
+				h("div", { className: ["mermaid-status"], role: "status", hidden: true }),
+				h("button", { type: "button", className: ["mermaid-retry"], hidden: true }, "重新渲染"),
+				h("div", { className: ["mermaid-viewport"], role: "region", "aria-label": "Mermaid 图表" }, [h("div", { className: ["mermaid-canvas"] })]),
+				h("details", { className: ["mermaid-source"] }, [
+					h("summary", "查看图表源码"),
+					h("pre", [h("code", code)]),
+				]),
+			];
 		});
 	};
 }
