@@ -1,13 +1,12 @@
 // Timeline data configuration file
 // Used to manage data for the timeline page
 
-export interface TimelineItem {
+interface TimelineItemBase {
 	id: string;
 	title: string;
 	description: string;
-	type: "education" | "work" | "project" | "achievement" | "love";
 	startDate: string;
-	endDate?: string; // If empty, it means current
+	endDate?: string; // Missing: ongoing for regular events; a single day for albums.
 	location?: string;
 	organization?: string;
 	position?: string;
@@ -22,9 +21,27 @@ export interface TimelineItem {
 	color?: string;
 	featured?: boolean;
 	image?: string[];
+	albumId?: string; // Optional album sticker for any event type.
 }
 
+export type TimelineItem =
+	| (TimelineItemBase & { type: "education" | "work" | "project" | "achievement" | "love" })
+	| (Omit<TimelineItemBase, "image"> & { type: "album"; albumId: string; image?: never });
+
+export type ResolvedTimelineItem = TimelineItem & {
+	album?: { href: string; cover: string; title: string };
+};
+
 export const timelineData: TimelineItem[] = [
+	{
+		id: "2024-07-guangzhou-album",
+		type: "album",
+		albumId: "20240705guangzhou",
+		title: "广东之旅",
+		description: "正在消灭此生仅有的3个月的暑假",
+		startDate: "2024-07-03",
+		location: "广东 · 广州-深圳",
+	},
 	{
 		"id": "2024-06-highschool-graduation",
 		"title": "高中毕业与升学",
@@ -260,6 +277,7 @@ export const timelineData: TimelineItem[] = [
 	},
 	{
 		"id": "2026-08-career-planner-wuxi",
+		"albumId": "20260821wuxi",
 		"title": "第17届中国大学生服创大赛全国总决赛",
 		"description": "前往江苏·无锡参加全国总决赛，为期三天，获国家级二等奖。",
 		"type": "achievement",
@@ -290,6 +308,7 @@ export const timelineData: TimelineItem[] = [
 export const getTimelineStats = () => {
 	const total = timelineData.length;
 	const byType = {
+		album: timelineData.filter((item) => item.type === "album").length,
 		love: timelineData.filter((item) => item.type === "love").length,
 		education: timelineData.filter((item) => item.type === "education").length,
 		work: timelineData.filter((item) => item.type === "work").length,
@@ -329,7 +348,7 @@ export const getFeaturedTimeline = () => {
 
 // Get current ongoing items
 export const getCurrentItems = () => {
-	return timelineData.filter((item) => !item.endDate);
+	return timelineData.filter((item) => item.type !== "album" && !item.endDate);
 };
 
 // Calculate total work experience

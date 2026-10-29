@@ -32,7 +32,7 @@ test('every timeline node receives local icon data, including trophy aliases', (
     assert.equal(icon.height, 24);
   }
   assert.equal(icons['material-symbols:emoji-events'].body, collection.icons.icons.trophy.body);
-  assert.equal(Object.keys(icons).length, new Set(timelineData.map(item => item.icon)).size);
+  assert.equal(Object.keys(icons).length, new Set(timelineData.map(item => item.icon || names.getTypeIcon(item.type))).size);
   assert.ok(JSON.stringify(icons).length < 10000, 'Only the used icons should reach the client');
 });
 
@@ -40,7 +40,9 @@ test('unknown custom icons and omitted icons fall back to a local type icon', ()
   const icons = resolveTimelineIcons([
     { ...timelineData[0], icon: 'missing:unknown', type: 'achievement' },
     { ...timelineData[0], icon: undefined, type: 'love' },
+    { ...timelineData[0], icon: undefined, type: 'album', albumId: 'journey' },
   ]);
   assert.equal(icons['missing:unknown'].body, collection.icons.icons.trophy.body);
   assert.equal(icons['material-symbols:favorite'].body, collection.icons.icons.favorite.body);
+  assert.equal(icons['material-symbols:photo-library'].body, iconify.getIcon('material-symbols:photo-library').body);
 });

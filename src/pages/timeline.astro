@@ -5,8 +5,14 @@ import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { timelineData } from "../data/timeline";
 import { resolveTimelineIcons } from '../utils/timeline-icons.server';
+import { resolveTimelineAlbums } from '../utils/timeline-albums';
+import { scanAlbums } from '../utils/album-scanner';
+import { siteConfig } from '../config';
 
 const nodeIcons = resolveTimelineIcons(timelineData);
+const hasAlbums = timelineData.some(item => item.type === 'album' || item.albumId !== undefined);
+const items = resolveTimelineAlbums(timelineData,
+  hasAlbums && siteConfig.featurePages.albums ? await scanAlbums() : [], siteConfig.featurePages.albums);
 
 // Render the complete timeline in HTML; Svelte adds scroll-state enhancement after hydration.
 
@@ -20,7 +26,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
     <p class="page-intro-caption">{subtitle}</p>
   </section>
 
-  <TimelineClient initialItems={timelineData} nodeIcons={nodeIcons} client:load />
+  <TimelineClient initialItems={items} nodeIcons={nodeIcons} client:load />
 </MainGridLayout>
 
 <style>

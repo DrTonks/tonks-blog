@@ -3,10 +3,11 @@
   import { onDestroy, onMount, tick } from 'svelte';
   import Icon, { type IconifyIcon } from '@iconify/svelte/dist/OfflineIcon.svelte';
   import { getTypeIcon } from '../utils/timeline-icon-name';
+  import TimelineAlbumSticker from './TimelineAlbumSticker.svelte';
   import { i18n } from '../i18n/translation';
   import I18nKey from '../i18n/i18nKey';
 
-  import type { TimelineItem } from "../data/timeline";
+  import type { ResolvedTimelineItem as TimelineItem } from "../data/timeline";
   type TimelineLink = NonNullable<TimelineItem["links"]>[number];
 
   type TimelineYearGroup = {
@@ -134,13 +135,13 @@
   }
 
   function getYear(dateString: string) {
-    const year = new Date(dateString).getFullYear();
+    const year = new Date(dateString).getUTCFullYear();
     return Number.isFinite(year) ? String(year) : dateString.slice(0, 4);
   }
 
-  function formatDate(dateString: string) {
+  function formatDate(dateString: string, precise = false) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
+    return date.toLocaleDateString('zh-CN', { timeZone: 'UTC', year: 'numeric', month: 'long', ...(precise ? { day: 'numeric' as const } : {}) });
   }
 
   function getDuration(startDate: string, endDate?: string) {
@@ -206,6 +207,7 @@
   }
 
   function getBadgeText(type: string) {
+    if (type === 'album') return '相册';
     if (type === 'education') return i18n(I18nKey.timelineEducation);
     if (type === 'work') return i18n(I18nKey.timelineWork);
     if (type === 'project') return i18n(I18nKey.timelineProject);
@@ -214,6 +216,7 @@
   }
 
   function getBadgeClass(type: string) {
+    if (type === 'album') return 'timeline-badge--album';
     if (type === 'education') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
     if (type === 'work') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
     if (type === 'project') return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
@@ -253,12 +256,13 @@
               data-year={group.year}
               aria-current={activeId === item.id ? 'step' : undefined}
             >
-              <div class="timeline-node" style={`--node-color: ${item.color || 'rgb(99 102 241)'}`} aria-hidden="true">
+              <div class="timeline-node" style={`--node-color: ${item.color || (item.type === 'album' ? 'var(--primary)' : 'rgb(99 102 241)')}`} aria-hidden="true">
                 <Icon icon={nodeIcons[item.icon || getTypeIcon(item.type)]} class="timeline-node__icon" color="currentColor" />
               </div>
 
-              <div class="timeline-card__body">
+              <div class="timeline-card__body" class:has-album={Boolean(item.album)} class:compact-album={Boolean(item.album) && !(item.type !== 'album' && item.image?.length)}>
                 <div class="timeline-card__marker" aria-hidden="true"></div>
+                <div class="timeline-card__intro">
                 <div class="timeline-card__head">
                   <div>
                     <h3>{item.title}</h3>
@@ -272,18 +276,23 @@
                 </div>
 
                 <div class="timeline-card__date">
-                  <span>{formatDate(item.startDate)} — {item.endDate ? formatDate(item.endDate) : i18n(I18nKey.timelinePresent)}</span>
-                  <span class="timeline-card__dot">•</span>
-                  <span>{getDuration(item.startDate, item.endDate)}</span>
+                  {#if item.type === 'album'}
+                    <span>{formatDate(item.startDate, true)}{item.endDate && item.endDate !== item.startDate ? ` — ${formatDate(item.endDate, true)}` : ''}</span>
+                  {:else}
+                    <span>{formatDate(item.startDate)} — {item.endDate ? formatDate(item.endDate) : i18n(I18nKey.timelinePresent)}</span>
+                    <span class="timeline-card__dot">•</span>
+                    <span>{getDuration(item.startDate, item.endDate)}</span>
+                  {/if}
                   {#if item.location}
                     <span class="timeline-card__dot">•</span>
                     <span>📍 {item.location}</span>
                   {/if}
                 </div>
 
+                </div>
+                <div class="timeline-card__content">
                 <p class="timeline-card__description">{item.description}</p>
-
-                {#if item.image && item.image.length > 0}
+                {#if item.type !== 'album' && item.image && item.image.length > 0}
                   <div class="timeline-gallery" use:fitGalleryOnOneLine>
                     {#each item.image as imageSource}
                       <div class="timeline-gallery__frame">
@@ -320,6 +329,10 @@
                     {/each}
                   </div>
                 {/if}
+                </div>
+                {#if item.album}
+                  <div class="timeline-card__sticker"><TimelineAlbumSticker album={item.album} compact={!(item.type !== 'album' && item.image?.length)} /></div>
+                {/if}
               </div>
             </article>
           {/each}
@@ -330,6 +343,27 @@
 </div>
 
 <style>
+  .timeline-card { container-type: inline-size; }
+  .timeline-card__content { min-width: 0; }
+  .timeline-card__intro { min-width: 0; grid-column: 1 / -1; }
+  .timeline-card__content > :last-child { margin-bottom: 0; }
+  .timeline-card__body.has-album { display: grid; gap: .5rem 1.5rem; }
+  .timeline-card__body:not(.has-album) .timeline-card__intro { margin-bottom: 1rem; }
+  .timeline-card__sticker { justify-self: end; align-self: start; padding: .25rem; }
+  .timeline-badge--album { color: var(--text-accent, var(--primary)); background: var(--btn-regular-bg); }
+  @container (min-width: 32rem) {
+    .timeline-card__body.has-album:not(.compact-album) { grid-template-columns: minmax(0, 1fr) 10rem; align-items: start; }
+  }
+  @container (min-width: 40rem) {
+    .timeline-card__body.has-album.compact-album { grid-template-columns: minmax(0, 1fr) 12rem; }
+    /* Share the date/description rows with the compact sticker. The title and
+       organization stay full-width; long dates wrap in their own grid cell. */
+    .compact-album .timeline-card__intro { display: contents; }
+    .compact-album .timeline-card__head { grid-column: 1 / -1; margin-bottom: .25rem; }
+    .compact-album .timeline-card__date { grid-column: 1; grid-row: 2; margin-bottom: 0; }
+    .compact-album .timeline-card__content { grid-column: 1; grid-row: 3; }
+    .compact-album .timeline-card__sticker { grid-column: 2; grid-row: 2 / span 2; }
+  }
   .timeline-state { padding: 2rem; color: var(--tw-prose-body, currentColor); }
   .timeline-state--error { color: rgb(220 38 38); }
 

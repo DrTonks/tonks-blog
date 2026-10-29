@@ -1,5 +1,6 @@
 export function getTypeIcon(type: string): string {
   switch (type) {
+    case 'album': return 'material-symbols:photo-library';
     case 'education': return 'material-symbols:school';
     case 'love': return 'material-symbols:favorite';
     case 'work': return 'material-symbols:work';
