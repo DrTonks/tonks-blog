@@ -181,5 +181,13 @@
 		"generatedAt": "2026-09-22T15:08:46.894Z",
 		"promptVersion": "1",
 		"contentHash": "c95d05ac68f58d92f13afc53a9942e60c38571b02cd886de0c2260c5b9e0069f"
+	},
+	"scholarship/ss": {
+		"summary": "本文记录了一次参加国家奖学金答辩的经历与准备过程。作者认为答辩流程不正规可能对精心准备者可能不公平，但正因无需答辩质疑，也促成了最连贯的一次答辩。",
+		"model": "deepseek-flash",
+		"requestedModel": "deepseek-flash",
+		"generatedAt": "2026-10-13T15:18:46.784Z",
+		"promptVersion": "1",
+		"contentHash": "689a3697f1fda41cc66b1ba153aa4f36fc3bfa4ae024e32ef2553d392087c105"
 	}
 }

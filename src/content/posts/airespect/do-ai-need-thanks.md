@@ -8,7 +8,7 @@ tags:
   - 动手实验
 category: 遇惑求索
 draft: false
-pinned: true
+pinned: false
 image: ./cover.png
 ---
 

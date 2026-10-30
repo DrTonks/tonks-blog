@@ -37,9 +37,7 @@ export const projectsData: Project[] = [
 		"startDate": "2026-09-10",
 		"tags": [
 			"DSH",
-			"Obsidian",
-			"插件",
-			"Agent"
+			"Obsidian"
 		],
 		"sourceCode": "https://github.com/DrTonks/deepseedian"
 	},
@@ -58,36 +56,31 @@ export const projectsData: Project[] = [
 		"startDate": "2026-06-01",
 		"endDate": "2026-08-21",
 		"tags": [
-			"服创",
-			"AI",
 			"职业规划",
 			"Agent"
 		],
 		"award": "国家二等奖 · 赛区一等奖",
 		"links": "https://career-planner.tonks.top/",
+		"sourceCode": "https://github.com/DrTonks/career-agent-lab",
 		"featured": true
 	},
 	{
-		"id": "tianchi-polardb-2025",
-		"title": "PGSQL——pgvector调优",
-		"description": "对pgvector的HNSW算法向量检索优化，性能排名49/3529，进入决赛第二阶段，未入围前20。",
-		"image": "/images/projects/tianchi.png",
+		"id": "dshtui-2026",
+		"title": "DSH-TUI",
+		"description": "参与设计窗口化通用问卷的长选项列表，让长帮助菜单可滚动并隔离组合键状态",
+		"image": "/images/projects/dstui1.png",
 		"category": "web",
 		"techStack": [
-			"C",
-			"SQL",
-			"HNSW"
+			"Typescript",
+			"React"
 		],
-		"status": "completed",
-		"startDate": "2025-11-01",
-		"endDate": "2026-01-05",
+		"status": "in-progress",
+		"startDate": "2026-08-17",
 		"tags": [
-			"Postgresql",
-			"pgvector",
-			"数据库",
-			"向量检索"
+			"DSH",
+			"TUI"
 		],
-		"sourceCode": "https://gitee.com/DrTonks/polardb_competition_2025/"
+		"sourceCode": "https://github.com/ccch1mneyyy/dsh-TUI"
 	},
 	{
 		"id": "tonks-home",
@@ -125,7 +118,6 @@ export const projectsData: Project[] = [
 		"endDate": "2025-06-21",
 		"featured": true,
 		"tags": [
-			"服创",
 			"端侧AI",
 			"机器学习"
 		],
@@ -135,7 +127,7 @@ export const projectsData: Project[] = [
 	{
 		"id": "calculator-app",
 		"title": "通用贷款计算器",
-		"description": "《金融学基础》教学项目，可视化计算过程，帮助用户处理不同贷款方案的还款计划和情境计算。",
+		"description": "《金融学基础》课程教学项目，可视化计算过程，帮助用户处理不同贷款方案的还款计划和情境计算。",
 		"image": "/images/projects/calculator.png",
 		"category": "web",
 		"techStack": [
@@ -146,10 +138,8 @@ export const projectsData: Project[] = [
 		"status": "completed",
 		"startDate": "2025-09-21",
 		"endDate": "2025-10-01",
-		"featured": true,
 		"tags": [
 			"金融",
-			"贷款",
 			"数学"
 		],
 		"links": "https://loancalculator.tonks.top"
@@ -170,7 +160,6 @@ export const projectsData: Project[] = [
 		"startDate": "2025-10-21",
 		"tags": [
 			"金融",
-			"贷款",
 			"数据可视化",
 			"大屏"
 		],
@@ -194,7 +183,6 @@ export const projectsData: Project[] = [
 		"startDate": "2025-09-01",
 		"tags": [
 			"金融",
-			"贷款",
 			"后台管理",
 			"APP"
 		],
@@ -216,8 +204,7 @@ export const projectsData: Project[] = [
 		"endDate": "2025-11-01",
 		"tags": [
 			"微光工作室",
-			"招新",
-			"三件套项目"
+			"招新"
 		],
 		"links": "https://glimmer.org.cn/"
 	}
