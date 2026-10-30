@@ -7,6 +7,12 @@
 
 # DisplaySettings is client-only: keep its complete static labels in production.
 主题色点击切换到对应主题亮色主题暗色主题蓝色金色显示效果水波纹动画网格卡片
+壁纸自动轮播头像粒子化主题过渡
+首页网格状布局
+当前设备不启用已遵循减少动态效果当前浏览器无法启用仅桌面主题切换时生效
+
+# LightDarkSwitch is client-only and inherits the navbar font.
+亮色暗色跟随系统
 
 # Index toggle changes its label at runtime after expanding tags.
 收起

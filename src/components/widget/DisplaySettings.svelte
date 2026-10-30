@@ -284,9 +284,9 @@ onMount(() => {
 		<span class:enabled={avatarParticlesEnabled && avatarSupported && !avatarMobile && !avatarReducedMotion} class="wave-switch" aria-hidden="true"><span></span></span>
 	</button>
     {#if siteConfig.postListLayout.allowSwitch}
-    <button type="button" role="switch" aria-checked={gridEnabled} aria-label="网格卡片" on:click={toggleGrid}
+    <button type="button" role="switch" aria-checked={gridEnabled} aria-label="首页网格状布局" on:click={toggleGrid}
       class="wave-setting-row flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[var(--primary)] transition-colors hover:bg-[var(--btn-plain-bg-hover)]">
-      <span class="flex items-center gap-2 font-medium"><Icon icon="material-symbols:grid-view-outline-rounded" class="text-[1.25rem]" />网格卡片</span>
+      <span class="flex items-center gap-2 font-medium"><Icon icon="material-symbols:grid-view-outline-rounded" class="text-[1.25rem]" />首页网格状布局</span>
       <span class:enabled={gridEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
     </button>
     {/if}
