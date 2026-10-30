@@ -827,7 +827,11 @@ import { boundedNavigationScroll } from "../utils/navigation-scroll";
 import { createSidebarLayoutTransition } from "../utils/sidebar-layout-transition";
 import { createBannerNavigation } from "../utils/banner-navigation";
 import { installPostList } from "../utils/post-list-navigation";
+import { installAboutViewportReveal } from "../utils/about-viewport-reveal";
+import { installFriendsViewportReveal } from "../utils/friends-viewport-reveal";
 installPostList();
+installAboutViewportReveal();
+installFriendsViewportReveal();
 import {getStoredTheme, isThemeDark} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
@@ -1382,7 +1386,14 @@ const setup = () => {
     let earlyBannerTarget: number | null = null;
     let destinationGridOffset = 0;
     let scrollAnchor: string | false | undefined;
-    const bannerNavigation = createBannerNavigation(scrollFunction);
+    let activeBannerVisit: object | null = null;
+    const resumeBannerCarousel = () => {
+        if (activeBannerVisit || bannerNavigation.prepared) return;
+        window.__tonksBannerPageTransitionPaused = false;
+        const carouselRuntime = window.__tonksBannerCarouselRuntime;
+        if (carouselRuntime?.root === document.getElementById('banner-carousel')) carouselRuntime.setPageTransitionPaused(false);
+    };
+    const bannerNavigation = createBannerNavigation(() => { scrollFunction(); resumeBannerCarousel(); });
     window.addEventListener('resize', () => {
         earlyBannerTarget = null;
         if (bannerNavigation.prepared) bannerNavigation.finish();
@@ -1458,7 +1469,7 @@ const setup = () => {
 
 
 	})
-	function beginBannerTransition(visit: {to: {url: string}}) {
+	function beginBannerTransition(visit: {to: {url: string}}, deferStickers = false) {
 		const bodyElement = document.querySelector('body')
 		const isHomePage = pathsEqual(new URL(visit.to.url, location.href).pathname, url('/'))
 		const wasHomePage = bodyElement?.classList.contains('lg:is-home') ?? false
@@ -1473,9 +1484,9 @@ const setup = () => {
 			setBannerTextVisibility(bannerTextOverlay, true)
 			bannerWrapper?.classList.remove('mobile-hide-banner')
 			mainContentWrapper?.classList.remove('mobile-main-no-banner')
-			// 与 banner 展开同时开始贴纸贴入，避免等待展开完成后的滞后感。
+			// Coordinated desktop navigation releases stickers near its softer finish.
 			window.dispatchEvent(new CustomEvent('tonks:home-stickers:state', {
-				detail: { active: true, refresh: true, revealDelay: 0 },
+				detail: { active: true, refresh: true, deferReveal: deferStickers },
 			}))
 		} else if (isLeavingHome) {
 			// 贴纸、banner 和正文从同一帧开始退场/位移，遮罩常驻。
@@ -1551,7 +1562,7 @@ const setup = () => {
         if (!pendingBannerVisit) return;
         const visit = pendingBannerVisit;
         pendingBannerVisit = null;
-        destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit));
+        destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit, true));
     }, { priority: -100 });
     swup.hooks.on('content:scroll', () => {
         // ScrollPlugin may skip restoration (e.g. the user scrolled while the
@@ -1611,6 +1622,7 @@ const setup = () => {
 		}
 	})
 	swup.hooks.on('visit:start', (visit) => {
+		activeBannerVisit = visit;
 		navigationScrollCancelled = false;
 		earlyBannerTarget = null;
 		pendingPageScroll = false;
@@ -1665,7 +1677,7 @@ const setup = () => {
 				if (visit.scroll.reset && bounded.start !== window.scrollY) {
 					window.scrollTo({ top: bounded.start, behavior: 'instant' });
 				}
-				destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit));
+				destinationGridOffset = bannerNavigation.prepare(() => beginBannerTransition(visit, true));
 				bannerNavigation.start(earlyBannerTarget, visit.scroll.animate ?? true, visit.scroll.reset);
 			}
 		} else {
@@ -1711,12 +1723,8 @@ const setup = () => {
 		}, 300);
 	});
 	swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
-		window.__tonksBannerPageTransitionPaused = false;
-		const currentCarousel = document.getElementById('banner-carousel');
-		const carouselRuntime = window.__tonksBannerCarouselRuntime;
-		if (carouselRuntime?.root === currentCarousel) {
-			carouselRuntime.setPageTransitionPaused(false);
-		}
+		if (activeBannerVisit === _visit) activeBannerVisit = null;
+		resumeBannerCarousel();
         scrollFunction();
 		window.scrollProtectionManager?.disable();
 		requestAnimationFrame(() => {
@@ -1731,6 +1739,13 @@ const setup = () => {
 				toc.classList.remove('toc-not-ready')
 			}
 		}, 200)
+	});
+	swup.hooks.on('visit:abort', (visit) => {
+		if (activeBannerVisit !== visit) return;
+		activeBannerVisit = null;
+		// Swup aborts the outgoing visit before starting its replacement. Preserve
+		// the current presentation so that visit can take over without a snap.
+		bannerNavigation.freeze();
 	});
 }
 if (window?.swup?.hooks) {

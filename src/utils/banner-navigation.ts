@@ -15,6 +15,9 @@ export function createBannerNavigation(onFinish: () => void) {
 	let scrolling = false;
 	let prepared = false;
 	let started = false;
+	let enteringHome = false;
+	let duration = 600;
+	const releaseStickers = () => window.dispatchEvent(new Event('tonks:home-stickers:reveal'));
 	const readStickyPositions = () => ['sidebar', 'sidebar-sticky'].flatMap(id => {
 		const element = document.getElementById(id);
 		return element ? [{element, top: element.getBoundingClientRect().top}] : [];
@@ -35,7 +38,7 @@ export function createBannerNavigation(onFinish: () => void) {
 			if (existing) (existing.effect as KeyframeEffect).setKeyframes(frames);
 			else {
 				const effect = element.animate(frames, {
-					duration: paused ? 1 : 600, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
+					duration: paused ? 1 : duration, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
 				});
 				if (paused) { effect.pause(); effect.currentTime = 0; }
 				effects.push(effect);
@@ -43,7 +46,7 @@ export function createBannerNavigation(onFinish: () => void) {
 		}
 	}
 
-	function clear() {
+	function clear(revealStickers = true) {
 		generation++;
 		for (const effect of effects) effect.cancel();
 		effects = [];
@@ -56,6 +59,7 @@ export function createBannerNavigation(onFinish: () => void) {
 		transitions = [];
 		prepared = started = scrolling = false;
 		delete document.body.dataset.bannerNavigation;
+		if (revealStickers) releaseStickers();
 	}
 
 	function currentFrames() {
@@ -72,11 +76,27 @@ export function createBannerNavigation(onFinish: () => void) {
 		cancelEffects();
 		const token = generation;
 		scrolling = false;
+		const grid = tracks.find(track => track.element.id === 'main-grid');
+		const y = (value: string) => new DOMMatrixReadOnly(value === 'none' ? undefined : value).m42;
+		const distance = grid ? Math.abs(y(grid.to) - y(grid.from)) : 0;
+		// Only returning home changes pace. Short trips keep the original timing;
+		// long trips get a bounded softer finish, without changing scroll targets.
+		duration = enteringHome ? 600 + Math.min(250, Math.max(0, distance - 300) * .2) : 600;
 		effects = tracks.filter(({ from, to }) => from !== to).map(({ element, property, from, to }) =>
 			element.animate([{ [property]: from }, { [property]: to }], {
-				duration: 600, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
+				duration, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
 			}));
 		afterStart?.();
+		if (enteringHome && effects.length) {
+			// A property-free gate on the same document timeline: no timer or frame
+			// polling, and freeze/cancel handles it together with the motion tracks.
+			const gate = new Animation(new KeyframeEffect(null, [], { duration: duration * .7 }), document.timeline);
+			gate.play();
+			effects.push(gate);
+			gate.finished.then(() => { if (generation === token) releaseStickers(); }).catch(() => {});
+		}
+		const startTime = document.timeline.currentTime;
+		if (startTime !== null) for (const effect of effects) effect.startTime = startTime;
 		Promise.all(effects.map(effect => effect.finished)).then(() => {
 			if (generation === token) { clear(); onFinish(); }
 		}).catch(() => { /* A new visit or user input replaced these effects. */ });
@@ -111,12 +131,14 @@ export function createBannerNavigation(onFinish: () => void) {
 			clear(); onFinish();
 		},
 		prepare(updateLayout: () => void) {
+			const wasHome = document.body.classList.contains('is-home');
+			const wasEnteringHome = enteringHome && prepared;
 			const stickyPositions = readStickyPositions();
 			const snapshots = properties.flatMap(([id, property]) => {
 				const element = document.getElementById(id);
 				return element ? [{ element, property, from: getComputedStyle(element)[property] }] : [];
 			});
-			clear();
+			clear(false);
 			transitions = snapshots.map(({ element }) => ({
 				element,
 				value: element.style.getPropertyValue('transition'),
@@ -124,6 +146,7 @@ export function createBannerNavigation(onFinish: () => void) {
 			}));
 			for (const { element } of transitions) element.style.setProperty('transition', 'none', 'important');
 			updateLayout();
+			enteringHome = document.body.classList.contains('is-home') && (!wasHome || wasEnteringHome || document.getElementById('home-sticker-layer')?.hasAttribute('data-reveal-pending') === true);
 			// Read all destination styles before installing the paused animations.
 			destinations = snapshots.map(snapshot => ({
 				...snapshot, to: getComputedStyle(snapshot.element)[snapshot.property],

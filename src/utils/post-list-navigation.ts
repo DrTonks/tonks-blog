@@ -1,6 +1,7 @@
 import { pageForIndex, pageIndices, pageSizeForLayout, paginationNumbers } from './post-pagination';
 import { url } from './url-utils';
 import { attachCardOverflow } from './card-overflow';
+import { attachPostViewportReveal } from './post-viewport-reveal';
 
 let installed = false;
 let hooked = false;
@@ -57,6 +58,7 @@ function mount(root: HTMLElement, cachedWidth?: number) {
   let layoutBusy = false;
   let layoutInterrupted = false;
   let layoutStartOpacity = 1;
+  let viewportReveal: ReturnType<typeof attachPostViewportReveal> | undefined;
   function cancelLayoutTransition() {
     layoutVersion++;
     layoutAnimations.forEach(animation => animation.cancel());
@@ -65,6 +67,7 @@ function mount(root: HTMLElement, cachedWidth?: number) {
     root.removeAttribute('aria-busy');
   }
   async function transitionLayout(enterOnly = false) {
+    viewportReveal?.suspend();
     const version = layoutVersion;
     layoutBusy = true; layoutInterrupted = false;
     root.setAttribute('aria-busy', 'true');
@@ -93,6 +96,7 @@ function mount(root: HTMLElement, cachedWidth?: number) {
     if (version !== layoutVersion) return;
     cancelLayoutTransition();
     if (dirty) update();
+    if (!suspended && !navigating && !layoutBusy) viewportReveal?.resume();
   }
   function pagination() {
     const last = Math.max(1, Math.ceil(total / currentSize));
@@ -152,6 +156,7 @@ function mount(root: HTMLElement, cachedWidth?: number) {
       if (replacement && replacement !== focusedCategory) replacement.focus({ preventScroll: true });
     }
     window.dispatchEvent(new CustomEvent('layoutInit', { detail: { layout: grid ? 'grid' : 'list' } }));
+    viewportReveal?.refresh();
   }
   function update(animate = false) {
     if (!root.isConnected) return;
@@ -194,6 +199,7 @@ function mount(root: HTMLElement, cachedWidth?: number) {
   const page = Math.min(routePage, Math.max(1, Math.ceil(total / size)));
   list.tabIndex = -1; apply(page, size, initial.grid, initial.columns, true);
   const destroyOverflow = attachCardOverflow(list);
+  if (routePage === 1) viewportReveal = attachPostViewportReveal(list, suspended);
   let observedWidth = initial.width;
   let observedViewport = innerWidth;
   // Read only after this frame's writes have been committed. During a visit,
@@ -230,6 +236,7 @@ function mount(root: HTMLElement, cachedWidth?: number) {
     layoutStartOpacity = Number(getComputedStyle(root).opacity);
     cancelLayoutTransition();
     mode = event.detail?.layout === 'grid' ? 'grid' : 'list'; update(true);
+    if (!suspended && !navigating && !layoutBusy) viewportReveal?.resume();
   }, { signal: lifetime.signal });
   return {
     root,
@@ -237,6 +244,7 @@ function mount(root: HTMLElement, cachedWidth?: number) {
     // avoid forcing an extra style/layout pass halfway through DOM replacement.
     width() { return observedViewport === innerWidth ? observedWidth : undefined; },
     suspend() {
+      viewportReveal?.suspend();
       suspended = true; clearTimeout(timer);
       // Preserve the current opacity while Swup fades its parent out.
       if (layoutAnimations.length) for (const target of [root, nav]) target.style.opacity = getComputedStyle(target).opacity;
@@ -250,8 +258,9 @@ function mount(root: HTMLElement, cachedWidth?: number) {
       if (opacity < 1 && !navigating && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
         layoutStartOpacity = opacity; void transitionLayout(true);
       }
+      if (!navigating && !layoutBusy) viewportReveal?.resume();
     },
-    destroy() { cancelLayoutTransition(); for (const target of [root, nav]) target.style.removeProperty('opacity'); destroyOverflow(); lifetime.abort(); observer.disconnect(); clearTimeout(timer); cancelAnimationFrame(readingFrame); }
+    destroy() { viewportReveal?.destroy(); cancelLayoutTransition(); for (const target of [root, nav]) target.style.removeProperty('opacity'); destroyOverflow(); lifetime.abort(); observer.disconnect(); clearTimeout(timer); cancelAnimationFrame(readingFrame); }
   };
 }
 

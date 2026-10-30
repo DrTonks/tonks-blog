@@ -70,9 +70,10 @@ const cardAngles = [
 		<div class="friend-wall__rule" aria-hidden="true">
 		</div>
 
-		<div class="friend-board">
+		<div class="friend-board" data-friends-reveal-root>
 			{friendsData.map((friend, index) => (
 				<a
+					data-friend-reveal
 					href={friend.url}
 					target="_blank"
 					rel="noopener noreferrer"

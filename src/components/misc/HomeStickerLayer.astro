@@ -77,7 +77,7 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 </div>
 
 <script>
-	type StickerStateEvent = CustomEvent<{ active: boolean; refresh?: boolean; revealDelay?: number }>;
+	type StickerStateEvent = CustomEvent<{ active: boolean; refresh?: boolean; revealDelay?: number; deferReveal?: boolean }>;
 	type StickerRuntime = Window & {
 		__tonksHomeStickerCleanup?: () => void;
 		__tonksHomeStickerLayer?: HTMLElement;
@@ -102,6 +102,8 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 		let replacementTimer: ReturnType<typeof setTimeout> | undefined;
 		let layerTransitionTimer: ReturnType<typeof setTimeout> | undefined;
 		let resizeFrame: number | undefined;
+		let activation = 0;
+		let deferredRefresh = false;
 
 		const shuffle = <T,>(items: T[]) => {
 			const result = [...items];
@@ -154,50 +156,58 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			image.src = shuffle(candidates.length ? candidates : images)[0];
 		};
 
-		const placeCard = (card: HTMLElement, slot: number) => {
+		const placeCards = (entries: Array<{ card: HTMLElement; slot: number }>) => {
+			if (!entries.length) return;
+			// One geometry read batch, then one write batch. Preparing both stickers
+			// first avoids forcing another layout between the two entrance effects.
 			const layerWidth = layer.clientWidth;
 			const layerHeight = layer.clientHeight;
-			const cardWidth = card.offsetWidth;
-			const cardHeight = card.offsetHeight;
 			const navbarHeight = document.getElementById("navbar-wrapper")?.getBoundingClientRect().height ?? 64;
 			const navbarClearance = Math.max(88, navbarHeight + 24);
-			let x = 0;
-			let y = 0;
+			const placements = entries.map(({ card, slot }) => {
+				const cardWidth = card.offsetWidth;
+				const cardHeight = card.offsetHeight;
+				let x = 0;
+				let y = 0;
 
-			if (compactQuery.matches) {
-				x = layerWidth - cardWidth - randomBetween(10, 22);
-				y = randomBetween(
-					Math.max(navbarClearance, layerHeight * 0.09),
-					Math.max(navbarClearance, layerHeight * 0.135),
+				if (compactQuery.matches) {
+					x = layerWidth - cardWidth - randomBetween(10, 22);
+					y = randomBetween(
+						Math.max(navbarClearance, layerHeight * 0.09),
+						Math.max(navbarClearance, layerHeight * 0.135),
+					);
+				} else {
+					// Keep both cards inside a centered content belt on ultrawide displays.
+					const bandWidth = Math.min(Math.max(layerWidth - 32, 0), 1280);
+					const bandLeft = (layerWidth - bandWidth) / 2;
+					const edgeInset = Math.min(44, Math.max(24, bandWidth * 0.025));
+					const centerHalf = Math.min(270, Math.max(220, bandWidth * 0.2));
+					const laneMinimum = slot === 0
+						? bandLeft + edgeInset
+						: layerWidth / 2 + centerHalf;
+					const laneMaximum = slot === 0
+						? layerWidth / 2 - centerHalf - cardWidth
+						: bandLeft + bandWidth - edgeInset - cardWidth;
+					x = randomBetween(Math.min(laneMinimum, laneMaximum), Math.max(laneMinimum, laneMaximum));
+					const yRange = slot === 0 ? [0.12, 0.23] : [0.085, 0.19];
+					y = randomBetween(
+						Math.max(navbarClearance, layerHeight * yRange[0]),
+						Math.max(navbarClearance, layerHeight * yRange[1]),
+					);
+				}
+
+				const safeX = Math.max(8, Math.min(x, layerWidth - cardWidth - 8));
+				const safeY = Math.max(
+					navbarClearance,
+					Math.min(y, Math.max(navbarClearance, layerHeight - cardHeight - 16)),
 				);
-			} else {
-				// Keep both cards inside a centered content belt on ultrawide displays.
-				const bandWidth = Math.min(Math.max(layerWidth - 32, 0), 1280);
-				const bandLeft = (layerWidth - bandWidth) / 2;
-				const edgeInset = Math.min(44, Math.max(24, bandWidth * 0.025));
-				const centerHalf = Math.min(270, Math.max(220, bandWidth * 0.2));
-				const laneMinimum = slot === 0
-					? bandLeft + edgeInset
-					: layerWidth / 2 + centerHalf;
-				const laneMaximum = slot === 0
-					? layerWidth / 2 - centerHalf - cardWidth
-					: bandLeft + bandWidth - edgeInset - cardWidth;
-				x = randomBetween(Math.min(laneMinimum, laneMaximum), Math.max(laneMinimum, laneMaximum));
-				const yRange = slot === 0 ? [0.12, 0.23] : [0.085, 0.19];
-				y = randomBetween(
-					Math.max(navbarClearance, layerHeight * yRange[0]),
-					Math.max(navbarClearance, layerHeight * yRange[1]),
-				);
+				return { card, slot, x: Math.round(safeX), y: Math.round(safeY) };
+			});
+			for (const { card, slot, x, y } of placements) {
+				card.style.setProperty("--sticker-x", `${x}px`);
+				card.style.setProperty("--sticker-y", `${y}px`);
+				card.style.setProperty("--peel-x", slot === 0 ? "-1.4rem" : "1.4rem");
 			}
-
-			const safeX = Math.max(8, Math.min(x, layerWidth - cardWidth - 8));
-			const safeY = Math.max(
-				navbarClearance,
-				Math.min(y, Math.max(navbarClearance, layerHeight - cardHeight - 16)),
-			);
-			card.style.setProperty("--sticker-x", `${Math.round(safeX)}px`);
-			card.style.setProperty("--sticker-y", `${Math.round(safeY)}px`);
-			card.style.setProperty("--peel-x", slot === 0 ? "-1.4rem" : "1.4rem");
 		};
 
 		const hideCard = (card: HTMLElement) => {
@@ -208,20 +218,23 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			delete card.dataset.slot;
 		};
 
-		const showCard = (card: HTMLElement, slot: number) => {
-			card.dataset.slot = String(slot);
-			card.hidden = false;
-			card.setAttribute("aria-hidden", "false");
-			primeImage(card);
-			placeCard(card, slot);
-			card.classList.remove("is-active", "is-entering", "is-leaving");
-			card.classList.add("is-entering");
-			if (reduceMotionQuery.matches) {
-				card.classList.remove("is-entering");
-				card.classList.add("is-active");
-				return;
+		const showCards = (entries: Array<{ card: HTMLElement; slot: number }>) => {
+			for (const { card, slot } of entries) {
+				card.dataset.slot = String(slot);
+				card.hidden = false;
+				card.setAttribute("aria-hidden", "false");
+				primeImage(card);
 			}
-			card.onanimationend = (event) => {
+			placeCards(entries);
+			for (const { card } of entries) {
+				card.classList.remove("is-active", "is-entering", "is-leaving");
+				card.classList.add("is-entering");
+				if (reduceMotionQuery.matches) {
+					card.classList.remove("is-entering");
+					card.classList.add("is-active");
+					continue;
+				}
+				card.onanimationend = (event) => {
 					if (event.target !== card || !event.animationName.includes('home-sticker-press')) return;
 					// 在入场动画释放 transform 前判断，避免指针停在新贴纸上时立刻触发 hover 回正。
 					if (card.matches(":hover")) {
@@ -231,7 +244,8 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 					card.classList.remove("is-entering");
 					card.onanimationend = null;
 				};
-			card.classList.add("is-active");
+				card.classList.add("is-active");
+			}
 		};
 
 		const markLeaving = (card: HTMLElement) => {
@@ -253,11 +267,12 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			replacementTimer = undefined;
 			cards.forEach(hideCard);
 			activeCards = chooseCards(compactQuery.matches ? 1 : 2);
-			activeCards.forEach(showCard);
+			showCards(activeCards.map((card, slot) => ({ card, slot })));
 			remember(activeCards);
 		};
 
-		const setActive = (active: boolean, shouldRefresh = false, revealDelay = 0) => {
+		const setActive = (active: boolean, shouldRefresh = false, revealDelay = 0, deferReveal = false) => {
+			const token = ++activation;
 			const wasActive = layerActive;
 			const motion = layer.querySelector<HTMLElement>('.home-sticker-motion');
 			const bannerWrapper = document.getElementById("banner-wrapper");
@@ -274,12 +289,18 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 				}
 
 				const revealHomeLayer = () => {
-					if (!layerActive) return;
+					if (!layerActive || token !== activation) return;
+					delete layer.dataset.revealPending;
 					layer.classList.add("is-layer-active");
 					bannerWrapper?.classList.add("home-stickers-active");
 					if (shouldRefresh || activeCards.length === 0) refreshAll();
 				};
 
+				if (deferReveal && !reduceMotionQuery.matches && !layer.classList.contains('is-layer-active')) {
+					layer.dataset.revealPending = '';
+					deferredRefresh = shouldRefresh;
+					return;
+				}
 				if (!wasActive && !reduceMotionQuery.matches && revealDelay > 0) {
 					layerTransitionTimer = setTimeout(() => {
 						layerTransitionTimer = undefined;
@@ -292,6 +313,8 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			}
 
 			layerActive = false;
+			delete layer.dataset.revealPending;
+			deferredRefresh = false;
 			if (motion) motion.dataset.departing = '';
 			layer.classList.remove("is-layer-active");
 			bannerWrapper?.classList.remove("home-stickers-active");
@@ -324,7 +347,7 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			replacementTimer = setTimeout(() => {
 				hideCard(current);
 				activeCards = activeCards.map((card) => card === current ? next : card);
-				showCard(next, slot);
+				showCards([{ card: next, slot }]);
 				remember(activeCards);
 				replacementTimer = undefined;
 			}, reduceMotionQuery.matches ? 0 : PEEL_DURATION);
@@ -340,15 +363,22 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 
 		const handleState = (event: Event) => {
 			const detail = (event as StickerStateEvent).detail;
-			setActive(Boolean(detail?.active), Boolean(detail?.refresh), detail?.revealDelay);
+			setActive(Boolean(detail?.active), Boolean(detail?.refresh), detail?.revealDelay, Boolean(detail?.deferReveal));
+		};
+		const revealPending = () => {
+			if (!layer.hasAttribute('data-reveal-pending') || !layerActive || !document.body.classList.contains('is-home')) return;
+			delete layer.dataset.revealPending;
+			const refresh = deferredRefresh;
+			deferredRefresh = false;
+			setActive(true, refresh);
 		};
 		const handleBreakpoint = () => {
-			if (document.body.classList.contains("lg:is-home")) refreshAll();
+			if (document.body.classList.contains("lg:is-home") && !layer.hasAttribute('data-reveal-pending')) refreshAll();
 		};
 		const handleResize = () => {
 			if (resizeFrame) cancelAnimationFrame(resizeFrame);
 			resizeFrame = requestAnimationFrame(() => {
-				activeCards.forEach((card, slot) => placeCard(card, slot));
+				placeCards(activeCards.map((card, slot) => ({ card, slot })));
 				resizeFrame = undefined;
 			});
 		};
@@ -359,6 +389,8 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 		layer.addEventListener("click", handleLayerClick);
 		layer.addEventListener("dragstart", handleDragStart);
 		window.addEventListener("tonks:home-stickers:state", handleState);
+		window.addEventListener("tonks:home-stickers:reveal", revealPending);
+		reduceMotionQuery.addEventListener('change', revealPending);
 		window.addEventListener("resize", handleResize);
 		compactQuery.addEventListener("change", handleBreakpoint);
 
@@ -369,6 +401,8 @@ const stickers = homeStickerDefinitions.map((sticker) => {
 			layer.removeEventListener("click", handleLayerClick);
 			layer.removeEventListener("dragstart", handleDragStart);
 			window.removeEventListener("tonks:home-stickers:state", handleState);
+			window.removeEventListener("tonks:home-stickers:reveal", revealPending);
+			reduceMotionQuery.removeEventListener('change', revealPending);
 			window.removeEventListener("resize", handleResize);
 			compactQuery.removeEventListener("change", handleBreakpoint);
 			if (runtime.__tonksHomeStickerLayer === layer) runtime.__tonksHomeStickerLayer = undefined;

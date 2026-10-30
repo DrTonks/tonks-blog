@@ -23,8 +23,9 @@ const tones: Record<string, string> = { '代码习作': 'blue', '电科生涯': 
   :global(.dark) .category-badge { --category-ink: color-mix(in srgb, var(--category-accent) 50%, white); background: color-mix(in srgb, var(--category-accent) 19%, var(--card-bg)); border-color: color-mix(in srgb, var(--category-accent) 45%, transparent); }
   .category-badge svg { flex: 0 0 auto; width: 1em; height: 1em; }
   .category-badge span { overflow: hidden; text-overflow: ellipsis; }
-  .category-badge:hover, .category-badge:focus-visible { color: var(--category-ink); transform: translateY(-2px); box-shadow: 0 2px 0 color-mix(in srgb, var(--category-accent) 48%, transparent); }
+  .category-badge { transform: translateY(-2px); box-shadow: 0 2px 0 color-mix(in srgb, var(--category-accent) 48%, transparent); }
+  .category-badge:hover, .category-badge:focus-visible { color: var(--category-ink); transform: translateY(0); box-shadow: none; }
   .category-badge:active { transform: translateY(0) scale(.97); }
   .category-badge:focus-visible { outline: 2px solid var(--category-ink); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { .category-badge { transition: none; } .category-badge:hover, .category-badge:focus-visible, .category-badge:active { transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .category-badge { transition: none; transform: none; } .category-badge:hover, .category-badge:focus-visible, .category-badge:active { transform: none; } }
 </style>

@@ -10,6 +10,15 @@
   }
 }
 .post-list-shell { min-width: 0; container-type: inline-size; }
+/* JS opts only unseen, below-fold blocks into this state. No-JS stays visible. */
+#post-list-container .post-card[data-post-reveal="pending"],
+[data-about-reveal-root] [data-about-reveal-state="pending"],
+[data-friends-reveal-root] [data-friend-reveal-state="pending"] { opacity: 0; transform: translateY(14px); }
+@media (prefers-reduced-motion: reduce), print {
+  #post-list-container .post-card[data-post-reveal="pending"],
+  [data-about-reveal-root] [data-about-reveal-state="pending"],
+  [data-friends-reveal-root] [data-friend-reveal-state="pending"] { opacity: 1; transform: none; }
+}
 [data-post-list-root]:not([data-ready]) { visibility: hidden; }
 [data-post-list-root]:not([data-ready]) .onload-animation { animation-play-state: paused; }
 [data-post-pagination] [aria-disabled="true"] { opacity: .35; pointer-events: none; }

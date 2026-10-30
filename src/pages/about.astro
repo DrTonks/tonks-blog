@@ -58,7 +58,7 @@ const aboutRoutes = [
 ---
 
 <MainGridLayout title={title}>
-	<article class="about-shell card-base" data-pagefind-body>
+	<article class="about-shell card-base" data-pagefind-body data-about-reveal-root>
 		<section class="about-hero" aria-labelledby="about-title">
 			<div class="about-hero__copy">
 				<div class="about-hero__title-row">
@@ -94,7 +94,7 @@ const aboutRoutes = [
 
 		<div class="about-content">
 			<section id="welcome" class="about-section about-origin" aria-labelledby="welcome-title">
-				<header class="about-section__header">
+				<header class="about-section__header" data-about-reveal="welcome-heading">
 					<span class="about-section__number">01</span>
 					<div>
 						<h2 id="welcome-title">欢迎你的到来！</h2>
@@ -123,21 +123,21 @@ const aboutRoutes = [
 
 				<p class="about-memory-intro" id="about-memory-title">让我决定继续记录的片段</p>
 				<div class="about-memory" role="group" aria-labelledby="about-memory-title">
-					<article>
+					<article data-about-reveal="memory-recruitment">
 						<h3>25工作室招新</h3>
 						<p>我看着新生们交上来的招新题，想起去年为了做一个博客东奔西走讨教经验的自己，也想起刚加入工作室时满怀期待地找了几个队友、打了几场不那么优雅的比赛。虽然没什么拿得出手的成绩，但我觉得还是有所收获的。</p>
 					</article>
-					<article>
+					<article data-about-reveal="memory-friendship">
 						<h3>24年11月</h3>
 						<p>我密谋许久，录下一段蹩脚的生日祝福。<br>点击发送之前，那段没来得及说再见的友谊和自以为结束了的青春，又在我的脑海里闪回。</p>
 					</article>
-					<article>
+					<article data-about-reveal="memory-sunshine">
 						<h3>25年初</h3>
 						<p>我遇见了我的小太阳，总是能找到我的优点，总是对我说：“你超级棒。” <br>也许生活没有我想象中的那么糟糕。</p>
 					</article>
 				</div>
 
-				<div class="about-declaration">
+				<div class="about-declaration" data-about-reveal="declaration">
 					<span aria-hidden="true">→</span>
 					<p>我想，趁着我还有这份热情与憧憬，我要开始做点什么了。</p>
 					<time datetime="2025-10-12">2025.10.12</time>
@@ -145,7 +145,7 @@ const aboutRoutes = [
 			</section>
 
 			<section id="about-me" class="about-section" aria-labelledby="about-me-title">
-				<header class="about-section__header">
+				<header class="about-section__header" data-about-reveal="profile-heading">
 					<span class="about-section__number">02</span>
 					<div>
 						<h2 id="about-me-title">关于我</h2>
@@ -153,7 +153,7 @@ const aboutRoutes = [
 				</header>
 
 				<div class="about-profile">
-					<div class="about-profile__intro">
+					<div class="about-profile__intro" data-about-reveal="profile-intro">
 						<p class="about-lead"><strong>半吊子前端，正在学习AI Agent...</strong></p>
 						<p><strong>随时可能陨落<del>(被限额)</del>的天才程序员</strong></p>
 						<p>电科大自研哈吉米 3.5 Flash</p>
@@ -165,7 +165,7 @@ const aboutRoutes = [
 						</ul>
 					</div>
 
-					<figure class="about-model-card">
+					<figure class="about-model-card" data-about-reveal="model-card">
 						<figcaption>
 							<span><b>MODEL TWIN / 模型映射</b><small>一张并不严肃的模型人格切片</small></span>
 							<a href="https://api.reizeiin.xyz" target="_blank" rel="noopener noreferrer">来源：HUMANBENCH<Icon name="material-symbols:arrow-outward-rounded" /></a>
@@ -188,7 +188,7 @@ const aboutRoutes = [
 				</div>
 			</section>
 
-			<section class="about-home-link" aria-labelledby="home-link-title">
+			<section class="about-home-link" aria-labelledby="home-link-title" data-about-reveal="home-link">
 				<a href="https://tonks.top/" target="_blank" rel="noopener noreferrer" class="about-home-card">
 					<div class="about-home-card__copy">
 						<h2 id="home-link-title">不只是博客</h2>
@@ -212,7 +212,7 @@ const aboutRoutes = [
 			</section>
 
 			<section id="building" class="about-section about-build" aria-labelledby="building-title">
-				<header class="about-section__header">
+				<header class="about-section__header" data-about-reveal="building-heading">
 					<span class="about-section__number">03</span>
 					<div>
 						<h2 id="building-title">关于本站的搭建</h2>
@@ -224,7 +224,7 @@ const aboutRoutes = [
 						<p>此网站使用 <strong>Astro</strong> 框架构建，基于 <a href="https://github.com/saicaca/fuwari" target="_blank" rel="noopener noreferrer">fuwari</a> 主题，参考其他同类型博客并深度魔改。虽然类似的主题已经烂大街了，它的布局还是能给我一种很清晰、很舒服的感觉，我很喜欢。</p>
 						<p>Fuwari的视觉中心拿捏得很到位，柔和的过渡效果可能比较符合我的审美，因此参考并整合了Mizuki主题的波浪效果。也有尝试过一些科幻工业风格、后现代主义、极简风之类的主题，最后也还是回到了这里。</p>
 					</div>
-					<ul class="about-stack" aria-label="本站技术关键词">
+					<ul class="about-stack" aria-label="本站技术关键词" data-about-reveal="tech-stack">
 						<li><span>CORE</span><strong>Astro</strong></li>
 						<li><span>BASE</span><strong>Fuwari</strong></li>
 						<li><span>STYLE</span><strong>4 Presets</strong></li>
@@ -233,11 +233,11 @@ const aboutRoutes = [
 				</div>
 
 				<div class="about-repositories prose dark:prose-invert !max-w-none">
-					<article class="about-repository">
+					<article class="about-repository" data-about-reveal="repository-theme">
 						<header><span>主题基础</span><p>特别感谢原作者及后续社区项目提供的基础设计与实现。</p></header>
 						<GitHubRepoCard repo="saicaca/fuwari" />
 					</article>
-					<article class="about-repository">
+					<article class="about-repository" data-about-reveal="repository-blog">
 						<header><span>博客仓库</span><p>本站持续修改中的公开源代码与版本记录。</p></header>
 						<GitHubRepoCard repo="DrTonks/tonks-blog" />
 					</article>
