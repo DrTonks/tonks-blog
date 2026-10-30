@@ -5,19 +5,26 @@ import PostPage from "../components/PostPage.astro";
 import { PAGE_SIZE } from "../constants/constants";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../utils/content-utils";
+import { routeCardIndices } from "../utils/post-pagination";
 
 export const getStaticPaths = (async ({ paginate }) => {
 	const allBlogPosts = await getSortedPosts();
-	return paginate(allBlogPosts, { pageSize: PAGE_SIZE });
+	return paginate(allBlogPosts, { pageSize: PAGE_SIZE }).map(route => {
+		const page = route.props.page;
+		const pool = routeCardIndices(page.currentPage, allBlogPosts.length)
+			.filter(index => index < page.start || index > page.end)
+			.map(index => ({ entry: allBlogPosts[index], index }));
+		return { ...route, props: { ...route.props, pool } };
+	});
 }) satisfies GetStaticPaths;
 // https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
 
-const { page } = Astro.props;
+const { page, pool } = Astro.props;
 
 const len = page.data.length;
 ---
 
 <MainGridLayout>
-    <PostPage page={page}></PostPage>
+    <PostPage page={page} pool={pool}></PostPage>
     <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
 </MainGridLayout>

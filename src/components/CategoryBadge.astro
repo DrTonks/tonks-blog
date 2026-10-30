@@ -1,0 +1,30 @@
+---
+import { getCategoryIcon } from '../utils/category-icons';
+import { getCategoryUrl } from '../utils/url-utils';
+import { i18n } from '../i18n/translation';
+import I18nKey from '../i18n/i18nKey';
+interface Props { category?: string | null; class?: string; }
+const { category, class: className } = Astro.props;
+const name = category?.trim() || i18n(I18nKey.uncategorized);
+const tones: Record<string, string> = { '代码习作': 'blue', '电科生涯': 'violet', '复盘手记': 'amber', '学无止境': 'teal', '有感而发': 'green', '遇惑求索': 'rose' };
+---
+<a class:list={['category-badge', className]} data-tone={tones[name] || 'theme'} href={getCategoryUrl(category || '')} aria-label={`查看「${name}」分类的文章`} title={name}>
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" set:html={getCategoryIcon(category || '')} />
+  <span>{name}</span>
+</a>
+<style>
+  .category-badge { --category-accent: var(--primary); --category-ink: color-mix(in srgb, var(--category-accent) 72%, #15202c); display: inline-flex; flex: 0 0 auto; align-items: center; gap: .3rem; max-width: 100%; padding: .22rem .45rem; border-radius: .4rem; border: 1px solid color-mix(in srgb, var(--category-accent) 26%, transparent); background: color-mix(in srgb, var(--category-accent) 11%, var(--card-bg)); color: var(--category-ink); font: 600 .8rem/1.4 system-ui, sans-serif; white-space: nowrap; text-decoration: none; transition: transform 150ms ease, box-shadow 150ms ease; }
+  .category-badge[data-tone='blue'] { --category-accent: #2574c5; }
+  .category-badge[data-tone='violet'] { --category-accent: #8550b8; }
+  .category-badge[data-tone='amber'] { --category-accent: #a36812; }
+  .category-badge[data-tone='teal'] { --category-accent: #087e87; }
+  .category-badge[data-tone='green'] { --category-accent: #438044; }
+  .category-badge[data-tone='rose'] { --category-accent: #b4496a; }
+  :global(.dark) .category-badge { --category-ink: color-mix(in srgb, var(--category-accent) 50%, white); background: color-mix(in srgb, var(--category-accent) 19%, var(--card-bg)); border-color: color-mix(in srgb, var(--category-accent) 45%, transparent); }
+  .category-badge svg { flex: 0 0 auto; width: 1em; height: 1em; }
+  .category-badge span { overflow: hidden; text-overflow: ellipsis; }
+  .category-badge:hover, .category-badge:focus-visible { color: var(--category-ink); transform: translateY(-2px); box-shadow: 0 2px 0 color-mix(in srgb, var(--category-accent) 48%, transparent); }
+  .category-badge:active { transform: translateY(0) scale(.97); }
+  .category-badge:focus-visible { outline: 2px solid var(--category-ink); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .category-badge { transition: none; } .category-badge:hover, .category-badge:focus-visible, .category-badge:active { transform: none; } }
+</style>

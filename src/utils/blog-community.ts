@@ -1749,6 +1749,7 @@ function initializeFriendApplications(): void {
 }
 
 let scheduledFrame: number | undefined;
+document.addEventListener('tonks:post-list-updated', () => { void initializeLikes(); });
 function scheduleCommunity(): void {
 	if (scheduledFrame !== undefined) cancelAnimationFrame(scheduledFrame);
 	scheduledFrame = requestAnimationFrame(() => {

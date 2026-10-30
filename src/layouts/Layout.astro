@@ -42,6 +42,7 @@ import "../styles/article.css";
 import "../styles/hanalei-font.css";
 import "../styles/mobile-transition-fix.css";
 import "../styles/mobile-post-list-fix.css";
+import "../styles/responsive-layout.css";
 
 interface Props {
 	title?: string;
@@ -825,6 +826,8 @@ import { getBannerCarouselEnabled, BANNER_CAROUSEL_CHANGE } from "../utils/banne
 import { boundedNavigationScroll } from "../utils/navigation-scroll";
 import { createSidebarLayoutTransition } from "../utils/sidebar-layout-transition";
 import { createBannerNavigation } from "../utils/banner-navigation";
+import { installPostList } from "../utils/post-list-navigation";
+installPostList();
 import {getStoredTheme, isThemeDark} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
@@ -1405,6 +1408,10 @@ const setup = () => {
             }
         }
         if (pendingPageScroll) {
+            // A responsive repartition keeps the reader's card at its previous
+            // viewport offset within this single original navigation scroll.
+            const listTop = swup.visit.meta.postListTop;
+            if (typeof listTop === 'number') target -= listTop;
             pendingPageScroll = false;
             const current = window.scrollY;
             const grid = document.getElementById('main-grid');
@@ -1453,7 +1460,7 @@ const setup = () => {
 	})
 	function beginBannerTransition(visit: {to: {url: string}}) {
 		const bodyElement = document.querySelector('body')
-		const isHomePage = pathsEqual(visit.to.url, url('/'))
+		const isHomePage = pathsEqual(new URL(visit.to.url, location.href).pathname, url('/'))
 		const wasHomePage = bodyElement?.classList.contains('lg:is-home') ?? false
 		const isEnteringHome = isHomePage && !wasHomePage
 		const isLeavingHome = !isHomePage && wasHomePage
@@ -1640,7 +1647,7 @@ const setup = () => {
 			signal: scrollRestoreInputController.signal,
 		});
 
-		const changesHome = pathsEqual(visit.to.url, url('/')) !== document.body.classList.contains('is-home');
+		const changesHome = pathsEqual(new URL(visit.to.url, location.href).pathname, url('/')) !== document.body.classList.contains('is-home');
 		if (document.body.classList.contains('enable-banner') && innerWidth >= 1024 && (changesHome || bannerNavigation.prepared)) {
 			if (scrollAnchor) {
 				// Cross-page anchors need the incoming DOM to resolve their target.

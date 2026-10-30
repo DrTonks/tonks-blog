@@ -160,6 +160,8 @@ function scheduleBlogViews(): void {
 	});
 }
 
+document.addEventListener('tonks:post-list-updated', scheduleBlogViews);
+
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", scheduleBlogViews, { once: true });
 } else {

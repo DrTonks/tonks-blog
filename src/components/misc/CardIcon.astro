@@ -1,0 +1,15 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import material from '@iconify-json/material-symbols/icons.json';
+import mdi from '@iconify-json/mdi/icons.json';
+
+interface Props extends HTMLAttributes<'svg'> { name: string; }
+const { name, ...attributes } = Astro.props;
+const [prefix, key] = name.split(':');
+const collection = prefix === 'material-symbols' ? material : prefix === 'mdi' ? mdi : undefined;
+const icon = (collection?.icons as Record<string, { body: string; width?: number; height?: number }> | undefined)?.[key];
+if (!icon) throw new Error(`Unknown card icon: ${name}`);
+// Cards can move into inert templates. Their icons must own their paths rather
+// than reference a shared symbol which might move out of the live document.
+---
+<svg width="1em" height="1em" viewBox={`0 0 ${icon.width ?? collection!.width} ${icon.height ?? collection!.height}`} data-icon={name} {...attributes} set:html={icon.body} />

@@ -1,10 +1,11 @@
 ---
-import { Icon } from "astro-icon/components";
+import Icon from './misc/CardIcon.astro';
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import { getCategoryUrl, getTagUrl } from "../utils/url-utils";
 import BlogLike from "./community/BlogLike.astro";
+import CategoryBadge from './CategoryBadge.astro';
 
 export interface Props {
 	published: Date;
@@ -22,6 +23,7 @@ export interface Props {
 	showWordCount?: boolean;
 	showViews?: boolean;
 	trackView?: boolean;
+	cardCategory?: boolean;
 }
 
 const {
@@ -38,10 +40,12 @@ const {
 	showWordCount = false,
 	showViews = false,
 	trackView = false,
+	cardCategory = false,
 } = Astro.props;
 ---
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
+	{cardCategory && <CategoryBadge category={category} class="post-card__category-inline" />}
 	<div class="flex items-center">
 		<div class="meta-icon">
 			<Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl" />
@@ -58,7 +62,7 @@ const {
 		</div>
 	)}
 
-	<div class="flex items-center">
+	{!cardCategory && <div class="flex items-center">
 		<div class="meta-icon">
 			<Icon name="material-symbols:book-2-outline-rounded" class="text-xl" />
 		</div>
@@ -71,7 +75,7 @@ const {
 				{category || i18n(I18nKey.uncategorized)}
 			</a>
 		</div>
-	</div>
+	</div>}
 
 	{showWordCount && typeof words === "number" && (
 		<div class="flex items-center">
