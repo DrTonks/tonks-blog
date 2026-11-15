@@ -57,7 +57,10 @@ try{
    const bad=await p.evaluate(async()=>JSON.parse(await window.__agentTools.tonks_read_article.execute({id:'../../.env'})));assert.ok(bad.error);
    const target=new URL(result.results[0].url).pathname;
    await p.evaluate(path=>{const a=document.createElement('a');a.href=path;document.body.append(a);a.click();a.remove();},target);
-   await p.waitForURL(blog+target);await p.waitForTimeout(1200);
+   await p.waitForURL(blog+target);
+   // Swup can update history before the response/head replacement completes.
+   // Wait for the observable result instead of assuming localhost latency.
+   await p.waitForFunction(expected=>document.querySelector('link[rel="canonical"]')?.getAttribute('href')===expected,result.results[0].url,{timeout:30000});
    assert.equal(await p.locator('link[rel="canonical"]').getAttribute('href'),result.results[0].url);
    assert.equal(await p.evaluate(()=>window.__registrations.length),2,'Swup must not register duplicate tools');
    assert.equal(requests.length,2,'Only catalog and selected article are fetched');
