@@ -1,0 +1,6 @@
+---
+import {canonicalUrl} from '../utils/search-policy.mjs';
+const {frontmatter} = Astro.props;
+---
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width" /><meta name="robots" content="noindex, follow" /><link rel="canonical" href={canonicalUrl(Astro.url.href)} /><title>{frontmatter?.title || '测试页面'}</title></head><body><slot /></body></html>

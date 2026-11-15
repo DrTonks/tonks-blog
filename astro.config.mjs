@@ -3,6 +3,7 @@ import {createHash} from 'node:crypto';
 import remarkPolls from './src/plugins/remark-polls.mjs';
 import pollsIntegration from './scripts/polls-integration.mjs';
 import sitemap from "@astrojs/sitemap";
+import {isIndexable} from './src/utils/search-policy.mjs';
 import articleComments from "./scripts/article-comments-integration.mjs";
 import optimizedImages from "./scripts/optimized-images.mjs";
 import buildVersion from "./scripts/build-version.mjs";
@@ -252,7 +253,7 @@ export default defineConfig({
 			},
 		}),
 		svelte(),
-		sitemap(),
+		sitemap({filter: isIndexable}),
 		pruneThemeAvatarOriginals(),
 	],
 	markdown: {

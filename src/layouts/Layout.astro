@@ -24,6 +24,7 @@ import {
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon, SakuraConfig } from "../types/config";
 import { pathsEqual, url } from "../utils/url-utils";
+import {canonicalUrl, isIndexable} from '../utils/search-policy.mjs';
 
 // Core styles must be explicit dependencies, never side effects of an image glob.
 import "../styles/variables.styl";
@@ -179,6 +180,9 @@ const bannerOffset =
 		</script>
 
 		<title>{pageTitle}</title>
+		<link rel="canonical" href={canonicalUrl(Astro.url.href)} />
+		<link rel="describedby" type="text/plain" href="/llms.txt" />
+		{!isIndexable(Astro.url.href) && <meta name="robots" content="noindex, follow" />}
 
 		<meta charset="UTF-8" />
 		<meta name="description" content={description || pageTitle}>
@@ -188,7 +192,7 @@ const bannerOffset =
 		<meta name="author" content={profileConfig.name}>
 
 		<meta property="og:site_name" content={siteConfig.title}>
-		<meta property="og:url" content={Astro.url}>
+		<meta property="og:url" content={canonicalUrl(Astro.url.href)}>
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
 		{ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
@@ -201,7 +205,7 @@ const bannerOffset =
 		}
 
 		<meta name="twitter:card" content="summary_large_image">
-		<meta property="twitter:url" content={Astro.url}>
+		<meta property="twitter:url" content={canonicalUrl(Astro.url.href)}>
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
 
@@ -828,6 +832,8 @@ import { createSidebarLayoutTransition } from "../utils/sidebar-layout-transitio
 import { createBannerNavigation } from "../utils/banner-navigation";
 import { installPostList } from "../utils/post-list-navigation";
 import { installArticleCounts } from "../utils/article-counts";
+import { installAgentTools } from '../utils/agent-tools.mjs';
+void installAgentTools();
 import { installAboutViewportReveal } from "../utils/about-viewport-reveal";
 import { installFriendsViewportReveal } from "../utils/friends-viewport-reveal";
 installPostList();

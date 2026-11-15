@@ -1,5 +1,7 @@
 ---
 import path from "node:path";
+import {getImage} from 'astro:assets';
+import type {ImageMetadata} from 'astro';
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import PasswordProtection from "@components/PasswordProtection.astro";
@@ -77,6 +79,16 @@ const toAbsoluteUrl = (u?: string) => {
 	}
 };
 
+// Resolve source-relative covers to the same public Astro asset used by images.
+let structuredImage: string | undefined;
+if (entry.data.image) {
+  if (/^(https?:\/\/|\/)/.test(entry.data.image)) structuredImage = toAbsoluteUrl(entry.data.image);
+  else {
+    const images = import.meta.glob<{default:ImageMetadata}>('/src/content/**/*.{jpeg,jpg,png,gif,webp,avif,svg}');
+    const key = path.posix.normalize(`/src/content/posts/${path.posix.dirname(entry.id)}/${entry.data.image}`);
+    if (images[key]) structuredImage = toAbsoluteUrl((await getImage({src:(await images[key]()).default})).src);
+  }
+}
 const jsonLd = {
 	"@context": "https://schema.org",
 	"@type": "BlogPosting",
@@ -98,7 +110,7 @@ const jsonLd = {
 	inLanguage: entry.data.lang
 		? entry.data.lang.replace("_", "-")
 		: siteConfig.lang.replace("_", "-"),
-	image: entry.data.image ? toAbsoluteUrl(entry.data.image) : undefined,
+	image: structuredImage,
 	wordCount: remarkPluginFrontmatter?.words ?? undefined,
 	timeRequired: remarkPluginFrontmatter?.minutes
 		? `PT${remarkPluginFrontmatter.minutes}M`
@@ -117,11 +129,12 @@ const jsonLd = {
     headings={headings}
 	aiSummary={aiSummary}
 >
+    {!entry.data.draft && !entry.data.encrypted && <link slot="head" rel="alternate" type="text/markdown" href={`/agent/articles/${entry.slug}.md`} />}
     <script
         is:inline
         slot="head"
         type="application/ld+json"
-        set:html={JSON.stringify(jsonLd)}
+        set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}
     />
     <div
         class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4"

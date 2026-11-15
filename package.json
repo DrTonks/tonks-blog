@@ -21,6 +21,8 @@
 		"preinstall": "npx only-allow pnpm",
 		"check:production": "node scripts/validate-production.mjs",
 		"test:production": "node --test scripts/production-validation.test.mjs",
+		"test:search": "node --test scripts/search-access.test.mjs",
+		"check:search:http": "node scripts/check-search-http.mjs",
 		"editor:build": "npm --prefix editor run build",
 		"editor:test": "node --test editor/adapter.test.mjs",
 		"test:polls": "pnpm editor:build && node --test scripts/polls.test.mjs"
@@ -69,9 +71,12 @@
 		"rehype-slug": "^6.0.0",
 		"remark-directive": "^3.0.1",
 		"remark-directive-rehype": "^0.4.2",
+		"remark-gfm": "^4.0.1",
 		"remark-github-admonitions-to-directives": "^1.0.5",
 		"remark-math": "^6.0.0",
+		"remark-parse": "^11.0.0",
 		"remark-sectionize": "^2.1.0",
+		"remark-stringify": "^11.0.0",
 		"sanitize-html": "^2.17.0",
 		"satori": "^0.18.3",
 		"sharp": "^0.34.4",
@@ -80,6 +85,7 @@
 		"svelte": "^5.42.2",
 		"tailwindcss": "^3.4.18",
 		"typescript": "^5.9.3",
+		"unified": "^11.0.5",
 		"unist-util-visit": "^5.0.0"
 	},
 	"devDependencies": {

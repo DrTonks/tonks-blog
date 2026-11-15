@@ -1,5 +1,6 @@
 ---
 title: 字体测试页面
+layout: ../layouts/UtilityDocument.astro
 ---
 
 # 字体测试

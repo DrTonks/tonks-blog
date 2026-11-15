@@ -39,3 +39,9 @@ jobs:
 
       - name: Build Astro site
         run: pnpm astro build
+
+      - name: Test public content and agent boundaries
+        run: pnpm test:search
+
+      - name: Validate generated search artifacts
+        run: node --input-type=module -e "import {validateSearch} from './scripts/validate-search.mjs'; validateSearch('dist');"
