@@ -478,12 +478,3 @@ const { remarkPluginFrontmatter } = await entry.render();
 .post-card__title-reveal .post-card__pin{color:var(--signal-ink)}
 @media(prefers-reduced-motion:reduce){.post-card__pin{transition:none}}
 </style>
-<script>
-import {initializeArticleCounts} from '../utils/article-counts';
-initializeArticleCounts();
-document.addEventListener('tonks:post-list-updated', initializeArticleCounts);
-document.addEventListener('swup:page:view',initializeArticleCounts);
-document.addEventListener('astro:page-load',initializeArticleCounts);
-const hook=()=>window.swup?.hooks.on('page:view',initializeArticleCounts);
-if(window.swup)hook();else document.addEventListener('swup:enable',hook,{once:true});
-</script>

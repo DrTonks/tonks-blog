@@ -1,6 +1,20 @@
 const base=(import.meta.env.PUBLIC_SLEEPY_API_BASE || '/api').replace(/\/$/,'');
 const cache=new Map<string,{count:number;at:number}>();
 let stopCards: (()=>void)|undefined;
+let installed=false;
+
+// Install from the persistent layout. Astro can emit a card's deduplicated
+// script inside the inert post-pool template, where it will never execute.
+export function installArticleCounts(){
+  if(installed)return;
+  installed=true;
+  initializeArticleCounts();
+  document.addEventListener('tonks:post-list-updated',initializeArticleCounts);
+  // @swup/astro also emits astro:page-load from page:view. Subscribe only
+  // once so one navigation does not abort and recreate the same observers.
+  const hook=()=>window.swup?.hooks.on('page:view',initializeArticleCounts);
+  if(window.swup)hook();else document.addEventListener('swup:enable',hook,{once:true});
+}
 
 export function initializeArticleCounts(){
   stopCards?.();stopCards=observeArticleCounts(document,'.post-card');
