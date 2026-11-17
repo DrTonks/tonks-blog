@@ -7,6 +7,7 @@ import ArticlePolls from '../components/ArticlePolls.astro';
 import PageScrollbar from "@components/control/PageScrollbar.astro";
 import AmbientBackground from "@components/AmbientBackground.astro";
 import BuildUpdateNotice from "@components/BuildUpdateNotice.astro";
+import Toast from "@components/Toast.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import LoadingScreen from "@components/LoadingScreen.astro";
 import { profileConfig, siteConfig } from "@/config";
@@ -742,6 +743,7 @@ const bannerOffset =
 		
 		
 		<BuildUpdateNotice />
+		<Toast />
 	<ArticlePolls /></body>
 </html>
 

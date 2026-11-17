@@ -1,0 +1,41 @@
+<!-- Outside Swup's content containers so feedback survives page navigation. -->
+<div class="site-toast-position" aria-live="polite" aria-atomic="true" role="status">
+	<div id="site-toast" class="site-toast">
+		<span class="site-toast-mark" aria-hidden="true">ⓘ</span>
+		<span data-toast-message></span>
+	</div>
+</div>
+
+<style>
+	.site-toast-position {
+		position: fixed;
+		top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
+		inset-inline: 1rem;
+		z-index: 10000;
+		display: flex;
+		justify-content: center;
+		pointer-events: none;
+	}
+	.site-toast {
+		display: flex;
+		align-items: center;
+		gap: .65rem;
+		max-width: 32rem;
+		padding: .85rem 1.1rem;
+		border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+		border-radius: .85rem;
+		background: var(--card-bg);
+		color: var(--text-secondary);
+		box-shadow: 0 6px 24px rgb(0 0 0 / 16%);
+		font-size: .9375rem;
+		line-height: 1.6;
+		opacity: 0;
+		transform: translateY(-.5rem);
+		transition: opacity 180ms ease, transform 180ms ease;
+	}
+	.site-toast[data-visible] { opacity: 1; transform: translateY(0); }
+	.site-toast-mark { flex: none; color: var(--primary); font-family: system-ui, sans-serif; }
+	@media (prefers-reduced-motion: reduce) {
+		.site-toast { transition: none; transform: none; }
+	}
+</style>

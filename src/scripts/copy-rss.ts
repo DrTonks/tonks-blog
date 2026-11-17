@@ -1,3 +1,5 @@
+import { showToast } from "../utils/toast";
+
 // Delegate to the persistent document so this also works after Swup navigation.
 const resetTimers = new WeakMap<HTMLButtonElement, ReturnType<typeof setTimeout>>();
 document.addEventListener("click", async (event) => {
@@ -25,6 +27,7 @@ document.addEventListener("click", async (event) => {
 	}
 	button.removeAttribute("aria-busy");
 	if (copied) {
+		showToast("RSS 订阅地址已复制");
 		button.dataset.copyState = "copied";
 		button.title = "RSS 订阅地址已复制";
 		button.setAttribute("aria-label", "RSS 订阅地址已复制");
@@ -36,12 +39,13 @@ document.addEventListener("click", async (event) => {
 			resetTimers.delete(button);
 		}, 2000));
 	} else {
+		showToast("未能自动复制，请在 RSS 按钮下方手动复制订阅地址", 5000);
 		delete button.dataset.copyState;
 		button.title = "复制 RSS 订阅地址";
 		button.setAttribute("aria-label", "复制 RSS 订阅地址");
 	}
 	if (feedback) {
 		feedback.classList.toggle("sr-only", copied);
-		feedback.textContent = copied ? "RSS 订阅地址已复制" : `未能自动复制，请手动复制：${address}`;
+		feedback.textContent = copied ? "" : `未能自动复制，请手动复制：${address}`;
 	}
 });
