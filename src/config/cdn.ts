@@ -12,9 +12,6 @@ export const CDN_BASE = 'https://img.tonks.top/blog'
  * 只包含已上传到 OSS 的文件。
  */
 const LOCAL_TO_CDN: Record<string, string> = {
-  // home 装饰图
-  '/assets/home/left.png': `${CDN_BASE}/left.webp`,
-  '/assets/home/right.png': `${CDN_BASE}/right.webp`,
   '/images/projects/personalWebsite2.png': `${CDN_BASE}/personalWebsite2.webp`,
   // 桌面 banner
   '/assets/desktop-banner/d1.png': `${CDN_BASE}/banner/d1.webp`,

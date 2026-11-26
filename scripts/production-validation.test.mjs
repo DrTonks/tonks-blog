@@ -21,3 +21,13 @@ test('old dist cannot be approved against edited source',t=>{const f=fixture(t);
 test('valid provenance rejects later artifact changes',t=>{const f=fixture(t),v=validateArtifacts(f.root);fs.mkdirSync(path.join(f.project,'.cache'));fs.writeFileSync(path.join(f.project,'.cache/build-provenance.json'),JSON.stringify({schema:1,source:sourceFingerprint(f.project),artifacts:fingerprint(v.files)}));assertBuildProvenance(f.project,v);f.put('_astro/chunk.js','changed');assert.throws(()=>assertBuildProvenance(f.project,validateArtifacts(f.root)),/differ/);});
 test('generated subset is excluded but original font and config are build inputs',t=>{const f=fixture(t),dir=path.join(f.project,'public/assets/font');fs.mkdirSync(dir,{recursive:true});const before=sourceFingerprint(f.project);fs.writeFileSync(path.join(dir,'Hanalei-subset.woff2'),'generated');assert.equal(sourceFingerprint(f.project),before);fs.writeFileSync(path.join(dir,'Hanalei.woff2'),'original');assert.notEqual(sourceFingerprint(f.project),before);const second=sourceFingerprint(f.project);fs.writeFileSync(path.join(f.project,'postcss.config.mjs'),'changed');assert.notEqual(sourceFingerprint(f.project),second);});
 test('archive must contain exactly the browser-validated hashes',t=>{const f=fixture(t),v=validateArtifacts(f.root),manifest={files:v.files.map(f=>({path:f.key,sha256:f.sha256}))};assertArchiveValidated(manifest,v);manifest.files[0].sha256='changed';assert.throws(()=>assertArchiveValidated(manifest,v),/Archive differs/);});
+
+test('both desktop artwork URLs must exist before publishing', t => {
+  const f = fixture(t);
+  f.put('index.html', f.html.replace('<body>', '<body><div data-art-src="/_images/art.webp" data-art-fallback="/assets/home/left.png"></div>'));
+  assert.throws(() => validateArtifacts(f.root), /art.webp/);
+  f.put('_images/art.webp', 'fixture');
+  assert.throws(() => validateArtifacts(f.root), /left.png/);
+  f.put('assets/home/left.png', 'fixture');
+  validateArtifacts(f.root);
+});

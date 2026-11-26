@@ -6,6 +6,7 @@ import SideBar from "@components/widget/SideBar.astro";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import FullscreenWallpaper from "../components/misc/FullscreenWallpaper.astro";
+import imageManifest from 'virtual:optimized-images';
 import IconifyLoader from "../components/misc/IconifyLoader.astro";
 import BannerImage from "../components/misc/BannerImage.astro";
 import HomeStickerLayer from "../components/misc/HomeStickerLayer.astro";
@@ -378,24 +379,17 @@ const transparentClass = shouldEnableTransparency
 <div id="main-panel-wrapper" class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!siteConfig.banner.enable ? 'no-banner-layout' : ''} ${transparentClass}`} style={`top: ${finalMainPanelTop}; --banner-extend-offset: ${BANNER_HEIGHT_EXTEND}vh; --main-banner-overlap: ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem`}>
 	<div class="ambient-document-stars" aria-hidden="true"><span class="ambient-document-stars__base"></span></div>
 	<div class="ambient-light-art" aria-hidden="true">
-		<div class="ambient-light-art__side ambient-light-art__side--left">
-			<div class="ambient-light-art__figure" style="--ambient-art-ratio: 1.465">
-				<img class="ambient-light-art__base" data-light-art-src="/assets/home/left.png" alt="" decoding="async" />
-				<img class="ambient-light-art__hover" data-light-art-src="/assets/home/left.png" alt="" decoding="async" />
-			</div>
-		</div>
-		<div class="ambient-light-art__side ambient-light-art__side--right">
-			<div class="ambient-light-art__figure" style="--ambient-art-ratio: 1.4675">
-				<img class="ambient-light-art__base" data-light-art-src="/assets/home/right.png" alt="" decoding="async" />
-				<img class="ambient-light-art__hover" data-light-art-src="/assets/home/right.png" alt="" decoding="async" />
-			</div>
-		</div>
+		{(["left", "right"] as const).map(side => {
+			const original = `/assets/home/${side}.png`;
+			return <div class={`ambient-light-art__side ambient-light-art__side--${side}`}>
+				<div class="ambient-light-art__figure" style={`--ambient-art-ratio: ${side === "left" ? 1.465 : 1.4675}`}
+					data-art-src={imageManifest[original]?.display ?? original} data-art-fallback={original}>
+					<img class="ambient-light-art__base" alt="" decoding="async" fetchpriority="low" />
+					<img class="ambient-light-art__hover" alt="" decoding="async" fetchpriority="low" />
+				</div>
+			</div>;
+		})}
 	</div>
-	<script is:inline>
-		document.querySelectorAll("img[data-light-art-src]").forEach((image) => {
-			if (!image.getAttribute("src")) image.setAttribute("src", image.dataset.lightArtSrc || "");
-		});
-	</script>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-none">
         <div id="main-grid" data-sidebar={desktopShowSidebar ? sidebarPosition : "none"} class={`pointer-events-auto transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar ? 'mobile-no-sidebar' : ''}`}

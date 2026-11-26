@@ -53,8 +53,11 @@ export async function generateImages(root, { strict = true } = {}) {
   const manifest = {}, outputs = new Map();
   const started = performance.now();
   let encoded = 0;
-  for (const group of ['albums', 'projects', 'covers']) {
-    for (const path of await walk(join(root, 'public/images', group))) {
+  for (const group of ['albums', 'projects', 'covers', 'ambient']) {
+    const ambient = group === 'ambient';
+    const directory = ambient ? join(root, 'public/assets/home') : join(root, 'public/images', group);
+    for (const path of await walk(directory)) {
+      if (ambient && !['left.png', 'right.png'].some(name => path === join(directory, name))) continue;
       if (!/\.(png|jpe?g)$/i.test(path)) continue;
       await attempt(async () => {
         const input = await readFile(path);
@@ -65,15 +68,15 @@ export async function generateImages(root, { strict = true } = {}) {
         const entry = { original, originalBytes: input.length };
         const generated = new Map();
         // Full-resolution display for zoom; only card thumbnails are bounded.
-        for (const kind of ['thumbnail', 'display']) {
+        for (const kind of (ambient ? ['display'] : ['thumbnail', 'display'])) {
           const size = kind === 'thumbnail' ? Math.min(800, Math.max(metadata.width, metadata.height)) : Math.max(metadata.width, metadata.height);
           const quality = group === 'projects' ? 90 : 85;
-          const id = hash(Buffer.concat([input, Buffer.from(`v1:${size}:${quality}:${sharp.versions.sharp}`)]));
+          const id = hash(Buffer.concat([input, Buffer.from(`v1:${size}:${ambient ? 'lossless' : quality}:${sharp.versions.sharp}`)]));
           const name = `${id}.webp`, target = join(cache, name);
           try { await stat(target); }
           catch (error) {
             if (error.code !== 'ENOENT') throw error;
-            const data = await sharp(input).rotate().resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true }).webp({ quality }).toBuffer();
+            const data = await sharp(input).rotate().resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true }).webp(ambient ? { lossless: true } : { quality }).toBuffer();
             const temporary = target + '.' + randomUUID() + '.tmp';
             await writeFile(temporary, data);
             await rename(temporary, target); encoded++;
@@ -82,6 +85,10 @@ export async function generateImages(root, { strict = true } = {}) {
           entry[kind] = bytes < input.length ? `/_images/${name}` : original;
           entry[`${kind}Bytes`] = Math.min(bytes, input.length);
           if (bytes < input.length) generated.set(name, target);
+        }
+        if (ambient) {
+          entry.thumbnail = entry.display;
+          entry.thumbnailBytes = entry.displayBytes;
         }
         manifest[key] = entry;
         for (const [name, target] of generated) outputs.set(name, target);
@@ -161,6 +168,7 @@ export default function optimizedImages() {
           const relevant = path => {
             const absolute = resolve(path);
             return isWithin(join(root, 'public/images'), absolute)
+              || isWithin(join(root, 'public/assets/home'), absolute)
               || (isWithin(join(root, 'src/data'), absolute) && /\.ts$/i.test(path))
               || isWithin(join(root, 'src/content/posts'), absolute);
           };
@@ -190,7 +198,7 @@ export default function optimizedImages() {
               } finally { running = false; }
             })();
           };
-          server.watcher.add([join(root, 'public/images'), join(root, 'src/data'), join(root, 'src/content/posts')]);
+          server.watcher.add([join(root, 'public/images'), join(root, 'public/assets/home'), join(root, 'src/data'), join(root, 'src/content/posts')]);
           server.watcher.on('all', changed);
           const rescan = () => changed('change', join(root, 'public/images'));
           // config:setup can precede watcher registration by seconds. Close that

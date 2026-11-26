@@ -25,7 +25,7 @@
 			// stays viewport-fixed throughout; no sticky/fixed handoff on scroll.
 			const origin = art.getBoundingClientRect().top;
 			for (const figure of art.querySelectorAll<HTMLElement>(".ambient-light-art__figure")) {
-				const visible = origin + figure.offsetHeight <= window.innerHeight;
+				const visible = figure.dataset.artState === "ready" && origin + figure.offsetHeight <= window.innerHeight;
 				figure.classList.toggle("is-art-visible", visible);
 			}
 		};
@@ -61,11 +61,28 @@
 				}
 			}
 		};
-		const loadLightArt = () => {
-			for (const image of document.querySelectorAll<HTMLImageElement>("img[data-light-art-src]")) {
-				if (!image.src) image.src = image.dataset.lightArtSrc || "";
+		const desktop = matchMedia("(min-width: 1024px)");
+		async function loadFigure(figure: HTMLElement) {
+			if (figure.dataset.artState) return;
+			figure.dataset.artState = "loading";
+			const images = Array.from(figure.querySelectorAll("img"));
+			for (const src of new Set([figure.dataset.artSrc, figure.dataset.artFallback])) {
+				if (!src) continue;
+				try {
+					await Promise.all(images.map(image => {
+						image.src = src;
+						return image.decode();
+					}));
+					figure.dataset.artState = "ready";
+					scheduleArtworkLayoutUpdate();
+					return;
+				} catch { /* Try this side's original PNG when its WebP fails. */ }
 			}
-		};
+			figure.dataset.artState = "failed";
+		}
+		function loadLightArt() {
+			if (desktop.matches) document.querySelectorAll<HTMLElement>("[data-art-src]").forEach(loadFigure);
+		}
 		const scheduleArtworkLayoutUpdate = () => {
 			if (layoutFrame) return;
 			layoutFrame = requestAnimationFrame(() => {
@@ -76,7 +93,9 @@
 		};
 
 		loadLightArt();
-		const layoutObserver = new MutationObserver(() => { loadLightArt(); scheduleArtworkLayoutUpdate(); });
+		desktop.addEventListener("change", loadLightArt);
+		document.addEventListener("swup:page:view", loadLightArt);
+		const layoutObserver = new MutationObserver(scheduleArtworkLayoutUpdate);
 		layoutObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 		layoutObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
 		document.addEventListener("transitionend", (event) => {

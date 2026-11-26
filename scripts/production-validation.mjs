@@ -37,6 +37,10 @@ export function validateArtifacts(root){
     if(e.tagName==='LINK'&&!/stylesheet|icon|preload|modulepreload/i.test(e.getAttribute('rel')||''))continue;
     resolve(e.getAttribute('src')||e.getAttribute('poster')||e.getAttribute('href'),key);
    }
+   for(const e of doc.querySelectorAll('[data-art-src]')){
+    resolve(e.getAttribute('data-art-src'),key);
+    resolve(e.getAttribute('data-art-fallback'),key);
+   }
    for(const e of doc.querySelectorAll('img[srcset],source[srcset]')){const set=e.getAttribute('srcset');if(!set.startsWith('data:'))for(const s of set.split(','))resolve(s.trim().split(/\s+/)[0],key);}
   }
   if(/\.css$/i.test(key))for(const m of source(key).matchAll(/url\(\s*['"]?([^'"\)]+)['"]?\s*\)/g))resolve(m[1].trim(),key);

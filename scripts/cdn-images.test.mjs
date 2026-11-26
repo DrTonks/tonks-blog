@@ -8,7 +8,8 @@ test('uploaded WebP mappings retain existing local sources and failure fallback'
   const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
   const cdn = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
   const entries = Object.entries(cdn.getCdnMapping());
-  assert.equal(entries.length, 11);
+  assert.equal(entries.length, 9);
+  assert.equal(cdn.getCdnUrl('/assets/home/left.png'), null);
   for (const [local, remote] of entries) {
     assert.match(remote, /^https:\/\/img\.tonks\.top\/blog\/.+\.webp$/);
     await access(new URL('../public' + local, import.meta.url));

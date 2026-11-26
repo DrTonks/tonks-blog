@@ -1,6 +1,5 @@
 ---
 import { siteConfig } from "@/config";
-import { initialLoadingPreloadImages, CDN_PRELOAD_MAP } from "@/loading-preload";
 
 const ROWS = 18;
 const COLS = 18;
@@ -16,8 +15,6 @@ const rows = Array.from({ length: ROWS }, (_, rowIndex) => {
 		return { key: `${line}-${column}`, transform: `translate(${x}, ${y})` };
 	});
 });
-const explicitPreloadImageUrls = initialLoadingPreloadImages;
-const cdnMapping = CDN_PRELOAD_MAP();
 const preloadHanaleiFont = Boolean(siteConfig.font?.hanalei?.enable);
 const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 ---
@@ -93,7 +90,7 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 	</style>
 </noscript>
 
-<script is:inline define:vars={{ explicitPreloadImageUrls, cdnMapping, preloadHanaleiFont, preloadBannerCarousel }}>
+<script is:inline define:vars={{ preloadHanaleiFont, preloadBannerCarousel }}>
 	(() => {
 		if (window.__tonksInitialLoaderStarted) return;
 		window.__tonksInitialLoaderStarted = true;
@@ -216,33 +213,6 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 				});
 			});
 		}
-		function preloadExplicitImages() {
-			return Promise.all(
-				explicitPreloadImageUrls.map((localSrc) => {
-					const cdnSrc = cdnMapping[localSrc] || null;
-					const primary = cdnSrc || localSrc;
-					return new Promise((resolve) => {
-						const image = new Image();
-						image.decoding = "async";
-						image.onload = resolve;
-						image.onerror = () => {
-							if (cdnSrc && !window.__tonksCdnFailed) {
-								// CDN 失败 → 标记不可达并重试本地
-								window.__tonksCdnFailed = true;
-								const fallbackImg = new Image();
-								fallbackImg.decoding = "async";
-								fallbackImg.onload = fallbackImg.onerror = resolve;
-								fallbackImg.src = localSrc;
-							} else {
-								resolve();
-							}
-						};
-						image.src = primary;
-					});
-				}),
-			);
-		}
-
 		function preloadCriticalFonts() {
 			if (!preloadHanaleiFont || !document.fonts?.load) return Promise.resolve();
 			return document.fonts
@@ -271,7 +241,7 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 
 		function waitForVisibleCriticalImages() {
 			const images = Array.from(document.querySelectorAll("img[src]"))
-				.filter((img) => !img.closest("[data-banner-device]"))
+				.filter((img) => !img.closest("[data-banner-device], .ambient-light-art"))
 				.filter((img) => img.loading !== "lazy")
 				.filter((img) => {
 					const rect = img.getBoundingClientRect();
@@ -350,7 +320,6 @@ const preloadBannerCarousel = Boolean(siteConfig.banner.carousel?.enable);
 			const preloadDeadline = performance.now() + 20000;
 			const preloadPromise = withMaximumWait(Promise.all([
 				preloadCriticalFonts(),
-				preloadExplicitImages(),
 				whenDomReady().then(() => waitForVisibleCriticalImages()),
 				preloadInitialBannerImages(),
 				preloadInitialStickerImages(),
