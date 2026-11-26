@@ -1,4 +1,5 @@
 ---
+import Icon from "../misc/Icon.astro";
 export interface Props {
 	title: string;
 	value: string | number;
@@ -95,17 +96,17 @@ const getIconStyle = () => {
           class={`rounded-lg flex items-center justify-center ${sizeClasses.iconContainer}`}
           style={getIconStyle()}
         >
-          <iconify-icon icon={icon} class={sizeClasses.icon}></iconify-icon>
+          <Icon icon={icon} class={sizeClasses.icon} />
         </div>
       )}
       
       <!-- 趋势指示器 -->
       {trend && (
         <div class={`flex items-center gap-1 ${trend.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-          <iconify-icon 
+          <Icon
             icon={trend.isPositive ? 'material-symbols:trending-up' : 'material-symbols:trending-down'} 
             class="text-sm"
-          ></iconify-icon>
+           />
           <span class="text-xs font-medium">
             {trend.isPositive ? '+' : ''}{trend.value}%
           </span>
@@ -153,16 +154,6 @@ const getIconStyle = () => {
   <!-- 悬停效果 -->
   <div class="absolute inset-0 bg-white/5 dark:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none"></div>
 </div>
-
-<script>
-  // 加载 Iconify 图标库
-  if (typeof window !== 'undefined' && !window.iconifyLoaded) {
-    const script = document.createElement('script');
-    script.src = 'https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js';
-    document.head.appendChild(script);
-    window.iconifyLoaded = true;
-  }
-</script>
 
 <style>
   .group {

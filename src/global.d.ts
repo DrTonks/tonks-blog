@@ -21,7 +21,6 @@ declare global {
 		mobileTOCInit?: () => void;
 		initSemifullScrollDetection?: () => void;
 		closeAnnouncement?: () => void;
-		iconifyLoaded?: boolean;
 		__tonksLayoutSwupHooksReady?: boolean;
 		__tonksBannerTextExitTimer?: number;
 		__tonksBannerPageTransitionPaused?: boolean;

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import * as collection from '@iconify-json/material-symbols';
+import * as localIcons from '../src/utils/local-icons.server.mjs';
 import * as iconify from '@iconify/svelte/dist/functions.js';
 import * as names from '../src/utils/timeline-icon-name.ts';
 import { timelineData } from '../src/data/timeline.ts';
@@ -12,8 +13,7 @@ const code = ts.transpileModule(readFileSync(new URL('../src/utils/timeline-icon
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const modules = {
-  '@iconify-json/material-symbols': collection,
-  '@iconify/svelte/dist/functions.js': iconify,
+  './local-icons.server.mjs': localIcons,
   './timeline-icon-name': names,
 };
 const exports = {};
@@ -45,4 +45,11 @@ test('unknown custom icons and omitted icons fall back to a local type icon', ()
   assert.equal(icons['missing:unknown'].body, collection.icons.icons.trophy.body);
   assert.equal(icons['material-symbols:favorite'].body, collection.icons.icons.favorite.body);
   assert.equal(icons['material-symbols:photo-library'].body, iconify.getIcon('material-symbols:photo-library').body);
+});
+
+test('production rejects invalid author icons and supports installed collections', () => {
+  const item = { ...timelineData[0], icon: 'missing:unknown' };
+  assert.throws(() => resolveTimelineIcons([item], true), error => error.message.includes(item.id) && error.message.includes(item.icon));
+  const key = 'mdi:camera';
+  assert.ok(resolveTimelineIcons([{ ...item, icon: key }], true)[key].body);
 });

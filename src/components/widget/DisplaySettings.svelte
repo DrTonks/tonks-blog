@@ -1,7 +1,8 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import Icon from "@iconify/svelte";
+import Icon from "@iconify/svelte/dist/OfflineIcon.svelte";
+import type { NavbarIcons } from "@/utils/navbar-icons.server";
 import { siteConfig } from "../../config";
 import { onMount } from "svelte";
 import { DARK_MODE, LIGHT_MODE } from "@constants/constants";
@@ -21,6 +22,8 @@ import {
 } from "@utils/setting-utils";
 
 import { BANNER_CAROUSEL_CHANGE, getBannerCarouselEnabled, setBannerCarouselEnabled } from "@utils/banner-carousel-preference";
+
+export let icons: NavbarIcons["settings"];
 
 let bannerCarouselEnabled = getBannerCarouselEnabled();
 const accentPresets: { id: AccentPreset; label: string }[] = [
@@ -154,7 +157,7 @@ onMount(() => {
             on:keydown={(event) => handleThemeModeKeydown("light", event)}
         >
             <div class="accent-group__label">
-                <Icon icon="material-symbols:light-mode-outline-rounded"></Icon>
+                <Icon icon={icons.lightModeOutlineRounded}></Icon>
                 <span>亮色主题</span>
             </div>
             <div class="accent-options">
@@ -176,7 +179,7 @@ onMount(() => {
                             class="accent-option__check"
                             aria-hidden="true"
                         >
-                            <Icon icon="material-symbols:check-rounded"></Icon>
+                            <Icon icon={icons.checkRounded}></Icon>
                         </span>
                     </button>
                 {/each}
@@ -195,7 +198,7 @@ onMount(() => {
             on:keydown={(event) => handleThemeModeKeydown("dark", event)}
         >
             <div class="accent-group__label">
-                <Icon icon="material-symbols:dark-mode-outline-rounded"></Icon>
+                <Icon icon={icons.darkModeOutlineRounded}></Icon>
                 <span>暗色主题</span>
             </div>
             <div class="accent-options">
@@ -217,7 +220,7 @@ onMount(() => {
                             class="accent-option__check"
                             aria-hidden="true"
                         >
-                            <Icon icon="material-symbols:check-rounded"></Icon>
+                            <Icon icon={icons.checkRounded}></Icon>
                         </span>
                     </button>
                 {/each}
@@ -229,7 +232,7 @@ onMount(() => {
     {/if}
 	<div class="mb-2 ml-3 flex items-center gap-2 font-bold text-lg text-neutral-900 dark:text-neutral-100 relative
 		before:absolute before:-left-3 before:top-[0.33rem] before:h-4 before:w-1 before:rounded-md before:bg-[var(--primary)]">
-		<Icon icon="material-symbols:wallpaper-outline-rounded" class="text-[1.15rem]"></Icon>
+		<Icon icon={icons.wallpaperOutlineRounded} class="text-[1.15rem]"></Icon>
 		显示效果
 	</div>
 	{#if siteConfig.banner.enable && siteConfig.banner.carousel?.enable}
@@ -242,7 +245,7 @@ onMount(() => {
 		class="wave-setting-row flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[var(--primary)] transition-colors hover:bg-[var(--btn-plain-bg-hover)]"
 	>
 		<span class="flex items-center gap-2 font-medium">
-			<Icon icon="material-symbols:wallpaper-outline-rounded" class="text-[1.25rem]"></Icon>
+			<Icon icon={icons.wallpaperOutlineRounded} class="text-[1.25rem]"></Icon>
 			壁纸自动轮播
 		</span>
 		<span class:enabled={bannerCarouselEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
@@ -257,7 +260,7 @@ onMount(() => {
 		class="wave-setting-row flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[var(--primary)] transition-colors hover:bg-[var(--btn-plain-bg-hover)]"
 	>
 		<span class="flex items-center gap-2 font-medium">
-			<Icon icon="material-symbols:waves-rounded" class="text-[1.25rem]"></Icon>
+			<Icon icon={icons.wavesRounded} class="text-[1.25rem]"></Icon>
 			水波纹动画
 		</span>
 		<span class:enabled={wavesEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
@@ -274,7 +277,7 @@ onMount(() => {
 	>
 		<span class="flex flex-col gap-0.5">
 			<span class="flex items-center gap-2 font-medium">
-				<Icon icon="material-symbols:blur-on-rounded" class="text-[1.25rem]"></Icon>
+				<Icon icon={icons.blurOnRounded} class="text-[1.25rem]"></Icon>
 				头像粒子化主题过渡
 			</span>
 			<span id="avatar-particles-hint" class="text-xs text-[var(--content-meta)]">
@@ -286,7 +289,7 @@ onMount(() => {
     {#if siteConfig.postListLayout.allowSwitch}
     <button type="button" role="switch" aria-checked={gridEnabled} aria-label="首页网格状布局" on:click={toggleGrid}
       class="wave-setting-row flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[var(--primary)] transition-colors hover:bg-[var(--btn-plain-bg-hover)]">
-      <span class="flex items-center gap-2 font-medium"><Icon icon="material-symbols:grid-view-outline-rounded" class="text-[1.25rem]" />首页网格状布局</span>
+      <span class="flex items-center gap-2 font-medium"><Icon icon={icons.gridViewOutlineRounded} class="text-[1.25rem]" />首页网格状布局</span>
       <span class:enabled={gridEnabled} class="wave-switch" aria-hidden="true"><span></span></span>
     </button>
     {/if}

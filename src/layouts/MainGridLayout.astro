@@ -7,7 +7,6 @@ import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import FullscreenWallpaper from "../components/misc/FullscreenWallpaper.astro";
 import imageManifest from 'virtual:optimized-images';
-import IconifyLoader from "../components/misc/IconifyLoader.astro";
 import BannerImage from "../components/misc/BannerImage.astro";
 import HomeStickerLayer from "../components/misc/HomeStickerLayer.astro";
 import TypewriterText from "../components/TypewriterText.astro";
@@ -183,8 +182,6 @@ const transparentClass = shouldEnableTransparency
 	<FullscreenWallpaper config={fullscreenWallpaperConfig} />
 )}
 
-<!-- 全局图标加载器 -->
-<IconifyLoader />
 
 <!-- 为全屏壁纸模式添加body类 -->
 {shouldEnableTransparency && (

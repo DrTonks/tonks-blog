@@ -1,9 +1,12 @@
 <script lang="ts">
 import { DARK_MODE, LIGHT_MODE, SYSTEM_MODE } from "@constants/constants.ts";
-import Icon from "@iconify/svelte";
+import Icon from "@iconify/svelte/dist/OfflineIcon.svelte";
+import type { NavbarIcons } from "@/utils/navbar-icons.server";
 import { onMount } from "svelte";
 import { getStoredTheme, setThemeFromPoint } from "@utils/setting-utils.ts";
 import type { LIGHT_DARK_MODE } from "@/types/config.ts";
+
+let { icons }: { icons: NavbarIcons["theme"] } = $props();
 
 let isDark = $state(document.documentElement.classList.contains("dark"));
 let activeMode = $state<LIGHT_DARK_MODE>(getStoredTheme());
@@ -13,11 +16,11 @@ let switchRoot: HTMLDivElement;
 const themeOptions: Array<{
 	mode: LIGHT_DARK_MODE;
 	label: string;
-	icon: string;
+	icon: keyof NavbarIcons["theme"];
 }> = [
-	{ mode: LIGHT_MODE, label: "亮色", icon: "material-symbols:light-mode-outline-rounded" },
-	{ mode: DARK_MODE, label: "暗色", icon: "material-symbols:dark-mode-outline-rounded" },
-	{ mode: SYSTEM_MODE, label: "跟随系统", icon: "material-symbols:contrast-rounded" },
+	{ mode: LIGHT_MODE, label: "亮色", icon: "lightModeOutlineRounded" },
+	{ mode: DARK_MODE, label: "暗色", icon: "darkModeOutlineRounded" },
+	{ mode: SYSTEM_MODE, label: "跟随系统", icon: "contrastRounded" },
 ];
 
 function switchScheme(newMode: LIGHT_DARK_MODE, event: MouseEvent) {
@@ -117,11 +120,11 @@ onMount(() => {
 		onkeydown={handleTriggerKeydown}
 	>
 		{#if activeMode === SYSTEM_MODE}
-			<Icon icon="material-symbols:contrast-rounded" class="text-[1.25rem]"></Icon>
+			<Icon icon={icons.contrastRounded} class="text-[1.25rem]"></Icon>
 		{:else if isDark}
-			<Icon icon="material-symbols:dark-mode-outline-rounded" class="text-[1.25rem]"></Icon>
+			<Icon icon={icons.darkModeOutlineRounded} class="text-[1.25rem]"></Icon>
 		{:else}
-			<Icon icon="material-symbols:wb-sunny-outline-rounded" class="text-[1.25rem]"></Icon>
+			<Icon icon={icons.wbSunnyOutlineRounded} class="text-[1.25rem]"></Icon>
 		{/if}
 	</button>
 
@@ -142,10 +145,10 @@ onMount(() => {
 			class="theme-mode-option"
 			onclick={(event) => switchScheme(option.mode, event)}
 			>
-				<Icon icon={option.icon}></Icon>
+				<Icon icon={icons[option.icon]}></Icon>
 				<span>{option.label}</span>
 				<span class="theme-mode-check" aria-hidden="true">
-					<Icon icon="material-symbols:check-rounded"></Icon>
+					<Icon icon={icons.checkRounded}></Icon>
 				</span>
 			</button>
 		{/each}

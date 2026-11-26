@@ -1,8 +1,11 @@
 <script lang="ts">
-import Icon from "@iconify/svelte";
+import Icon from "@iconify/svelte/dist/OfflineIcon.svelte";
+import type { NavbarIcons } from "@/utils/navbar-icons.server";
 import { onMount, tick } from "svelte";
 import type { SearchResult } from "@/global";
 import { navigateToPage } from "@utils/navigation-utils";
+
+export let icons: NavbarIcons["search"];
 
 let keyword = "";
 let result: SearchResult[] = [];
@@ -91,13 +94,13 @@ onMount(() => {
 
 <button bind:this={button} type="button" on:click={togglePanel} aria-label="搜索文章" title="搜索文章" aria-expanded={open} aria-controls="search-panel" id="search-switch"
  class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90">
- <Icon icon="material-symbols:search" class="text-[1.25rem]" />
+ <Icon icon={icons.search} class="text-[1.25rem]" />
 </button>
 <div bind:this={panel} id="search-panel" class:float-panel-closed={!open} inert={!open} class="float-panel search-panel absolute top-20 left-4 md:left-[unset] right-4 md:w-[30rem] shadow-2xl rounded-2xl p-3" role="search" aria-label="站内文章搜索">
  <div class="search-input-row">
-  <Icon icon="material-symbols:search" class="text-xl" />
+  <Icon icon={icons.search} class="text-xl" />
   <input bind:this={input} bind:value={keyword} on:input={queueSearch} type="text" inputmode="search" placeholder="搜索文章…" aria-label="搜索关键词" autocomplete="off" />
-  <button type="button" aria-label="关闭搜索" on:click={() => closePanel(true)}><Icon icon="material-symbols:close-rounded" class="text-xl" /></button>
+  <button type="button" aria-label="关闭搜索" on:click={() => closePanel(true)}><Icon icon={icons.closeRounded} class="text-xl" /></button>
  </div>
  <p class="search-status" role="status">{busy ? "正在搜索…" : message}</p>
  {#each result as item}

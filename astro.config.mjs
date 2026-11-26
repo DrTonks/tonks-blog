@@ -1,3 +1,4 @@
+import localContentIcons from "./src/plugins/rehype-local-icons.mjs";
 import tableCards from './src/plugins/rehype-table-cards.mjs';
 import {createHash} from 'node:crypto';
 import remarkPolls from './src/plugins/remark-polls.mjs';
@@ -268,6 +269,7 @@ export default defineConfig({
 			remarkMermaid,
 		],
 		rehypePlugins: [tableCards,
+			[localContentIcons, { strict: process.env.NODE_ENV === "production", cacheVersion: createHash("sha256").update(readFileSync(new URL("./src/utils/local-icons.server.mjs", import.meta.url))).update(readFileSync(new URL("./src/plugins/rehype-local-icons.mjs", import.meta.url))).update(readFileSync(new URL("./pnpm-lock.yaml", import.meta.url))).digest("hex") }],
 			[articleMedia, {cacheVersion:createHash('sha256').update(readFileSync(new URL('./src/plugins/rehype-article-media.mjs', import.meta.url))).digest('hex')}],
 			rehypeKatex,
 			rehypeSlug,

@@ -9,7 +9,7 @@ import { resolveTimelineAlbums } from '../utils/timeline-albums';
 import { scanAlbums } from '../utils/album-scanner';
 import { siteConfig } from '../config';
 
-const nodeIcons = resolveTimelineIcons(timelineData);
+const nodeIcons = resolveTimelineIcons(timelineData, import.meta.env.PROD);
 const hasAlbums = timelineData.some(item => item.type === 'album' || item.albumId !== undefined);
 const items = resolveTimelineAlbums(timelineData,
   hasAlbums && siteConfig.featurePages.albums ? await scanAlbums() : [], siteConfig.featurePages.albums);

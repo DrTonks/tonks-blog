@@ -1,8 +1,11 @@
 <script lang="ts">
-import Icon from "@iconify/svelte";
+import Icon from "@iconify/svelte/dist/OfflineIcon.svelte";
+import type { NavbarIcons } from "@/utils/navbar-icons.server";
 import { onMount } from "svelte";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+
+export let icons: NavbarIcons["toc"];
 
 let tocItems: Array<{ id: string; text: string; level: number }> = [];
 let activeId = "";
@@ -158,7 +161,7 @@ if (typeof window !== "undefined") {
 	id="mobile-toc-switch"
 	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 lg:!hidden"
 >
-	<Icon icon="material-symbols:format-list-bulleted" class="text-[1.25rem]" />
+	<Icon icon={icons.formatListBulleted} class="text-[1.25rem]" />
 </button>
 
 <!-- Mobile TOC Panel -->
@@ -174,13 +177,13 @@ if (typeof window !== "undefined") {
 			aria-label="Close TOC"
 			class="btn-plain rounded-lg h-8 w-8 active:scale-90"
 		>
-			<Icon icon="material-symbols:close" class="text-[1rem]" />
+			<Icon icon={icons.close} class="text-[1rem]" />
 		</button>
 	</div>
 
 		{#if tocItems.length === 0}
 			<div class="text-center py-8 text-black/50 dark:text-white/50">
-				<Icon icon="material-symbols:article-outline" class="text-2xl mb-2" />
+				<Icon icon={icons.articleOutline} class="text-2xl mb-2" />
 				<p>当前页面没有目录</p>
 			</div>
 		{:else}
