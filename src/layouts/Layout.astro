@@ -9,6 +9,7 @@ import AmbientBackground from "@components/AmbientBackground.astro";
 import BuildUpdateNotice from "@components/BuildUpdateNotice.astro";
 import Toast from "@components/Toast.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
+import clarityBootstrap from "../scripts/clarity-bootstrap.js?raw";
 import LoadingScreen from "@components/LoadingScreen.astro";
 import { profileConfig, siteConfig } from "@/config";
 import { widgetConfigs } from "../config";
@@ -142,6 +143,7 @@ const bannerOffsetByPosition = {
 	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
 	bottom: "0",
 };
+const gtmId = import.meta.env.PUBLIC_GTM_ID?.trim();
 const bannerOffset =
 	bannerOffsetByPosition[siteConfig.banner.position || "center"];
 ---
@@ -155,30 +157,18 @@ const bannerOffset =
 >
 	<head>
 		<meta name="tonks-build" content={import.meta.env.PUBLIC_BUILD_ID} />
-		<script>
-			const dataLayer = (window.dataLayer ??= []);
-			dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-			const firstScript = document.getElementsByTagName('script')[0];
-			const gtmScript = document.createElement('script');
-			gtmScript.async = true;
-			gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-KRX3XGVH';
-			firstScript?.parentNode?.insertBefore(gtmScript, firstScript);
-		</script>
-		<script>
-			type ClarityApi = ((...args: unknown[]) => void) & { q?: unknown[][] };
-			const clarityWindow = window as Window & { clarity?: ClarityApi };
-			if (!clarityWindow.clarity) {
-				const clarity: ClarityApi = (...args) => {
-					(clarity.q ??= []).push(args);
-				};
-				clarityWindow.clarity = clarity;
-				const clarityScript = document.createElement('script');
-				clarityScript.async = true;
-				clarityScript.src = 'https://www.clarity.ms/tag/tjr3vkhj8i';
-				const firstClarityScript = document.getElementsByTagName('script')[0];
-				firstClarityScript?.parentNode?.insertBefore(clarityScript, firstClarityScript);
+		{gtmId && <script is:inline data-swup-ignore-script define:vars={{ gtmId }}>
+			if (!window.__tonksGtmStarted) {
+				window.__tonksGtmStarted = true;
+				(window.dataLayer ??= []).push({ "gtm.start": Date.now(), event: "gtm.js" });
+				const tag = document.createElement("script");
+				tag.async = true;
+				tag.setAttribute("data-swup-ignore-script", "");
+				tag.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(gtmId);
+				document.head.append(tag);
 			}
-		</script>
+		</script>}
+		<script is:inline data-swup-ignore-script set:html={clarityBootstrap} />
 
 		<title>{pageTitle}</title>
 		<link rel="canonical" href={canonicalUrl(Astro.url.href)} />
@@ -374,7 +364,7 @@ const bannerOffset =
 		  data-overlayscrollbars-initialize
 	>
 		<LoadingScreen />
-		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+		{gtmId && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(gtmId)}`} height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>}
 		
 		<!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
 		{shouldShowTopHighlight && <div class="top-gradient-highlight"></div>}

@@ -8,17 +8,12 @@ import { createServer } from 'node:http';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 const require = createRequire(import.meta.url);
 const astroRequire = createRequire(require.resolve('astro'));
-const { build, transform: transformJs } = createRequire(astroRequire.resolve('vite'))('esbuild');
-const { transform: transformAstro } = astroRequire('@astrojs/compiler');
+const { build } = createRequire(astroRequire.resolve('vite'))('esbuild');
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE_PATH ? pathToFileURL(process.env.PLAYWRIGHT_MODULE_PATH).href : 'playwright');
 const sourcePath = new URL('../src/utils/blog-community.ts', import.meta.url);
 const source = await readFile(sourcePath, 'utf8');
 const compiled = await build({stdin:{contents:source, resolveDir:fileURLToPath(new URL('../src/utils/', import.meta.url)),loader:'ts'}, bundle:true,write:false,format:'esm',outfile:'app.js',define:{'import.meta.env':'{}'}});
-const layout = await readFile(new URL('../src/layouts/Layout.astro', import.meta.url), 'utf8');
-const astro = await transformAstro(layout, {filename:'Layout.astro'});
-const clarity = astro.scripts.find(script => script.code?.includes('type ClarityApi'));
-assert(clarity && clarity.type === 'inline', 'Clarity must be extracted for Astro processing, not emitted as raw inline TypeScript');
-const clarityJs = (await transformJs(clarity.code, {loader:'ts',format:'esm'})).code;
+const clarityJs = await readFile(new URL('../src/scripts/clarity-bootstrap.js', import.meta.url), 'utf8');
 const base = {page:'about',website:'',created_at:'2026-09-08T00:00:00Z',status:'published',author_key:'fixture',owned:false,is_admin:false,reply_to_name:'',is_pinned:false};
 const comments = [
   {...base,id:1,root_id:1,parent_id:null,nickname:'Root',content:'Older root'},
@@ -91,11 +86,15 @@ try {
   await comment(19).locator('.community-inline-emoji').click();
   await page.locator('[data-community-comments]').evaluate(el=>el.remove());
   await page.locator('.community-image-preview').waitFor({state:'detached'});
-  await page.addScriptTag({url:origin+'/clarity.js',type:'module'});
+  await page.evaluate(()=>{const loader=document.createElement('div');loader.id='initial-loading-screen';document.body.append(loader);});
+  await page.addScriptTag({url:origin+'/clarity.js'});
   await page.waitForFunction(()=>typeof window.clarity==='function');
   await page.evaluate(()=>window.clarity('event','local-regression'));
   assert.deepEqual(await page.evaluate(()=>window.clarity.q),[['event','local-regression']]);
-  await page.addScriptTag({url:origin+'/clarity.js?navigation=2',type:'module'});
+  assert.equal(await page.locator('script[src^="https://www.clarity.ms/tag/"]').count(),0);
+  await page.evaluate(()=>{window.dispatchEvent(new Event('tonks:initial-loader:done'));document.getElementById('initial-loading-screen').remove();});
+  await page.locator('script[src^="https://www.clarity.ms/tag/"]').waitFor({state:'attached'});
+  await page.addScriptTag({url:origin+'/clarity.js?navigation=2'});
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(resolve)));
   assert.equal(await page.locator('script[src^="https://www.clarity.ms/tag/"]').count(),1,'navigation must not load Clarity twice');
   assert.deepEqual(errors,[]);assert.deepEqual(alerts,[]);
