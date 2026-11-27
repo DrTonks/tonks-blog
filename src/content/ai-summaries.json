@@ -189,5 +189,37 @@
 		"generatedAt": "2026-10-13T15:18:46.784Z",
 		"promptVersion": "1",
 		"contentHash": "689a3697f1fda41cc66b1ba153aa4f36fc3bfa4ae024e32ef2553d392087c105"
+	},
+	"deep01/bianyiyuanli1": {
+		"summary": "Deepseedian 是基于 dsh 的 Obsidian 笔记侧栏助手；长期记忆由插件保存、检索和修改，模型判断何时调用记忆工具，实现跨会话记忆。每轮以快照和最多 12 条、每条 160 字符的关键词索引供读取；支持闲时与主动整理，建议需用户确认。",
+		"model": "deepseek-flash",
+		"requestedModel": "deepseek-flash",
+		"generatedAt": "2026-10-30T12:08:14.349Z",
+		"promptVersion": "1",
+		"contentHash": "14ef7dc876f4c27c6fef36b2c2cce43bb2aa7a6308c9b557ee0d22760ab13f1b"
+	},
+	"raintern/ra": {
+		"summary": "我知道这个板块是AI摘要，显然我修改了这部分。虽然开这个头不太好，但我不想看到AI对这些文字的总结。我也不知道为啥。",
+		"model": "tonks-flash",
+		"requestedModel": "tonks-flash",
+		"generatedAt": "2026-11-19T13:50:49.857Z",
+		"promptVersion": "1",
+		"contentHash": "db9136c5955d09cade889527eb7e8ee34e12fdf969b0e7aa270dd4e8ddd558ef"
+	},
+	"agent1028/multi-agent-vs-skills": {
+		"summary": "作者因面试追问“多agent比skills强在哪”而做对照测评：在deepseek-flash下两者业务完成度均100%，但多专家方案在事实支持、约束遵守、完整性与一致性等评分上更高，token和费用也略低。作者归因于上下文隔离与更少压缩，并强调依赖恢复更可检查，同时指出盲审不严格、耗时差异难比较，结论仍有不确定性。",
+		"model": "deepseek-flash",
+		"requestedModel": "deepseek-flash",
+		"generatedAt": "2026-11-19T13:50:54.364Z",
+		"promptVersion": "1",
+		"contentHash": "c2343b29f2f7265f46279998f9aaf78393fb78a008a3d4ed21a1fdce12d62bb7"
+	},
+	"kaifa04/vote-mail": {
+		"summary": "作者为博客与主页接入 WebMCP 这一浏览器标准提案，向 AI 代理公开只读工具（搜索内容、按 ID 读取 Markdown、读取简介与导航），并配套 llms.txt、agent 目录、Markdown 副本与初始语义 HTML。工具均不改变状态、不读取个人数据；作者坦言实际效果尚不清楚。",
+		"model": "deepseek-flash",
+		"requestedModel": "deepseek-flash",
+		"generatedAt": "2026-11-19T13:59:21.529Z",
+		"promptVersion": "1",
+		"contentHash": "cfc86314d98e570021a1593b105552686c4d1fcab1a13e74f836e11d573d9bfc"
 	}
 }

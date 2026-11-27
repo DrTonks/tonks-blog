@@ -80,5 +80,13 @@ export const friendsData: FriendLink[] = [
 		"url": "https://blog.neurosama.com/",
 		"category": "Neuro",
 		"fastener": "pin"
+	},
+	{
+  		"name": "星空驿站 Starlight Station",
+  		"description": "一座漂浮在深空中的小小驿站",
+  		"avatar": "https://baiyangmu.xyz/static/favicon-96x96.png",
+  		"url": "https://baiyangmu.xyz",
+  		"category": "Blog",
+  		"fastener": "pin"
 	}
 ];

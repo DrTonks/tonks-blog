@@ -8,7 +8,7 @@ tags:
 category: 学无止境
 draft: false
 pinned: false
-image: ./cover.png
+image: ./cover.jpg
 ---
 在“微光职引”的后续设计里，我们添加了总控加四大专家的架构：画像构建、人岗匹配、职业路径规划、生涯报告。
 
